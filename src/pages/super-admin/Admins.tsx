@@ -102,14 +102,21 @@ export default function Admins() {
 
   // Filter and sort admins
   const filteredAdmins = admins.filter(admin => {
+    const name = admin.name || '';
+    const email = admin.email || '';
+    const company = admin.company || '';
+
     const matchesSearch = 
-      admin.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      admin.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (admin.company || '').toLowerCase().includes(searchTerm.toLowerCase());
+      name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      company.toLowerCase().includes(searchTerm.toLowerCase());
+
     const matchesStatus = statusFilter === 'all' || admin.status === statusFilter;
-    const matchesRole = roleFilter === 'all' || admin.role.toLowerCase().includes(roleFilter.toLowerCase());
+    const matchesRole = roleFilter === 'all' || (admin.role || '').toLowerCase().includes(roleFilter.toLowerCase());
+
     return matchesSearch && matchesStatus && matchesRole;
   });
+
 
   // Sort admins
   const sortedAdmins = [...filteredAdmins].sort((a, b) => {

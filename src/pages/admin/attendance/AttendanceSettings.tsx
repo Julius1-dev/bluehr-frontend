@@ -8,48 +8,34 @@ import { MapPin, Save, X, Plus, Trash2 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import LocationForm from './LocationForm';
+import {
+  getLocations,
+  saveLocation,
+  deleteLocation,
+} from '@/api/officeLocationApi';
 
-// Mock data for office locations
+import type { OfficeLocationData } from '@/types';
+
+// Mock data (you might want to move these to separate files)
 const mockLocations = [
-  { id: 1, name: 'Nairobi Office', address: '123 Business Park, Nairobi', radius: 100 },
-  { id: 2, name: 'Mombasa Branch', address: '456 Coastal Road, Mombasa', radius: 150 },
+  { id: 1, name: 'Main Office', address: '123 Main St', radius: 100 },
+  { id: 2, name: 'Branch Office', address: '456 Branch Ave', radius: 150 }
 ];
 
-// Mock data for departments
+const mockExceptions = [
+  { id: 1, name: 'Remote Work Policy', type: 'schedule', days: ['Monday', 'Friday'], active: true },
+  { id: 2, name: 'Field Work Exception', type: 'location', days: [], active: false }
+];
+
 const mockDepartments = [
   { id: 1, name: 'Engineering' },
-  { id: 2, name: 'Human Resources' },
-  { id: 3, name: 'Marketing' },
-  { id: 4, name: 'Sales' },
+  { id: 2, name: 'Marketing' }
 ];
 
-// Mock data for employees
 const mockEmployees = [
-  { id: 1, name: 'John Doe', department: 'Engineering' },
-  { id: 2, name: 'Jane Smith', department: 'Human Resources' },
-  { id: 3, name: 'Mike Johnson', department: 'Marketing' },
-];
-
-// Mock data for exceptions
-const mockExceptions = [
-  { 
-    id: 1, 
-    name: 'Remote Work Policy', 
-    type: 'schedule', 
-    days: ['Monday', 'Wednesday', 'Friday'], 
-    startTime: '08:00',
-    endTime: '17:00',
-    appliesTo: [{ type: 'department', id: 1 }],
-    active: true 
-  },
-  { 
-    id: 2, 
-    name: 'Field Work', 
-    type: 'location', 
-    days: ['Tuesday', 'Thursday'], 
-    appliesTo: [{ type: 'employee', id: 3 }],
-    active: true 
-  },
+  { id: 1, name: 'John Doe' },
+  { id: 2, name: 'Jane Smith' }
 ];
 
 type WorkShift = {
@@ -59,6 +45,8 @@ type WorkShift = {
   clockIn: string;
   clockOut: string;
   breakTime: string;
+  targetType?: string;
+  targetId?: string;
 };
 
 export default function AttendanceSettings() {
@@ -98,6 +86,9 @@ export default function AttendanceSettings() {
   const [workShiftBreakTime, setWorkShiftBreakTime] = useState('60');
   const [editingWorkShift, setEditingWorkShift] = useState<WorkShift | null>(null);
   const [workShiftError, setWorkShiftError] = useState<string | null>(null);
+  const [locations, setLocations] = useState<OfficeLocationData[]>([]);
+  const [selectedLocation, setSelectedLocation] = useState<OfficeLocationData | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
@@ -110,11 +101,54 @@ export default function AttendanceSettings() {
     }));
   };
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await getLocations();
+        if (Array.isArray(res)) {
+          setLocations(res);
+        } else {
+          console.error('Expected an array but got:', res);
+          setLocations([]); // fallback to avoid crash
+        }
+      } catch (err) {
+        console.error('Failed to load locations', err);
+        setLocations([]); // fallback in case of error
+      }
+    };
+    fetchData();
+  }, []);
+
+
+  const handleSave = async (location: OfficeLocationData) => {
+    try {
+      setLoading(true);
+      const saved = await saveLocation(location);
+      if (location.id) {
+        setLocations(prev => prev.map(l => (l.id === saved.id ? saved : l)));
+      } else {
+        setLocations(prev => [...prev, saved]);
+      }
+      setSelectedLocation(null);
+    } catch (err) {
+      console.error('Error saving location:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteLocation(id);
+      setLocations(prev => prev.filter(l => l.id !== id));
+    } catch (err) {
+      console.error('Error deleting location:', err);
+    }
+  };
+
   const handleAddException = () => {
-    // In a real app, this would be an API call
     console.log('Adding exception:', newException);
     setShowAddException(false);
-    // Reset form
     setNewException({
       name: '',
       type: 'schedule',
@@ -154,32 +188,55 @@ export default function AttendanceSettings() {
     setWorkShiftError(null);
     const token = localStorage.getItem('token');
     const payload = {
-      targetType: workShiftTargetType,
-      targetId: workShiftTargetId,
+      target_type: workShiftTargetType,
+      target_id: parseInt(workShiftTargetId, 10),
       days: workShiftDays,
-      clockIn: workShiftClockIn,
-      clockOut: workShiftClockOut,
-      breakTime: parseInt(workShiftBreakTime, 10),
+      clock_in: workShiftClockIn,
+      clock_out: workShiftClockOut,
+      break_time: workShiftBreakTime,
     };
+
+    // 🔍 Log payload before making request
+    console.log("Submitting work shift payload:", payload);
+
     try {
+      let response;
+
       if (editingWorkShift) {
-        await fetch(`http://localhost:4000/company-admin/attendance/work-shifts/${editingWorkShift.id}`, {
+        response = await fetch(`http://localhost:4000/company-admin/attendance/work-shifts/${editingWorkShift.id}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
           body: JSON.stringify(payload),
         });
       } else {
-        await fetch('http://localhost:4000/company-admin/attendance/work-shifts', {
+        response = await fetch('http://localhost:4000/company-admin/attendance/work-shifts', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
           body: JSON.stringify(payload),
         });
       }
+
+      // 🔍 Check for server error response
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Server responded with error:", response.status, errorText);
+        throw new Error(errorText); // This will be caught below
+      }
+
       setShowAddWorkShift(false);
       setEditingWorkShift(null);
-      // Refresh work shifts
-      const wsRes = await fetch('http://localhost:4000/company-admin/attendance/work-shifts', { headers: { 'Authorization': `Bearer ${token}` } });
+
+      const wsRes = await fetch('http://localhost:4000/company-admin/attendance/work-shifts', {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
       const wsData = await wsRes.json();
+
       if (Array.isArray(wsData)) {
         setWorkShifts(wsData.map((ws: any) => ({
           id: ws.id,
@@ -198,9 +255,12 @@ export default function AttendanceSettings() {
         setWorkShiftError('Failed to fetch work shifts.');
       }
     } catch (err) {
+      // 🔍 Log any fetch or logic errors
+      console.error("Error saving work shift:", err);
       setWorkShiftError('Failed to save work shift.');
     }
   };
+
 
   const handleDeleteWorkShift = async (id: string) => {
     setWorkShiftError(null);
@@ -210,7 +270,6 @@ export default function AttendanceSettings() {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` },
       });
-      // Refresh work shifts
       const wsRes = await fetch('http://localhost:4000/company-admin/attendance/work-shifts', { headers: { 'Authorization': `Bearer ${token}` } });
       const wsData = await wsRes.json();
       if (Array.isArray(wsData)) {
@@ -235,7 +294,6 @@ export default function AttendanceSettings() {
     }
   };
 
-  // Fetch departments, employees, and work shifts
   useEffect(() => {
     const fetchData = async () => {
       setWorkShiftError(null);
@@ -378,31 +436,51 @@ export default function AttendanceSettings() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {mockLocations.map(location => (
-                  <div key={location.id} className="border rounded-lg p-4">
-                    <div className="flex justify-between items-start">
+            <div className="space-y-4">
+
+
+                <div className="mt-4 space-y-2">
+                  <h2 className="text-lg font-semibold">Saved Office Locations</h2>
+                  {locations.map((loc) => (
+                    <div
+                      key={loc.id}
+                      className="p-2 border rounded-md flex justify-between items-center"
+                    >
                       <div>
-                        <h4 className="font-medium">{location.name}</h4>
-                        <p className="text-sm text-muted-foreground">{location.address}</p>
-                        <div className="mt-2 flex items-center text-sm text-muted-foreground">
-                          <MapPin className="mr-1 h-4 w-4" />
-                          <span>{location.radius}m radius</span>
-                        </div>
+                        <strong>{loc.name}</strong> – {loc.address}
+                        <br />
+                        Lat: {loc.latitude}, Lng: {loc.longitude}, Radius: {loc.radius}m
                       </div>
-                      <div className="flex space-x-2">
-                        <Button variant="outline" size="sm">Edit</Button>
-                        <Button variant="outline" size="sm" className="text-destructive">
-                          <Trash2 className="h-4 w-4" />
+                      <div className="space-x-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => navigate(`/admin/attendance/locations/${loc.id}`)}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-red-600"
+                          onClick={() => {
+                            if (confirm('Are you sure you want to delete this location?')) {
+                              handleDelete(loc.id!);
+                            }
+                          }}
+                        >
+                          Delete
                         </Button>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </CardContent>
           </Card>
         </TabsContent>
+
+        {/* here */}
 
         <TabsContent value="exceptions" className="space-y-4">
           <Card>
@@ -457,6 +535,8 @@ export default function AttendanceSettings() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        {/* Workshift */}
 
         <TabsContent value="workshift" className="space-y-4">
           <Card>
@@ -628,16 +708,19 @@ export default function AttendanceSettings() {
         </div>
       )}
 
-      {/* Add/Edit Work Shift Modal */}
+     {/* Add/Edit Work Shift Modal */}
       {showAddWorkShift && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-2xl">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">{editingWorkShift ? 'Edit' : 'Add'} Work Shift</h3>
+              <h3 className="text-lg font-semibold">
+                {editingWorkShift ? 'Edit' : 'Add'} Work Shift
+              </h3>
               <Button variant="ghost" size="sm" onClick={() => setShowAddWorkShift(false)}>
                 <X className="h-4 w-4" />
               </Button>
             </div>
+
             <div className="space-y-4">
               <div>
                 <Label>Applies To</Label>
@@ -651,28 +734,42 @@ export default function AttendanceSettings() {
                       <SelectItem value="employee">Employee</SelectItem>
                     </SelectContent>
                   </Select>
+
                   <Select value={workShiftTargetId} onValueChange={v => setWorkShiftTargetId(v)}>
                     <SelectTrigger className="flex-1">
                       <SelectValue placeholder={workShiftTargetType === 'department' ? 'Select department' : 'Select employee'} />
                     </SelectTrigger>
                     <SelectContent>
-                      {workShiftTargetType === 'department' ? (
-                        departments.map(dept => (
-                          <SelectItem key={dept.id} value={String(dept.id)}>
-                            {dept.name}
-                          </SelectItem>
-                        ))
-                      ) : (
-                        employees.map(emp => (
-                          <SelectItem key={emp.id} value={String(emp.id)}>
-                            {emp.name}
-                          </SelectItem>
-                        ))
-                      )}
-                    </SelectContent>
+                    {workShiftTargetType === 'department' ? (
+                      departments.map((dept) => (
+                        <SelectItem
+                          key={dept.id}
+                          value={String(dept.id)}
+                          className="text-black dark:text-white"
+                        >
+                          {dept.name}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <>
+                        {console.log('Employees in dropdown:', employees)}
+                        {employees.map((emp) => (
+                          <SelectItem
+                          key={emp.id}
+                          value={String(emp.id)}
+                          className="!text-black dark:!text-white bg-white dark:bg-gray-900"
+                        >
+                          {`${emp.first_name} ${emp.last_name}`}
+                        </SelectItem>
+
+                        ))}
+                      </>
+                    )}
+                  </SelectContent>
                   </Select>
                 </div>
               </div>
+
               <div>
                 <Label>Days of Week</Label>
                 <div className="flex flex-wrap gap-2 mt-2">
@@ -682,13 +779,18 @@ export default function AttendanceSettings() {
                       type="button"
                       variant={workShiftDays.includes(day) ? 'default' : 'outline'}
                       size="sm"
-                      onClick={() => setWorkShiftDays(prev => prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day])}
+                      onClick={() =>
+                        setWorkShiftDays(prev =>
+                          prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]
+                        )
+                      }
                     >
                       {day.substring(0, 3)}
                     </Button>
                   ))}
                 </div>
               </div>
+
               <div className="grid grid-cols-3 gap-4">
                 <div>
                   <Label>Clock In</Label>
@@ -703,6 +805,7 @@ export default function AttendanceSettings() {
                   <Input type="number" value={workShiftBreakTime} onChange={e => setWorkShiftBreakTime(e.target.value)} />
                 </div>
               </div>
+
               <div className="flex justify-end space-x-2 pt-4">
                 <Button variant="outline" onClick={() => setShowAddWorkShift(false)}>
                   Cancel

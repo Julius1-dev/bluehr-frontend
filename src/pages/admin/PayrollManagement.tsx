@@ -21,6 +21,11 @@ import { PayrollEmployeeList } from '@/components/payroll/PayrollEmployeeList';
 import { AdvanceManagement } from '@/components/payroll/AdvanceManagement';
 import { PayrollProcessor } from '@/components/payroll/PayrollProcessor';
 import { calculatePAYE, calculateSHIF, calculateNSSF, calculateHousingLevy } from '@/components/payroll/payrollCalculations';
+import { PayrollSummaryWidget } from '@/components/dashboard/PayrollSummaryWidget';
+
+
+
+
 
 // Mock utility function for formatting currency
 const formatCurrency = (amount: number): string => {
@@ -342,8 +347,10 @@ export function PayrollManagement() {
 
         {/* Tab content with our components */}
         <TabsContent value="overview" className="space-y-4">
+          <PayrollSummaryWidget />
           <PayrollScheduler payrollData={payrollSummary} />
         </TabsContent>
+
         
         <TabsContent value="employees" className="space-y-4">
           <PayrollEmployeeList 

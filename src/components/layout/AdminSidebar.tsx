@@ -14,11 +14,13 @@ import {
   Shield,
   LifeBuoy,
   UserX,
-  Building2
+  Building2,
+  Fingerprint
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Link, useLocation } from 'react-router-dom';
 
+// First, define the NavItem component before using it in AdminSidebar
 interface NavItemProps {
   icon: React.ReactNode;
   label: string;
@@ -28,7 +30,14 @@ interface NavItemProps {
   userPermissions?: string[];
 }
 
-function NavItem({ icon, label, to, badge, requiredPermissions, userPermissions }: NavItemProps) {
+const NavItem: React.FC<NavItemProps> = ({ 
+  icon, 
+  label, 
+  to, 
+  badge, 
+  requiredPermissions, 
+  userPermissions 
+}) => {
   const location = useLocation();
   const isActive = location.pathname === to;
 
@@ -64,9 +73,10 @@ function NavItem({ icon, label, to, badge, requiredPermissions, userPermissions 
       )}
     </Link>
   );
-}
+};
 
-export function AdminSidebar() {
+// Then define the AdminSidebar component
+export const AdminSidebar: React.FC = () => {
   const [userPermissions, setUserPermissions] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -86,6 +96,7 @@ export function AdminSidebar() {
 
         if (response.ok) {
           const data = await response.json();
+          console.log('User permissions:', data.data?.permissions);
           // Always grant full access to the original admin
           if (data.data && data.data.role === 'admin') {
             setUserPermissions(['*']); // Admin has all permissions
@@ -153,6 +164,13 @@ export function AdminSidebar() {
           requiredPermissions={['manage_users']}
           userPermissions={userPermissions}
         />
+        {/* <NavItem 
+          icon={<Fingerprint className="w-full h-full" />} 
+          label="Employee Check-In/Out" 
+          to="/admin/employee-checkin" 
+          requiredPermissions={['manage_attendance']}
+          userPermissions={userPermissions}
+        /> */}
         <NavItem 
           icon={<Clock className="w-full h-full" />} 
           label="Attendance" 
@@ -233,4 +251,4 @@ export function AdminSidebar() {
       </div>
     </aside>
   );
-}
+};

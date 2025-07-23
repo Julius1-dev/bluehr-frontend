@@ -33,6 +33,9 @@ import { DocumentApi, Document, DocumentUploadData, DocumentShareData } from '@/
 import axios from 'axios';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { DialogTrigger } from '@/components/ui/dialog';
+import { DocumentType } from '@/types/documents';
+import type { SharedWithEntry } from '@/types/documents';
+
 
 // Types
 interface Recipient {
@@ -266,7 +269,7 @@ export function Documents() {
   };
   
   // Handle document download
-  const handleDownloadDocument = async (doc: Document) => {
+  const handleDownloadDocument = async (doc: DocumentType) => {
     try {
       const blob = await DocumentApi.downloadDocument(doc.id);
       const url = window.URL.createObjectURL(blob);
@@ -282,6 +285,7 @@ export function Documents() {
       alert('Failed to download document');
     }
   };
+
   
   // Get documents based on user role and view
   const getDocumentsForView = () => {
@@ -297,43 +301,91 @@ export function Documents() {
   const documentsToShow = getDocumentsForView();
   
   // Get recent documents (first 3 documents visible to the user, no mock data filter)
-  const recentDocuments = documentsToShow.slice(0, 3).map(doc => ({
-    ...doc,
-    uploadedFlag: doc.uploaded_by === currentUserId ? 'Uploaded' : undefined
-  }));
+  const recentDocuments = documentsToShow
+    .filter(doc => {
+      // Exclude review-pending docs that the current user is *supposed to review*
+      const isReviewer = doc.require_review && doc.status === 'pending_review' && doc.uploaded_by !== currentUserId && isSharedWith(doc);
+      return !isReviewer;
+    })
+    .slice(0, 3)
+    .map(doc => ({
+      ...doc,
+      uploadedFlag: doc.uploaded_by === currentUserId ? 'Uploaded' : undefined
+    }));
+
   
   // Helper to get current user's department IDs
   const userDepartments = employees.find(e => e.id === currentUserId)?.department_id ? [employees.find(e => e.id === currentUserId)?.department_id] : [];
 
   // Helper to check if user or their department is in shared_with
-  function isSharedWith(doc) {
-    if (!doc.shared_with) return false;
-    let sharedWith = doc.shared_with;
-    if (typeof sharedWith === 'string') {
-      try { sharedWith = JSON.parse(sharedWith); } catch { return false; }
+ function isSharedWith(doc: DocumentType): boolean {
+  if (!doc.shared_with) return false;
+
+  let sharedWith: SharedWithEntry[] = [];
+
+  // Handle both string and array
+  if (typeof doc.shared_with === 'string') {
+    try {
+      sharedWith = JSON.parse(doc.shared_with);
+    } catch (e) {
+      console.warn('❌ Failed to parse shared_with:', doc.shared_with);
+      return false;
     }
-    if (!Array.isArray(sharedWith)) return false;
-    return sharedWith.some(r =>
-      (r.type === 'employee' && String(r.id) === String(currentUserId)) ||
-      (r.type === 'department' && userDepartments.includes(Number(r.id)))
-    );
+  } else if (Array.isArray(doc.shared_with)) {
+    sharedWith = doc.shared_with;
+  } else {
+    return false;
   }
+
+  // Get current user's department
+  const userDeptId = employees.find(e => e.id === currentUserId)?.department_id;
+
+  const match = sharedWith.some(entry => {
+    if (entry.type === 'all') return true;
+    if (entry.type === 'employee' && Number(entry.id) === Number(currentUserId)) return true;
+    if (entry.type === 'department' && userDeptId && Number(entry.id) === Number(userDeptId)) return true;
+    return false;
+  });
+
+  console.log("👥 isSharedWith Debug", {
+    docName: doc.name,
+    currentUserId,
+    userDeptId,
+    sharedWith,
+    match
+  });
+
+  return match;
+}
+
+
+
+
 
   // Pending Actions: 
   // - Uploader: sees their own shared-for-review docs as 'pending'
   // - Recipient: sees shared-for-review docs as 'pending review' with view button
   const pendingDocuments = documentsToShow
     .filter(doc => {
-      // Uploader sees their own shared-for-review docs
-      if (doc.require_review && doc.status === 'pending_review' && doc.uploaded_by === currentUserId) {
-        return true;
-      }
-      // Recipient sees shared-for-review docs
-      if (doc.require_review && doc.status === 'pending_review' && isSharedWith(doc) && doc.uploaded_by !== currentUserId) {
-        return true;
-      }
-      // Optionally, keep old logic for legacy docs
-      return false;
+      const isUploader = doc.uploaded_by === currentUserId;
+      const isRecipient = isSharedWith(doc) && !isUploader;
+      const needsReview = doc.require_review;
+      const isPending = ['pending_review', 'pending'].includes(doc.status);
+
+      const shouldInclude = needsReview && isPending && (isUploader || isRecipient);
+
+      console.log("🔍 Review Check", {
+        docName: doc.name,
+        isUploader,
+        isRecipient,
+        needsReview,
+        isPending,
+        currentUserId,
+        uploaded_by: doc.uploaded_by,
+        shouldInclude
+      });
+
+      return shouldInclude;
     })
     .map(doc => ({
       id: doc.id,
@@ -343,9 +395,13 @@ export function Documents() {
       priority: 'high',
       uploaded_by: doc.uploaded_by,
       uploaded_by_name: doc.uploaded_by_name,
-      status: doc.uploaded_by === currentUserId ? 'pending' : 'pending_review',
-      canView: doc.uploaded_by !== currentUserId // Only recipient can view
+      status: doc.status,
+      canView: doc.uploaded_by !== currentUserId,
+      review_message: doc.review_message ?? null
     }));
+
+
+
 
   // Shared Documents: shared with user/department AND require_review false (or status not 'pending_review')
   const sharedDocuments = documentsToShow
@@ -501,7 +557,10 @@ export function Documents() {
               <span className="ml-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white">
                 {pendingDocuments.length}
               </span>
-          )}
+          )}             
+
+          {/* uphere */}
+
           </TabsTrigger>
           <TabsTrigger value="policies">Company Policies</TabsTrigger>
           <TabsTrigger value="shared">
@@ -513,7 +572,7 @@ export function Documents() {
             )}
           </TabsTrigger>
         </TabsList>
-
+           {/* this part  */}
         <TabsContent value="recent">
           <Card>
             <CardHeader>
@@ -749,6 +808,7 @@ export function Documents() {
             </CardContent>
           </Card>
         </TabsContent>
+        {/* to this part  */}
 
         <TabsContent value="policies">
           <Card>
