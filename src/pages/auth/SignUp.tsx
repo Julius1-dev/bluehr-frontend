@@ -24,24 +24,33 @@ export function SignUp({ onSignUp }: SignUpProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       return;
     }
+
     setIsLoading(true);
     setError('');
+
     try {
       const response = await fetch('http://localhost:4000/company-admin/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ companyName, fullName, email, password })
+        body: JSON.stringify({
+          companyName,
+          fullName,
+          email,
+          password
+        })
       });
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Registration failed');
       }
+
       toast.success("Account created successfully! Please sign in.");
-      // Redirect to sign in page
       navigate('/signin');
     } catch (err: any) {
       setError(err.message);
@@ -50,6 +59,8 @@ export function SignUp({ onSignUp }: SignUpProps) {
       setIsLoading(false);
     }
   };
+
+
 
   const handleGoogleSignUp = () => {
     toast.error("Please complete the sign up with your Google account");
