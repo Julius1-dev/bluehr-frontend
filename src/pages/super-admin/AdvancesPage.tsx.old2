@@ -1,0 +1,220 @@
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams, Outlet, useLocation } from 'react-router-dom';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { mockCompanies, mockAdvances, Company, Advance } from '@/types/advances';
+import { formatCurrency, calculateTotals } from '@/utils/advanceUtils';
+import { SummaryCards } from '@/components/advances/SummaryCards';
+import { CompaniesTable } from '@/components/advances/CompaniesTable';
+import { AdvancesTable } from '@/components/advances/AdvancesTable';
+import { ForgiveAdvanceDialog } from '@/components/advances/ForgiveAdvanceDialog';
+import { SuspendCompanyDialog } from '@/components/advances/SuspendCompanyDialog';
+import { ArrowLeft } from 'lucide-react';
+
+export default function AdvancesPage() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { companyId } = useParams();
+  
+  const [activeTab, setActiveTab] = useState('overview');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
+  const [selectedAdvance, setSelectedAdvance] = useState<Advance | null>(null);
+  const [companies, setCompanies] = useState<Company[]>(mockCompanies);
+  const [advances, setAdvances] = useState<Advance[]>(mockAdvances);
+  const [isForgiveDialogOpen, setIsForgiveDialogOpen] = useState(false);
+  const [isSuspendDialogOpen, setIsSuspendDialogOpen] = useState(false);
+  
+  // Update selected company when companyId changes
+  useEffect(() => {
+    if (companyId) {
+      const company = companies.find(c => c.id === companyId) || null;
+      setSelectedCompany(company);
+    } else {
+      setSelectedCompany(null);
+    }
+  }, [companyId, companies]);
+  
+  // Update active tab based on URL
+  useEffect(() => {
+    const path = location.pathname;
+    if (path.includes('requests')) {
+      setActiveTab('requests');
+    } else if (path.includes('settings')) {
+      setActiveTab('settings');
+    } else if (companyId) {
+      setActiveTab('company');
+    } else {
+      setActiveTab('overview');
+    }
+  }, [location.pathname, companyId]);
+
+  // Calculate summary data
+  const totals = calculateTotals(companies);
+  const totalFees = totals.bluehrFees + totals.walletFees;
+  const activeCompaniesCount = companies.filter(c => c.status === 'active').length;
+
+  // Filter companies based on search term
+  const filteredCompanies = companies.filter(company => 
+    company.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    company.id.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // Filter advances for the selected company
+  const companyAdvances = selectedCompany 
+    ? advances.filter(advance => advance.companyId === selectedCompany.id)
+    : [];
+
+  // Handle forgiving an advance
+  const handleForgiveAdvance = (advance: Advance) => {
+    setSelectedAdvance(advance);
+    setIsForgiveDialogOpen(true);
+  };
+
+  const confirmForgiveAdvance = async (notes: string) => {
+    // In a real app, this would be an API call
+    const updatedAdvances = advances.map(a => 
+      a.id === selectedAdvance?.id 
+        ? { ...a, status: 'forgiven', notes }
+        : a
+    );
+    setAdvances(updatedAdvances);
+    return Promise.resolve();
+  };
+
+  // Handle suspending/activating a company
+  const handleSuspendCompany = (company: Company) => {
+    setSelectedCompany(company);
+    setIsSuspendDialogOpen(true);
+  };
+
+  const confirmSuspendCompany = async (isSuspending: boolean, notes: string) => {
+    // In a real app, this would be an API call
+    const updatedCompanies = companies.map(c => 
+      c.id === selectedCompany?.id
+        ? { 
+            ...c, 
+            status: isSuspending ? 'suspended' : 'active',
+            advanceEnabled: !isSuspending,
+            notes: notes || c.notes
+          }
+        : c
+    );
+    setCompanies(updatedCompanies);
+    setSelectedCompany(updatedCompanies.find(c => c.id === selectedCompany?.id) || null);
+    return Promise.resolve();
+  };
+
+  const handleTabChange = (value: string) => {
+    if (value === 'overview') {
+      navigate('/super-admin/advances/overview');
+    } else if (value === 'requests') {
+      navigate('/super-admin/advances/requests');
+    } else if (value === 'settings') {
+      navigate('/super-admin/advances/settings');
+    } else if (value === 'company' && selectedCompany) {
+      navigate(`/super-admin/advances/${selectedCompany.id}`);
+    }
+  };
+
+  const handleBack = () => {
+    navigate('/super-admin/advances/overview');
+    setSelectedCompany(null);
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="flex items-center gap-4">
+          {(selectedCompany || activeTab !== 'overview') && (
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={handleBack}
+              className="h-8 w-8"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span className="sr-only">Back</span>
+            </Button>
+          )}
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight">
+              {selectedCompany ? selectedCompany.name : 'Advances Management'}
+            </h2>
+            <p className="text-muted-foreground">
+              {selectedCompany 
+                ? `Manage ${selectedCompany.name}'s advances` 
+                : 'Manage employee salary advances and company settings'}
+            </p>
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm">
+            Refresh
+          </Button>
+          <Button variant="outline" size="sm">
+            Export
+          </Button>
+        </div>
+      </div>
+
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="requests">Advance Requests</TabsTrigger>
+          <TabsTrigger value="settings">Settings</TabsTrigger>
+        </TabsList>
+
+        <div className="pt-4">
+          <Outlet context={{ 
+            selectedCompany, 
+            companies: filteredCompanies, 
+            advances: companyAdvances,
+            totals,
+            totalFees,
+            activeCompaniesCount,
+            onViewCompany: (company: Company) => navigate(`/super-admin/advances/${company.id}`),
+            onSuspendCompany: handleSuspendCompany,
+            onForgiveAdvance: handleForgiveAdvance
+          }} />
+        </div>
+      </Tabs>
+
+                </div>
+                <div className="rounded-lg border p-4">
+                  <p className="text-sm font-medium text-muted-foreground">Status</p>
+                  <p className="text-2xl font-bold capitalize">
+                    {selectedCompany.status}
+                  </p>
+                </div>
+              </div>
+              
+              <AdvancesTable 
+                advances={companyAdvances}
+                onForgiveAdvance={handleForgiveAdvance}
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+              />
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Dialogs */}
+      <ForgiveAdvanceDialog
+        open={isForgiveDialogOpen}
+        onOpenChange={setIsForgiveDialogOpen}
+        advance={selectedAdvance}
+        onConfirm={confirmForgiveAdvance}
+      />
+      
+      <SuspendCompanyDialog
+        open={isSuspendDialogOpen}
+        onOpenChange={setIsSuspendDialogOpen}
+        company={selectedCompany}
+        onConfirm={confirmSuspendCompany}
+      />
+    </div>
+  );
+}
