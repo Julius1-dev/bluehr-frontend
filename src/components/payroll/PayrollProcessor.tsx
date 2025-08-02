@@ -40,6 +40,8 @@ interface Employee {
   allowance_reason?: string;
   deduction_reason?: string;
   original_salary?: number;
+  latenessDeduction?: number;
+  earlyLeaveDeduction?: number;
 }
 
 interface PayrollStatus {
@@ -55,6 +57,41 @@ interface PayrollProcessorProps {
   onSaveAndRunLater?: (updatedEmployees: any[]) => void;
   onRunNow?: (updatedEmployees: any[]) => void;
   onClose?: () => void;
+}
+
+// Utility to convert month name (e.g., "June") or number string ("6") to number
+function getMonthNumber(month: string | number): number {
+  if (typeof month === 'number') return month;
+  if (/^\d+$/.test(month)) return parseInt(month, 10);
+  const months = [
+    'january', 'february', 'march', 'april', 'may', 'june',
+    'july', 'august', 'september', 'october', 'november', 'december'
+  ];
+  const idx = months.indexOf(month.toLowerCase());
+  return idx === -1 ? NaN : idx + 1;
+}
+
+// Fetch master payroll and return processedEmployees array
+export async function fetchMasterPayroll(payrollMonth: number | string, payrollYear: number, paymentFrequency: string): Promise<any[]> {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) return [];
+    const monthNum = getMonthNumber(payrollMonth);
+    if (isNaN(monthNum)) return [];
+    const response = await fetch(
+      `http://127.0.0.1:4000/company-admin/master-payroll?payrollMonth=${monthNum}&payrollYear=${payrollYear}&paymentFrequency=${paymentFrequency}`,
+      {
+        headers: { 'Authorization': `Bearer ${token}` }
+      }
+    );
+    if (response.ok) {
+      const data = await response.json();
+      return data.processedEmployees || [];
+    }
+  } catch (err) {
+    // Optionally handle error
+  }
+  return [];
 }
 
 export function PayrollProcessor({ payrollMonth, payrollYear, onSaveAndRunLater, onRunNow, onClose }: PayrollProcessorProps) {
@@ -79,7 +116,7 @@ export function PayrollProcessor({ payrollMonth, payrollYear, onSaveAndRunLater,
       if (!token) return;
 
       const response = await fetch(
-        `http://localhost:4000/company-admin/payroll/status?payrollMonth=${payrollMonth}&payrollYear=${payrollYear}&paymentFrequency=${selectedPaymentFrequency}`,
+        `http://localhost:4000/company-admin/payroll/status?payrollMonth=${getMonthNumber(payrollMonth)}&payrollYear=${payrollYear}&paymentFrequency=${selectedPaymentFrequency}`,
         {
           headers: { 'Authorization': `Bearer ${token}` }
         }
@@ -197,6 +234,28 @@ export function PayrollProcessor({ payrollMonth, payrollYear, onSaveAndRunLater,
             });
 
           setEmployees(employeeData);
+
+          // Fetch lateness/early leave from master payroll and merge into employees
+          const attendanceMap = await fetchMasterPayroll(
+            getMonthNumber(payrollMonth),
+            payrollYear,
+            selectedPaymentFrequency
+          );
+          // Map employee id to lateness/early leave
+          const attendanceById: Record<number, { latenessDeduction?: number; earlyLeaveDeduction?: number }> = {};
+          attendanceMap.forEach((emp: any) => {
+            attendanceById[emp.id] = {
+              latenessDeduction: emp.latenessDeduction || 0,
+              earlyLeaveDeduction: emp.earlyLeaveDeduction || 0
+            };
+          });
+          // Merge into employees
+          const mergedEmployees = employeeData.map(emp => ({
+            ...emp,
+            latenessDeduction: attendanceById[emp.id]?.latenessDeduction || 0,
+            earlyLeaveDeduction: attendanceById[emp.id]?.earlyLeaveDeduction || 0
+          }));
+          setEmployees(mergedEmployees);
         } else {
           setError('Invalid data format received from server');
         }
@@ -551,7 +610,7 @@ export function PayrollProcessor({ payrollMonth, payrollYear, onSaveAndRunLater,
                         <TableCell className="text-red-600">{formatCurrency(employee.nssf)}</TableCell>
                         <TableCell className="text-red-600">{formatCurrency(employee.housing_levy)}</TableCell>
                         <TableCell className="text-green-600">{formatCurrency(employee.allowances)}</TableCell>
-                        <TableCell className="text-red-600">{formatCurrency(employee.deductions)}</TableCell>
+                        <TableCell className="text-red-600">{formatCurrency((employee.latenessDeduction || 0) + (employee.earlyLeaveDeduction || 0))}</TableCell>
                         <TableCell className="font-semibold">{formatCurrency(employee.net_pay)}</TableCell>
                         <TableCell>
                           <Button 
