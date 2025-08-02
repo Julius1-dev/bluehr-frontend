@@ -170,7 +170,7 @@ export function AddEmployeePage({ isEditMode = false }: AddEmployeePageProps) {
         payment_frequency: formData.paymentFrequency,
         basic_salary: formData.basicSalary,
         joiningDate: formData.joiningDate,
-      };
+      };        
       const res = await fetch(editMode ? `${API_URL}/${id}` : API_URL, {
         method: editMode ? 'PUT' : 'POST',
         headers: {
@@ -277,12 +277,15 @@ export function AddEmployeePage({ isEditMode = false }: AddEmployeePageProps) {
                     {formData.dateOfBirth ? format(formData.dateOfBirth, 'PPP') : <span>Pick a date</span>}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
+                <PopoverContent className="w-auto p-0 bg-gray-200" align="start">
                   <Calendar
                     mode="single"
                     selected={formData.dateOfBirth}
                     onSelect={(date) => handleDateSelect(date, 'dateOfBirth')}
                     initialFocus
+                    weekStartsOn={1}
+                    fixedWeeks
+                    ISOWeek
                   />
                 </PopoverContent>
               </Popover>
@@ -297,7 +300,7 @@ export function AddEmployeePage({ isEditMode = false }: AddEmployeePageProps) {
                 <SelectTrigger>
                   <SelectValue placeholder="Select gender" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className='bg-gray-200'>
                   <SelectItem value="male">Male</SelectItem>
                   <SelectItem value="female">Female</SelectItem>
                   <SelectItem value="other">Other</SelectItem>
@@ -338,7 +341,7 @@ export function AddEmployeePage({ isEditMode = false }: AddEmployeePageProps) {
                       : 'Select date'}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
+                <PopoverContent className="w-auto p-0 bg-gray-200" align="start">
                   <Calendar
                     mode="single"
                     selected={formData.joiningDate}
@@ -359,7 +362,7 @@ export function AddEmployeePage({ isEditMode = false }: AddEmployeePageProps) {
                 <SelectTrigger>
                   <SelectValue placeholder="Select department" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className='bg-gray-200'>
                   {departments.map(dept => (
                     <SelectItem key={dept.id} value={dept.id}>
                       {dept.name}
@@ -380,7 +383,7 @@ export function AddEmployeePage({ isEditMode = false }: AddEmployeePageProps) {
                 <SelectTrigger>
                   <SelectValue placeholder={formData.departmentId ? "Select role" : "Select department first"} />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className='bg-gray-200'>
                   {formData.departmentId && roles.map((role: string, index: number) => (
                     <SelectItem key={index} value={role}>
                       {role}
@@ -402,7 +405,7 @@ export function AddEmployeePage({ isEditMode = false }: AddEmployeePageProps) {
                     {formData.employmentType ? formData.employmentType.charAt(0).toUpperCase() + formData.employmentType.slice(1) : ''}
                   </SelectValue>
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className='bg-gray-200'>
                   {employmentTypes.map(type => (
                     <SelectItem key={type} value={type.toLowerCase()}>
                       {type}
@@ -424,7 +427,7 @@ export function AddEmployeePage({ isEditMode = false }: AddEmployeePageProps) {
                     {formData.paymentFrequency ? formData.paymentFrequency.charAt(0).toUpperCase() + formData.paymentFrequency.slice(1) : ''}
                   </SelectValue>
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className='bg-gray-200'>
                   {paymentFrequencies.map(frequency => (
                     <SelectItem key={frequency} value={frequency.toLowerCase()}>
                       {frequency}
@@ -455,7 +458,7 @@ export function AddEmployeePage({ isEditMode = false }: AddEmployeePageProps) {
                 <SelectTrigger>
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className='bg-gray-200'>
                   <SelectItem value="active">Active</SelectItem>
                   <SelectItem value="on-leave">On Leave</SelectItem>
                   <SelectItem value="probation">Probation</SelectItem>
