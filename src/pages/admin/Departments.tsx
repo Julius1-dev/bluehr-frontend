@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Plus, Trash2, Building2, Users, Pencil, Check, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { BACKEND_URL } from '@/lib/config';
 
 type Department = {
   id: string;
@@ -14,7 +15,7 @@ type Department = {
   roles: string[];
 };
 
-const API_URL = 'http://localhost:4000/company-admin/departments';
+const API_URL = `${BACKEND_URL}/company-admin/departments`;
 
 export function DepartmentsPage() {
   const [departments, setDepartments] = useState<Department[]>([]);

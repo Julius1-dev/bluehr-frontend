@@ -4,6 +4,7 @@ import { Button } from '../ui/button';
 import { DollarSign, ArrowRight, FileText, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { formatCurrency } from '@/lib/utils';
+import { BACKEND_URL } from '@/lib/config';
 
 export function PayrollSummaryWidget() {
   const navigate = useNavigate();
@@ -29,7 +30,7 @@ export function PayrollSummaryWidget() {
         const token = localStorage.getItem('token');
         if (!token) throw new Error('No auth token');
         // Fetch pending payroll total
-        const res = await fetch('http://localhost:4000/company-admin/payroll/pending-total', {
+        const res = await fetch(`${BACKEND_URL}/company-admin/payroll/pending-total`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await res.json();

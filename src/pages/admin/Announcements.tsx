@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { BACKEND_URL } from '@/lib/config';
 
 // Types
 interface Announcement {
@@ -52,7 +53,7 @@ export function Announcements() {
       setError(null);
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch('http://localhost:4000/company-admin/announcements', {
+        const res = await fetch(`${BACKEND_URL}/company-admin/announcements`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await res.json();
@@ -76,7 +77,7 @@ export function Announcements() {
     setError(null);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:4000/company-admin/announcements', {
+      const res = await fetch(`${BACKEND_URL}/company-admin/announcements`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -139,7 +140,7 @@ export function Announcements() {
       setPoliciesError(null);
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch('http://localhost:4000/company-admin/policies', {
+        const res = await fetch(`${BACKEND_URL}/company-admin/policies`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await res.json();
@@ -171,7 +172,7 @@ export function Announcements() {
       if (newPolicy.document) {
         formData.append('document', newPolicy.document);
       }
-      const res = await fetch('http://localhost:4000/company-admin/policies', {
+      const res = await fetch(`${BACKEND_URL}/company-admin/policies`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -201,7 +202,7 @@ export function Announcements() {
     setPoliciesError(null);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:4000/company-admin/policies/${deletePolicy.id}`, {
+      const res = await fetch(`${BACKEND_URL}/company-admin/policies/${deletePolicy.id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -234,7 +235,7 @@ export function Announcements() {
       if (editPolicyData.document) {
         formData.append('document', editPolicyData.document);
       }
-      const res = await fetch(`http://localhost:4000/company-admin/policies/${editPolicy.id}`, {
+      const res = await fetch(`${BACKEND_URL}/company-admin/policies/${editPolicy.id}`, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${token}` },
         body: formData
@@ -505,7 +506,7 @@ export function Announcements() {
                     <div className="px-6 pb-4 flex flex-col gap-2">
                       {policy.document_url && (
                         <a
-                          href={`http://localhost:4000${policy.document_url}`}
+                          href={`${BACKEND_URL}${policy.document_url}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-blue-600 underline text-sm mb-2"
@@ -549,7 +550,7 @@ export function Announcements() {
                 </div>
                 {viewPolicy?.document_url && (
                   <a
-                    href={`http://localhost:4000${viewPolicy.document_url}`}
+                    href={`${BACKEND_URL}${viewPolicy.document_url}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-blue-600 underline text-sm"

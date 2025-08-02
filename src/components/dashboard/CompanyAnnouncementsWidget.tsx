@@ -4,6 +4,7 @@ import { Button } from '../ui/button';
 import { Megaphone, ArrowRight, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Badge } from '../ui/badge';
+import { BACKEND_URL } from '@/lib/config';
 
 export function CompanyAnnouncementsWidget() {
   const navigate = useNavigate();
@@ -21,7 +22,7 @@ export function CompanyAnnouncementsWidget() {
         const token = localStorage.getItem('token');
         if (!token) throw new Error('No auth token');
         
-        const res = await fetch('http://localhost:4000/company-admin/announcements', {
+        const res = await fetch(`${BACKEND_URL}/company-admin/announcements`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         

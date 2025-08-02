@@ -21,6 +21,7 @@ import {
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import React, { useEffect, useState } from 'react';
+import { BACKEND_URL } from '@/lib/config';
 
 export default function SystemHealth() {
   const [systemStatus, setSystemStatus] = useState<any>(null);
@@ -32,7 +33,7 @@ export default function SystemHealth() {
     setError(null);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:4000/super-admin/companies/system-health', {
+      const res = await fetch(`${BACKEND_URL}/super-admin/companies/system-health`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!res.ok) throw new Error('Failed to fetch system health');

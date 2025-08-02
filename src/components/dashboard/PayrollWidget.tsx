@@ -4,6 +4,7 @@ import { Button } from '../ui/button';
 import { FileText, ArrowRight, Download } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
+import { BACKEND_URL } from '@/lib/config';
 
 export function PayrollWidget() {
   const navigate = useNavigate();
@@ -14,7 +15,7 @@ export function PayrollWidget() {
     const fetchPayrollData = async () => {
       const token = localStorage.getItem('token');
       if (!token) return;
-      const response = await fetch('http://localhost:4000/employee/payroll/data', {
+      const response = await fetch(`${BACKEND_URL}/employee/payroll/data`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!response.ok) return;
@@ -35,7 +36,7 @@ export function PayrollWidget() {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
-      const response = await fetch(`http://localhost:4000/employee/payroll/payslip/${period}/${year}`, {
+      const response = await fetch(`${BACKEND_URL}/employee/payroll/payslip/${period}/${year}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!response.ok) return;

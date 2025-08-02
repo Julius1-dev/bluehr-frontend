@@ -1,7 +1,8 @@
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
+import { BACKEND_URL } from '../lib/config';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+const API_BASE = BACKEND_URL;
 
 export function getUserFromToken() {
   const token = localStorage.getItem('token');

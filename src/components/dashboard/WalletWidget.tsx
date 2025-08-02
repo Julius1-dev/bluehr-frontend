@@ -5,6 +5,7 @@ import { Wallet as WalletIcon, ArrowRight, CreditCard, BarChart } from 'lucide-r
 import { formatCurrency } from '@/lib/utils';
 import { Badge } from '../ui/badge';
 import { useNavigate } from 'react-router-dom';
+import { BACKEND_URL } from '@/lib/config';
 
 export function WalletWidget() {
   const navigate = useNavigate();
@@ -15,7 +16,7 @@ export function WalletWidget() {
     const fetchAdvanceData = async () => {
       const token = localStorage.getItem('token');
       if (!token) return;
-      const response = await fetch('http://localhost:4000/employee/advances/data', {
+      const response = await fetch(`${BACKEND_URL}/employee/advances/data`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!response.ok) return;

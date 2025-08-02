@@ -15,6 +15,7 @@ import {
 import { calculatePAYE, calculateSHIF, calculateNSSF, calculateHousingLevy } from './payrollCalculations';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { toast } from 'sonner';
+import { BACKEND_URL } from '@/lib/config';
 
 // Mock utility function for formatting currency
 const formatCurrency = (amount: number): string => {
@@ -75,7 +76,7 @@ export function StatutoryDocuments({ statutoryData }: StatutoryDocumentsProps) {
       if (!token) return;
 
       const response = await fetch(
-        `http://localhost:4000/company-admin/payroll/statutory/status?month=${selectedMonth}&year=${selectedYear}`,
+        `${BACKEND_URL}/company-admin/payroll/statutory/status?month=${selectedMonth}&year=${selectedYear}`,
         {
           headers: { 'Authorization': `Bearer ${token}` }
         }
@@ -100,7 +101,7 @@ export function StatutoryDocuments({ statutoryData }: StatutoryDocumentsProps) {
       if (!token) return;
 
       // Fetch departments for mapping
-      const deptRes = await fetch('http://localhost:4000/company-admin/departments', {
+      const deptRes = await fetch(`${BACKEND_URL}/company-admin/departments`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
       const deptData = await deptRes.json();
@@ -113,7 +114,7 @@ export function StatutoryDocuments({ statutoryData }: StatutoryDocumentsProps) {
         setDepartmentsMap(deptMap);
 
         // Fetch employees
-      const empRes = await fetch('http://localhost:4000/company-admin/users', {
+      const empRes = await fetch(`${BACKEND_URL}/company-admin/users`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
       const empData = await empRes.json();
@@ -171,7 +172,7 @@ export function StatutoryDocuments({ statutoryData }: StatutoryDocumentsProps) {
     try {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('No authentication token found');
-      const res = await fetch(`http://localhost:4000/company-admin/payroll/statutory/payments?month=${selectedMonth}&year=${selectedYear}`, {
+      const res = await fetch(`${BACKEND_URL}/company-admin/payroll/statutory/payments?month=${selectedMonth}&year=${selectedYear}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!res.ok) throw new Error('Failed to fetch statutory payments');
@@ -205,7 +206,7 @@ export function StatutoryDocuments({ statutoryData }: StatutoryDocumentsProps) {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('No authentication token found');
       
-      const res = await fetch('http://localhost:4000/company-admin/payroll/statutory/initiate', {
+      const res = await fetch(`${BACKEND_URL}/company-admin/payroll/statutory/initiate`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -267,7 +268,7 @@ export function StatutoryDocuments({ statutoryData }: StatutoryDocumentsProps) {
   const handleDownloadPaymentStatement = async (paymentId: number) => {
     const token = localStorage.getItem('token');
     if (!token) return;
-    const res = await fetch(`http://localhost:4000/company-admin/payroll/statutory/payment/${paymentId}`, {
+    const res = await fetch(`${BACKEND_URL}/company-admin/payroll/statutory/payment/${paymentId}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     if (!res.ok) return;

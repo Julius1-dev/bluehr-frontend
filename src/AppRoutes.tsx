@@ -1,5 +1,6 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { Routes, Route, Navigate, Outlet, useNavigate } from 'react-router-dom';
+import { BACKEND_URL } from './lib/config';
 
 // Lazy load components for better performance
 const AdvancesOverview = lazy(() => import('./pages/super-admin/advances/AdvancesOverview'));
@@ -125,7 +126,7 @@ const AppRoutes = () => {
       const token = localStorage.getItem('token');
       if (token) {
         console.log('Calling backend logout endpoint');
-        await fetch('http://localhost:4000/super-admin/auth/logout', {
+        await fetch(`${BACKEND_URL}/super-admin/auth/logout`, {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -491,4 +492,4 @@ const AppRoutes = () => {
   );
 };
 
-export default AppRoutes; 
+export default AppRoutes;

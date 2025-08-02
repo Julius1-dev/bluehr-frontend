@@ -23,6 +23,7 @@ import { PayrollProcessor } from '@/components/payroll/PayrollProcessor';
 import { MasterPayroll } from '@/components/payroll/MasterPayroll';
 import { calculatePAYE, calculateSHIF, calculateNSSF, calculateHousingLevy } from '@/components/payroll/payrollCalculations';
 import PayrollExemptionsModal from '@/components/payroll/PayrollExemptionsModal';
+import { BACKEND_URL } from '@/lib/config';
 
 // Mock utility function for formatting currency
 const formatCurrency = (amount: number): string => {
@@ -111,7 +112,7 @@ export function PayrollManagement() {
         console.log('Fetching wallet data for company ID:', companyId);
         
         // Fetch wallet data from backend using company admin endpoint
-        const response = await fetch(`http://localhost:4000/company-admin/wallet`, {
+        const response = await fetch(`${BACKEND_URL}/company-admin/wallet`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -185,13 +186,13 @@ export function PayrollManagement() {
         const token = localStorage.getItem('token');
         if (!token) return;
         // Fetch departments
-        const deptRes = await fetch('http://localhost:4000/company-admin/departments', {
+        const deptRes = await fetch(`${BACKEND_URL}/company-admin/departments`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const deptData = await deptRes.json();
         setDepartments(deptData);
         // Fetch employees
-        const empRes = await fetch('http://localhost:4000/company-admin/users', {
+        const empRes = await fetch(`${BACKEND_URL}/company-admin/users`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const empData = await empRes.json();

@@ -3,6 +3,9 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { BACKEND_URL } from '@/lib/config';
+
+const IMPORT_API = `${BACKEND_URL}/company-admin/import-preview`;
 
 export default function ImportPreview() {
   const location = useLocation();
@@ -18,7 +21,7 @@ export default function ImportPreview() {
     setRowErrors({});
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:4000/company-admin/users/bulk', {
+      const res = await fetch(IMPORT_API, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -103,4 +106,4 @@ export default function ImportPreview() {
       </div>
     </div>
   );
-} 
+}

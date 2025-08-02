@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { leaveRequestsApi } from '@/services/leaveRequestsApi';
 import { LeaveTypeApi } from '@/services/leaveTypeApi';
 import { PerformanceApi } from '@/services/performanceApi';
+import { BACKEND_URL } from '@/lib/config';
 
 export function AdminWelcomeCard() {
   const navigate = useNavigate();
@@ -36,7 +37,7 @@ export function AdminWelcomeCard() {
         const token = localStorage.getItem('token');
         if (!token) throw new Error('No auth token');
         
-        const res = await fetch('http://localhost:4000/company-admin/auth/profile', {
+        const res = await fetch(`${BACKEND_URL}/company-admin/auth/profile`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         

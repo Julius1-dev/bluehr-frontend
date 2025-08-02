@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Building2, MapPin, Mail, FileText, Edit, Save, X } from 'lucide-react';
+import { BACKEND_URL } from '@/lib/config';
 
 // Real company info type (matches backend)
 type CompanyInfo = {
@@ -27,6 +28,11 @@ type CompanyInfo = {
   notes?: string;
 };
 
+const COMPANY_PROFILE_API = `${BACKEND_URL}/company-admin/company`;
+const PROFILE_API = `${BACKEND_URL}/company-admin/company-profile`;
+const LOGO_UPLOAD_API = `${BACKEND_URL}/company-admin/company-profile/logo-upload`;
+const DOCUMENTS_API = `${BACKEND_URL}/company-admin/company-profile/documents`;
+
 export function CompanyProfile() {
   const [isEditing, setIsEditing] = useState(false);
   const [companyInfo, setCompanyInfo] = useState<CompanyInfo | null>(null);
@@ -44,7 +50,7 @@ export function CompanyProfile() {
       try {
         const token = localStorage.getItem('token');
         if (!token) throw new Error('No authentication token found');
-        const res = await fetch('http://localhost:4000/company-admin/company', {
+        const res = await fetch(COMPANY_PROFILE_API, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (!res.ok) throw new Error('Failed to fetch company profile');
@@ -91,7 +97,7 @@ export function CompanyProfile() {
     try {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('No authentication token found');
-      const res = await fetch('http://localhost:4000/company-admin/company', {
+      const res = await fetch(COMPANY_PROFILE_API, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`,

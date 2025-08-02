@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
+import { BACKEND_URL } from '@/lib/config';
 
 interface PermissionGuardProps {
   children: React.ReactNode;
@@ -25,7 +26,7 @@ export const PermissionGuard: React.FC<PermissionGuardProps> = ({
         }
 
         // Get user profile to check permissions
-        const response = await fetch('http://localhost:4000/company-admin/auth/profile', {
+        const response = await fetch(`${BACKEND_URL}/company-admin/auth/profile`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -78,4 +79,4 @@ export const PermissionGuard: React.FC<PermissionGuardProps> = ({
   }
 
   return <>{children}</>;
-}; 
+};

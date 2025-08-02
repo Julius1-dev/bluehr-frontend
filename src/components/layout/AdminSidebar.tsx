@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Link, useLocation } from 'react-router-dom';
+import { BACKEND_URL } from '@/lib/config';
 
 interface NavItemProps {
   icon: React.ReactNode;
@@ -80,7 +81,7 @@ export function AdminSidebar() {
         }
 
         // Get user profile to check permissions and role
-        const response = await fetch('http://localhost:4000/company-admin/auth/profile', {
+        const response = await fetch(`${BACKEND_URL}/company-admin/auth/profile`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 

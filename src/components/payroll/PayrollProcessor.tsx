@@ -9,6 +9,7 @@ import { Download, Filter, Search, Save, Edit, AlertCircle, CheckCircle, Clock, 
 import { EditPayrollModal } from './EditPayrollModal';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { BACKEND_URL } from '@/lib/config';
 
 // Format currency utility
 const formatCurrency = (amount: number): string => {
@@ -79,7 +80,7 @@ export async function fetchMasterPayroll(payrollMonth: number | string, payrollY
     const monthNum = getMonthNumber(payrollMonth);
     if (isNaN(monthNum)) return [];
     const response = await fetch(
-      `http://127.0.0.1:4000/company-admin/master-payroll?payrollMonth=${monthNum}&payrollYear=${payrollYear}&paymentFrequency=${paymentFrequency}`,
+      `${BACKEND_URL}/company-admin/master-payroll?payrollMonth=${monthNum}&payrollYear=${payrollYear}&paymentFrequency=${paymentFrequency}`,
       {
         headers: { 'Authorization': `Bearer ${token}` }
       }
@@ -116,7 +117,7 @@ export function PayrollProcessor({ payrollMonth, payrollYear, onSaveAndRunLater,
       if (!token) return;
 
       const response = await fetch(
-        `http://localhost:4000/company-admin/payroll/status?payrollMonth=${getMonthNumber(payrollMonth)}&payrollYear=${payrollYear}&paymentFrequency=${selectedPaymentFrequency}`,
+        `${BACKEND_URL}/company-admin/payroll/status?payrollMonth=${getMonthNumber(payrollMonth)}&payrollYear=${payrollYear}&paymentFrequency=${selectedPaymentFrequency}`,
         {
           headers: { 'Authorization': `Bearer ${token}` }
         }
@@ -147,7 +148,7 @@ export function PayrollProcessor({ payrollMonth, payrollYear, onSaveAndRunLater,
         }
 
         // First fetch departments to build the mapping
-        const deptResponse = await fetch('http://localhost:4000/company-admin/departments', {
+        const deptResponse = await fetch(`${BACKEND_URL}/company-admin/departments`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -166,7 +167,7 @@ export function PayrollProcessor({ payrollMonth, payrollYear, onSaveAndRunLater,
         }
 
         // Now fetch employees
-        const empResponse = await fetch('http://localhost:4000/company-admin/users', {
+        const empResponse = await fetch(`${BACKEND_URL}/company-admin/users`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -304,7 +305,7 @@ export function PayrollProcessor({ payrollMonth, payrollYear, onSaveAndRunLater,
       }
 
       // Send payroll data to backend for storage
-      const response = await fetch('http://localhost:4000/company-admin/payroll/process', {
+      const response = await fetch(`${BACKEND_URL}/company-admin/payroll/process`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -387,7 +388,7 @@ export function PayrollProcessor({ payrollMonth, payrollYear, onSaveAndRunLater,
       if (!token) return;
 
       const response = await fetch(
-        `http://localhost:4000/company-admin/payroll/reports?reportType=${selectedPaymentFrequency}`,
+        `${BACKEND_URL}/company-admin/payroll/reports?reportType=${selectedPaymentFrequency}`,
         {
           headers: { 'Authorization': `Bearer ${token}` }
         }

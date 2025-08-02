@@ -21,6 +21,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { BACKEND_URL } from '@/lib/config';
 
 // Helper function to format currency
 const formatCurrency = (amount: number): string => {
@@ -99,7 +100,7 @@ export function AdvanceManagement({ advanceSettings }: AdvanceManagementProps) {
         return;
       }
 
-      const response = await fetch('http://localhost:4000/company-admin/advance-approval/all', {
+      const response = await fetch(`${BACKEND_URL}/company-admin/advance-approval/all`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -158,7 +159,7 @@ export function AdvanceManagement({ advanceSettings }: AdvanceManagementProps) {
         return;
       }
 
-      const response = await fetch(`http://localhost:4000/company-admin/advance-approval/${request.id}/approve`, {
+      const response = await fetch(`${BACKEND_URL}/company-admin/advance-approval/${request.id}/approve`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -204,7 +205,7 @@ export function AdvanceManagement({ advanceSettings }: AdvanceManagementProps) {
         return;
       }
 
-      const response = await fetch(`http://localhost:4000/company-admin/advance-approval/${selectedRequest.id}/reject`, {
+      const response = await fetch(`${BACKEND_URL}/company-admin/advance-approval/${selectedRequest.id}/reject`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
