@@ -180,7 +180,19 @@ export function AddEmployeePage({ isEditMode = false }: AddEmployeePageProps) {
         body: JSON.stringify(payload)
       });
       if (!res.ok) throw new Error('Failed to save employee');
-      alert(editMode ? 'Employee updated successfully!' : 'Employee added successfully!');
+      
+      const result = await res.json();
+      
+      if (editMode) {
+        alert('Employee updated successfully!');
+      } else {
+        if (result.emailSent) {
+          alert(`Employee added successfully! A welcome email with login credentials has been sent to ${formData.email}.`);
+        } else {
+          alert(`Employee added successfully! However, there was an issue sending the welcome email: ${result.emailError || 'Unknown error'}`);
+        }
+      }
+      
       navigate('/admin/team');
     } catch (err: any) {
       alert('Error saving employee: ' + (err.message || 'Unknown error'));
