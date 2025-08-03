@@ -5,6 +5,7 @@ import { Clock, ArrowRight } from 'lucide-react';
 import { Progress } from '../ui/progress';
 import { formatTime } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
+import { BACKEND_URL } from '@/lib/config';
 
 function getLast7Days() {
   const days = [];
@@ -50,7 +51,7 @@ export function AttendanceWidget() {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) return;
-    fetch('http://localhost:4000/employee/attendance/today', {
+    fetch(`${BACKEND_URL}/employee/attendance/today`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
       .then(res => res.json())
@@ -99,7 +100,7 @@ export function AttendanceWidget() {
     const days = getLast7Days();
     const from = days[0].toISOString().slice(0, 10);
     const to = days[6].toISOString().slice(0, 10);
-    fetch(`http://localhost:4000/employee/attendance/history?from=${from}&to=${to}`, {
+    fetch(`${BACKEND_URL}/employee/attendance/history?from=${from}&to=${to}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
       .then(res => res.json())

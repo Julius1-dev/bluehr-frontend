@@ -1,6 +1,7 @@
 import axios from 'axios';
+import { BACKEND_URL } from '../lib/config';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+const API_BASE_URL = BACKEND_URL;
 
 function getAuthHeaders() {
   const token = localStorage.getItem('token');
@@ -188,4 +189,4 @@ export const DocumentApi = {
     });
     return response.data;
   }
-}; 
+};

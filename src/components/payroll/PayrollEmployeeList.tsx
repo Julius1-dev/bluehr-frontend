@@ -10,6 +10,7 @@ import {
   FileText
 } from 'lucide-react';
 import { PayslipModal } from './PayslipModal';
+import { BACKEND_URL } from '@/lib/config';
 
 // Utility function for formatting currency
 const formatCurrency = (amount: number): string => {
@@ -89,7 +90,7 @@ export function PayrollEmployeeList({ payrollMonth, payrollYear, totalEmployees 
     setError(null);
     
     try {
-      const response = await fetch('http://localhost:4000/company-admin/payroll/history', {
+      const response = await fetch(`${BACKEND_URL}/company-admin/payroll/history`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -139,7 +140,7 @@ export function PayrollEmployeeList({ payrollMonth, payrollYear, totalEmployees 
     setError(null);
     
     try {
-      const response = await fetch(`http://localhost:4000/company-admin/payroll/details/${payrollId}`, {
+      const response = await fetch(`${BACKEND_URL}/company-admin/payroll/details/${payrollId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

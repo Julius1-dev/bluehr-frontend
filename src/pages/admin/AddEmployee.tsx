@@ -9,9 +9,10 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { format } from 'date-fns';
 import { CalendarIcon, ArrowLeft, UserPlus } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-// Using browser alert instead of toast for now
+import { BACKEND_URL } from '@/lib/config';
 
-const DEPARTMENTS_API = 'http://localhost:4000/company-admin/departments';
+// Using browser alert instead of toast for now
+const DEPARTMENTS_API = `${BACKEND_URL}/company-admin/departments`;
 
 const employmentTypes = [
   'Full-time',
@@ -92,7 +93,7 @@ export function AddEmployeePage({ isEditMode = false }: AddEmployeePageProps) {
       const fetchEmployee = async () => {
         try {
           const token = localStorage.getItem('token');
-          const res = await fetch(`http://localhost:4000/company-admin/users/${id}`, {
+          const res = await fetch(`${BACKEND_URL}/company-admin/users/${id}`, {
             headers: { 'Authorization': `Bearer ${token}` }
           });
           if (!res.ok) throw new Error('Failed to fetch employee');
@@ -158,7 +159,7 @@ export function AddEmployeePage({ isEditMode = false }: AddEmployeePageProps) {
     setRoles(dept && Array.isArray(dept.roles) ? dept.roles : (dept && dept.roles ? JSON.parse(dept.roles) : []));
   };
 
-  const API_URL = 'http://localhost:4000/company-admin/users';
+  const API_URL = `${BACKEND_URL}/company-admin/users`;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

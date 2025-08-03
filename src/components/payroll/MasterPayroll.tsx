@@ -3,8 +3,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
-
-// ...existing code...
+import { BACKEND_URL } from '@/lib/config';
 
 export function MasterPayroll() {
   const [selectedEmployees, setSelectedEmployees] = useState<any[]>([]);
@@ -21,7 +20,7 @@ export function MasterPayroll() {
         const token = localStorage.getItem('token');
         if (!token) return;
         const response = await fetch(
-          `http://127.0.0.1:4000/company-admin/master-payroll?payrollMonth=${payrollMonth}&payrollYear=${payrollYear}&paymentFrequency=${paymentFrequency}`,
+          `${BACKEND_URL}/company-admin/master-payroll?payrollMonth=${payrollMonth}&payrollYear=${payrollYear}&paymentFrequency=${paymentFrequency}`,
           {
             headers: { 'Authorization': `Bearer ${token}` }
           }
@@ -43,7 +42,7 @@ export function MasterPayroll() {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
-      const response = await fetch('http://127.0.0.1:4000/company-admin/master-payroll/process', {
+      const response = await fetch(`${BACKEND_URL}/company-admin/master-payroll/process`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

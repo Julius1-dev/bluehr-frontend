@@ -20,6 +20,7 @@ import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
+import { BACKEND_URL } from '@/lib/config';
 
 // Extend jsPDF with autotable
 declare module 'jspdf' {
@@ -96,6 +97,12 @@ export function PayrollReports() {
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState(false);
 
+  // Replace all hardcoded backend URLs with BACKEND_URL
+  const REPORTS_API = `${BACKEND_URL}/company-admin/payroll-reports`;
+  const EXPORT_API = `${BACKEND_URL}/company-admin/payroll-reports/export`;
+  const EMPLOYEE_API = `${BACKEND_URL}/company-admin/employees`;
+  const PAYROLL_API = `${BACKEND_URL}/company-admin/payrolls`;
+
   // Fetch payroll reports
   const fetchPayrollReports = async () => {
     try {
@@ -103,7 +110,7 @@ export function PayrollReports() {
       if (!token) return;
 
       const response = await fetch(
-        `http://localhost:4000/company-admin/payroll/reports?reportType=${selectedReportType === 'all' ? '' : selectedReportType}`,
+        `${REPORTS_API}?reportType=${selectedReportType === 'all' ? '' : selectedReportType}`,
         {
           headers: { 'Authorization': `Bearer ${token}` }
         }
@@ -126,7 +133,7 @@ export function PayrollReports() {
       if (!token) return;
 
       // First, get payroll history to find the most recent processed payroll
-      const historyResponse = await fetch('http://localhost:4000/company-admin/payroll/history', {
+      const historyResponse = await fetch(`${BACKEND_URL}/company-admin/payroll/history`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -163,7 +170,7 @@ export function PayrollReports() {
       }
 
       // Now fetch the payroll details for this specific payroll
-      const detailsResponse = await fetch(`http://localhost:4000/company-admin/payroll/details/${targetPayrollId}`, {
+      const detailsResponse = await fetch(`${BACKEND_URL}/company-admin/payroll/details/${targetPayrollId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -227,7 +234,7 @@ export function PayrollReports() {
       if (!token) return;
 
       const response = await fetch(
-        `http://localhost:4000/company-admin/payroll/statutory/periods`,
+        `${BACKEND_URL}/company-admin/payroll/statutory/periods`,
         {
           headers: { 'Authorization': `Bearer ${token}` }
         }
@@ -664,4 +671,4 @@ export function PayrollReports() {
       </Tabs>
     </div>
   );
-} 
+}

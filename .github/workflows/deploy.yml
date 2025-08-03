@@ -1,0 +1,40 @@
+name: CD Pipeline
+
+on:
+  push:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build the production version
+        run: CI='' npm run build
+
+      - name: Deploy to server via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: 205.209.115.166
+          username: root
+          password: $$$Telemux01!int
+          port: 22
+          script: |
+            cd /var/www/blue--hr/bluehr-frontend-v2
+            rm -f package-lock.json
+            git config pull.rebase false
+            git pull origin master
+            npm install
+            npm run build
+            pm2 start /var/www/blue--hr/bluehr-frontend-v2/dev-ecosystem.json --env production || pm2 restart bluehr-frontend-v2

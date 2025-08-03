@@ -7,6 +7,7 @@ import { Mail, Lock } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { BACKEND_URL } from '@/lib/config';
 
 type UserRole = 'employee' | 'admin' | 'superadmin';
 
@@ -33,13 +34,13 @@ export function SignIn({ onLogin }: SignInProps) {
     setError('');
     try {
       // Use correct endpoint based on role
-      let endpoint = 'http://localhost:4000/company-admin/auth/login';
+      let endpoint = `${BACKEND_URL}/company-admin/auth/login`;
       let redirect = '/admin';
       if (role === 'superadmin') {
-        endpoint = 'http://localhost:4000/super-admin/login';
+        endpoint = `${BACKEND_URL}/super-admin/login`;
         redirect = '/super-admin';
       } else if (role === 'employee') {
-        endpoint = 'http://localhost:4000/employee/auth/login';
+        endpoint = `${BACKEND_URL}/employee/auth/login`;
         redirect = '/';
       }
       const response = await fetch(endpoint, {
@@ -47,11 +48,16 @@ export function SignIn({ onLogin }: SignInProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Login failed');
+      let data;
+      const text = await response.text();
+      if (text) {
+        data = JSON.parse(text);
+      } else {
+        throw new Error('Empty response from server');
       }
-      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
+      }
       
       // 2FA flow for company admin and employee
       if ((role === 'admin' || role === 'employee') && data.require2FA && data.userId) {
@@ -79,10 +85,10 @@ export function SignIn({ onLogin }: SignInProps) {
     setTwoFALoading(true);
     try {
       // Use correct endpoint based on role
-      let endpoint = 'http://localhost:4000/company-admin/auth/2fa/verify';
+      let endpoint = `${BACKEND_URL}/company-admin/auth/2fa/verify`;
       let redirect = '/admin';
       if (role === 'employee') {
-        endpoint = 'http://localhost:4000/employee/auth/2fa/verify';
+        endpoint = `${BACKEND_URL}/employee/auth/2fa/verify`;
         redirect = '/';
       }
       
