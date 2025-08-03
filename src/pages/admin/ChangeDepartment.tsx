@@ -145,7 +145,7 @@ export default function ChangeDepartment() {
                 <SelectTrigger>
                   <SelectValue placeholder="Select department" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className='bg-gray-200'>
                   {departments.map((dept) => (
                     <SelectItem key={dept.id} value={dept.id.toString()}>
                       {dept.name}
@@ -168,7 +168,7 @@ export default function ChangeDepartment() {
                 <SelectTrigger>
                   <SelectValue placeholder="Select role" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className='bg-gray-200'>
                   {roles.map((role: string, idx: number) => (
                     <SelectItem key={idx} value={role}>{role}</SelectItem>
                   ))}
@@ -185,7 +185,7 @@ export default function ChangeDepartment() {
                 <SelectTrigger>
                   <SelectValue placeholder="Select change type" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className='bg-gray-200'>
                   <SelectItem value="promotion">Promotion</SelectItem>
                   <SelectItem value="demotion">Demotion</SelectItem>
                   <SelectItem value="transfer">Transfer</SelectItem>

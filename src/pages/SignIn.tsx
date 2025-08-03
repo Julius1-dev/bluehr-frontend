@@ -159,7 +159,7 @@ export function SignIn({ onLogin }: SignInProps) {
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select role" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-gray-50">
                   <SelectItem value="admin">Company Admin</SelectItem>
                   <SelectItem value="superadmin">Super Admin</SelectItem>
                   <SelectItem value="employee">Employee</SelectItem>

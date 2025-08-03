@@ -28,10 +28,26 @@ export function WelcomeCard() {
   const [leaveBalance, setLeaveBalance] = useState<string>('...');
   const [notices, setNotices] = useState<any[]>([]);
   const [noticesCount, setNoticesCount] = useState<number>(0);
+  const [employeeName, setEmployeeName] = useState<string>('Employee');
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) return;
+
+    // Fetch employee profile to get the real name
+    fetch('http://localhost:4000/employee/auth/profile', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+      .then(res => res.json())
+      .then(profileData => {
+        if (profileData.success && profileData.data) {
+          const firstName = profileData.data.firstName || '';
+          const lastName = profileData.data.lastName || '';
+          const fullName = `${firstName} ${lastName}`.trim();
+          setEmployeeName(fullName || 'Employee');
+        }
+      })
+      .catch(() => setEmployeeName('Employee'));
 
     // Fetch next pay date
     fetch(`${BACKEND_URL}/employee/payroll/data`, {
@@ -107,7 +123,7 @@ export function WelcomeCard() {
       <CardContent className="p-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold">{greeting}, Sarah!</h1>
+            <h1 className="text-2xl font-bold">{greeting}, {employeeName}!</h1>
             <p className="text-blue-100 mt-1">{today}</p>
           </div>
           

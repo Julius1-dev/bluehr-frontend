@@ -89,7 +89,7 @@ import PrepareReviewPage from './pages/admin/performance/prepare-review';
 import ThreeSixtyFeedbackPage from './pages/admin/performance/360-feedback';
 
 // Components
-import { ViewSwitcher } from './components/ui/ViewSwitcher';
+
 
 // Types for user roles
 type UserRole = 'employee' | 'admin' | 'superadmin';
@@ -145,9 +145,7 @@ const AppRoutes = () => {
     navigate('/signin', { replace: true });
   };
 
-  const toggleAdminView = () => {
-    setUserRole(prev => prev === 'admin' ? 'employee' : 'admin');
-  };
+
 
   // Redirect to the appropriate dashboard based on user role
   const getDashboardRedirect = () => {
@@ -442,12 +440,9 @@ const AppRoutes = () => {
         {/* Employee Routes */}
         <Route element={
           isAuthenticated && userRole === 'employee' ? (
-            <>
-              <ViewSwitcher isAdmin={false} onToggle={toggleAdminView} />
-              <DashboardLayout onLogout={handleLogout}>
-                <Outlet />
-              </DashboardLayout>
-            </>
+            <DashboardLayout onLogout={handleLogout}>
+              <Outlet />
+            </DashboardLayout>
           ) : (
             <Navigate to="/signin" replace />
           )

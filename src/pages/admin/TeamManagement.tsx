@@ -235,7 +235,7 @@ export function TeamManagement(): JSX.Element {
         onChange={handleFileChange}
       />
       <Dialog open={importOpen} onOpenChange={setImportOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg bg-white">
           <DialogHeader>
             <DialogTitle>Bulk Import Employees</DialogTitle>
           </DialogHeader>
@@ -246,7 +246,7 @@ export function TeamManagement(): JSX.Element {
             <li>Department name must match exactly as created in your system.</li>
             <li>Upload the completed CSV using the file input below.</li>
           </ul>
-          <Button size="sm" variant="outline" onClick={handleSampleDownload}>Download Sample CSV</Button>
+          <Button className='bg-blue-700 text-white hover:bg-blue-700 hover:text-white' size="sm" variant="outline" onClick={handleSampleDownload}>Download Sample CSV</Button>
           <input
             type="file"
             accept=".csv"
@@ -254,7 +254,7 @@ export function TeamManagement(): JSX.Element {
             onChange={handleFileChange}
           />
           <DialogFooter>
-            <Button variant="outline" onClick={handleCloseImport}>Cancel</Button>
+            <Button className='bg-blue-700 text-white hover:bg-blue-700 hover:text-white' variant="outline" onClick={handleCloseImport}>Cancel</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -378,31 +378,31 @@ export function TeamManagement(): JSX.Element {
                               <span className="sr-only">Actions</span>
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuContent className='bg-gray-200' align="end">
+                            <DropdownMenuLabel className='text-center'>Actions</DropdownMenuLabel>
                             <DropdownMenuItem 
-                              className="cursor-pointer" 
+                              className="cursor-pointer hover:underline hover:underline-offset-2" 
                               onClick={() => navigate(`/admin/team/view/${member.id}`)}
                             >
                               <Mail className="mr-2 h-4 w-4" />
                               View Details
                             </DropdownMenuItem>
                             <DropdownMenuItem 
-                              className="cursor-pointer" 
+                              className="cursor-pointer hover:underline hover:underline-offset-2" 
                               onClick={() => handleEditEmployee(member.id)}
                             >
                               <Pencil className="mr-2 h-4 w-4" />
                               Edit Details
                             </DropdownMenuItem>
                             <DropdownMenuItem 
-                              className="cursor-pointer"
+                              className="cursor-pointer hover:underline hover:underline-offset-2"
                               onClick={() => navigate(`/admin/team/${member.id}/department`)}
                             >
                               <Building className="mr-2 h-4 w-4" />
                               Change Department
                             </DropdownMenuItem>
                             <DropdownMenuItem 
-                              className="cursor-pointer"
+                              className="cursor-pointer hover:underline hover:underline-offset-2"
                               onClick={() => navigate(`/admin/team/${member.id}/schedule`)}
                             >
                               <Calendar className="mr-2 h-4 w-4" />

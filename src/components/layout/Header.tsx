@@ -1,7 +1,7 @@
 import React from 'react';
-import { Menu, Bell } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { Button } from '../ui/button';
-import { Badge } from '../ui/badge';
+import { NotificationDropdown } from '../notifications/NotificationDropdown';
 
 interface HeaderProps {
   onLogout: () => void;
@@ -32,13 +32,7 @@ export function Header({ onLogout, isAdmin = false, isSuperAdmin = false }: Head
         </div>
       </div>
       <div className="flex items-center ml-auto gap-3 md:gap-4">
-        <div className="relative">
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="h-5 w-5 text-gray-500" />
-            <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center">3</Badge>
-            <span className="sr-only">Notifications</span>
-          </Button>
-        </div>
+        <NotificationDropdown />
         <Button 
           variant="ghost" 
           size="sm"
@@ -51,3 +45,4 @@ export function Header({ onLogout, isAdmin = false, isSuperAdmin = false }: Head
     </header>
   );
 }
+
