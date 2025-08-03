@@ -4,7 +4,7 @@
       "name": "bluehr-frontend-v2",
       "cwd": "/var/www/blue--hr/bluehr-frontend-v2",
       "script": "npm",
-      "args": "run start",
+      "args": "run preview",
       "env": {
         "NODE_ENV": "production",
         "PORT": "3012"
