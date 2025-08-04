@@ -8,6 +8,7 @@ import { MapPin, Save, X, Plus, Trash2 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { BACKEND_URL } from '@/lib/config';
 import LocationForm from './LocationForm';
 import {
   getLocations,
@@ -203,6 +204,7 @@ export default function AttendanceSettings() {
       let response;
 
       if (editingWorkShift) {
+        await fetch(`${BACKEND_URL}/company-admin/attendance/work-shifts/${editingWorkShift.id}`, {
         response = await fetch(`http://localhost:4000/company-admin/attendance/work-shifts/${editingWorkShift.id}`, {
           method: 'PUT',
           headers: {
@@ -212,6 +214,7 @@ export default function AttendanceSettings() {
           body: JSON.stringify(payload),
         });
       } else {
+        await fetch(`${BACKEND_URL}/company-admin/attendance/work-shifts`, {
         response = await fetch('http://localhost:4000/company-admin/attendance/work-shifts', {
           method: 'POST',
           headers: {
@@ -231,6 +234,8 @@ export default function AttendanceSettings() {
 
       setShowAddWorkShift(false);
       setEditingWorkShift(null);
+      // Refresh work shifts
+      const wsRes = await fetch(`${BACKEND_URL}/company-admin/attendance/work-shifts`, { headers: { 'Authorization': `Bearer ${token}` } });
 
       const wsRes = await fetch('http://localhost:4000/company-admin/attendance/work-shifts', {
         headers: { 'Authorization': `Bearer ${token}` },
@@ -266,10 +271,12 @@ export default function AttendanceSettings() {
     setWorkShiftError(null);
     const token = localStorage.getItem('token');
     try {
-      await fetch(`http://localhost:4000/company-admin/attendance/work-shifts/${id}`, {
+      await fetch(`${BACKEND_URL}/company-admin/attendance/work-shifts/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` },
       });
+      // Refresh work shifts
+      const wsRes = await fetch(`${BACKEND_URL}/company-admin/attendance/work-shifts`, { headers: { 'Authorization': `Bearer ${token}` } });
       const wsRes = await fetch('http://localhost:4000/company-admin/attendance/work-shifts', { headers: { 'Authorization': `Bearer ${token}` } });
       const wsData = await wsRes.json();
       if (Array.isArray(wsData)) {
@@ -298,9 +305,9 @@ export default function AttendanceSettings() {
     const fetchData = async () => {
       setWorkShiftError(null);
       const token = localStorage.getItem('token');
-      const depRes = await fetch('http://localhost:4000/company-admin/departments', { headers: { 'Authorization': `Bearer ${token}` } });
-      const empRes = await fetch('http://localhost:4000/company-admin/users', { headers: { 'Authorization': `Bearer ${token}` } });
-      const wsRes = await fetch('http://localhost:4000/company-admin/attendance/work-shifts', { headers: { 'Authorization': `Bearer ${token}` } });
+      const depRes = await fetch(`${BACKEND_URL}/company-admin/departments`, { headers: { 'Authorization': `Bearer ${token}` } });
+      const empRes = await fetch(`${BACKEND_URL}/company-admin/users`, { headers: { 'Authorization': `Bearer ${token}` } });
+      const wsRes = await fetch(`${BACKEND_URL}/company-admin/attendance/work-shifts`, { headers: { 'Authorization': `Bearer ${token}` } });
       const depData = await depRes.json();
       const empData = await empRes.json();
       const wsData = await wsRes.json();

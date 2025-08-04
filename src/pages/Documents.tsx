@@ -36,6 +36,7 @@ import { DialogTrigger } from '@/components/ui/dialog';
 import { DocumentType } from '@/types/documents';
 import type { SharedWithEntry } from '@/types/documents';
 
+import { BACKEND_URL } from '@/lib/config';
 
 // Types
 interface Recipient {
@@ -195,8 +196,8 @@ export function Documents() {
           const token = localStorage.getItem('token');
           const headers = token ? { Authorization: `Bearer ${token}` } : {};
           const [deptRes, empRes] = await Promise.all([
-            axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/company-admin/departments`, { headers, withCredentials: true }),
-            axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/company-admin/users`, { headers, withCredentials: true })
+            axios.get(`${BACKEND_URL}/company-admin/departments`, { headers, withCredentials: true }),
+            axios.get(`${BACKEND_URL}/company-admin/users`, { headers, withCredentials: true })
           ]);
           setDepartments(deptRes.data);
           setEmployees(empRes.data);
@@ -853,7 +854,7 @@ export function Documents() {
                       </div>
                           {policy.document_url && (
                             <a
-                              href={`http://localhost:4000${policy.document_url}`}
+                              href={`${BACKEND_URL}${policy.document_url}`}
                               target="_blank"
                               rel="noopener noreferrer"
                             >

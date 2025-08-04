@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { BACKEND_URL } from '@/lib/config';
 
 // Types
 type Permission = {
@@ -37,7 +38,7 @@ type AdminUser = {
   permissions: string[];
 };
 
-const API_BASE = 'http://localhost:4000/company-admin/roles';
+const API_URL = `${BACKEND_URL}/company-admin/roles`;
 
 const RolesAndPermissions = () => {
   // Real data state
@@ -74,19 +75,19 @@ const RolesAndPermissions = () => {
         const headers = { 'Authorization': `Bearer ${token}` };
 
         // Fetch permissions
-        const permissionsRes = await fetch(`${API_BASE}/permissions`, { headers });
+        const permissionsRes = await fetch(`${API_URL}/permissions`, { headers });
         if (!permissionsRes.ok) throw new Error('Failed to fetch permissions');
         const permissionsData = await permissionsRes.json();
         setPermissions(permissionsData);
 
         // Fetch roles
-        const rolesRes = await fetch(`${API_BASE}/roles`, { headers });
+        const rolesRes = await fetch(`${API_URL}/roles`, { headers });
         if (!rolesRes.ok) throw new Error('Failed to fetch roles');
         const rolesData = await rolesRes.json();
         setRoles(rolesData);
 
         // Fetch sub-admins
-        const adminsRes = await fetch(`${API_BASE}/sub-admins`, { headers });
+        const adminsRes = await fetch(`${API_URL}/sub-admins`, { headers });
         if (!adminsRes.ok) throw new Error('Failed to fetch sub-admins');
         const adminsData = await adminsRes.json();
         setAdmins(adminsData);
@@ -127,7 +128,7 @@ const RolesAndPermissions = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${API_BASE}/sub-admins`, {
+      const res = await fetch(`${API_URL}/sub-admins`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -184,7 +185,7 @@ const RolesAndPermissions = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${API_BASE}/sub-admins/${id}`, {
+      const res = await fetch(`${API_URL}/sub-admins/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });

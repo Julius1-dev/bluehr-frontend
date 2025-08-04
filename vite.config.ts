@@ -12,5 +12,9 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
-  // Removed the proxy section since you're using full URLs
+  preview: {
+    port: 3012,
+    host: true,
+    allowedHosts: ['bluehr.joinbluehr.com'],
+  },
 });

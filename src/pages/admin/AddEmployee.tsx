@@ -9,6 +9,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { format } from 'date-fns';
 import { CalendarIcon, ArrowLeft, UserPlus } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { BACKEND_URL } from '@/lib/config';
+
 
 interface EmployeeFormData {
   firstName: string;
@@ -40,8 +42,7 @@ interface EmployeeFormData {
 
 
 // Using browser alert instead of toast for now
-
-const DEPARTMENTS_API = 'http://localhost:4000/company-admin/departments';
+const DEPARTMENTS_API = `${BACKEND_URL}/company-admin/departments`;
 
 const employmentTypes = [
   'Full-time',
@@ -122,7 +123,7 @@ export function AddEmployeePage({ isEditMode = false }: AddEmployeePageProps) {
       const fetchEmployee = async () => {
         try {
           const token = localStorage.getItem('token');
-          const res = await fetch(`http://localhost:4000/company-admin/users/${id}`, {
+          const res = await fetch(`${BACKEND_URL}/company-admin/users/${id}`, {
             headers: { 'Authorization': `Bearer ${token}` }
           });
           if (!res.ok) throw new Error('Failed to fetch employee');
@@ -188,7 +189,7 @@ export function AddEmployeePage({ isEditMode = false }: AddEmployeePageProps) {
     setRoles(dept && Array.isArray(dept.roles) ? dept.roles : (dept && dept.roles ? JSON.parse(dept.roles) : []));
   };
 
-  const API_URL = 'http://localhost:4000/company-admin/users';
+  const API_URL = `${BACKEND_URL}/company-admin/users`;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -200,7 +201,7 @@ export function AddEmployeePage({ isEditMode = false }: AddEmployeePageProps) {
         payment_frequency: formData.paymentFrequency,
         basic_salary: formData.basicSalary,
         joiningDate: formData.joiningDate,
-      };
+      };        
       const res = await fetch(editMode ? `${API_URL}/${id}` : API_URL, {
         method: editMode ? 'PUT' : 'POST',
         headers: {
@@ -210,7 +211,19 @@ export function AddEmployeePage({ isEditMode = false }: AddEmployeePageProps) {
         body: JSON.stringify(payload)
       });
       if (!res.ok) throw new Error('Failed to save employee');
-      alert(editMode ? 'Employee updated successfully!' : 'Employee added successfully!');
+      
+      const result = await res.json();
+      
+      if (editMode) {
+        alert('Employee updated successfully!');
+      } else {
+        if (result.emailSent) {
+          alert(`Employee added successfully! A welcome email with login credentials has been sent to ${formData.email}.`);
+        } else {
+          alert(`Employee added successfully! However, there was an issue sending the welcome email: ${result.emailError || 'Unknown error'}`);
+        }
+      }
+      
       navigate('/admin/team');
     } catch (err: any) {
       alert('Error saving employee: ' + (err.message || 'Unknown error'));
@@ -312,12 +325,15 @@ export function AddEmployeePage({ isEditMode = false }: AddEmployeePageProps) {
                     )}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
+                <PopoverContent className="w-auto p-0 bg-gray-200" align="start">
                   <Calendar
                     mode="single"
                     selected={formData.dateOfBirth}
                     onSelect={(date) => handleDateSelect(date, 'dateOfBirth')}
                     initialFocus
+                    weekStartsOn={1}
+                    fixedWeeks
+                    ISOWeek
                     fromYear={1900}
                     toYear={new Date().getFullYear() - 18} // Typically employees should be at least 18
                     captionLayout="dropdown"
@@ -342,7 +358,7 @@ export function AddEmployeePage({ isEditMode = false }: AddEmployeePageProps) {
                     'Select gender'}
                   </SelectValue>
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className='bg-gray-200'>
                   <SelectItem value="male">Male</SelectItem>
                   <SelectItem value="female">Female</SelectItem>
                   <SelectItem value="other">Other</SelectItem>
@@ -383,7 +399,7 @@ export function AddEmployeePage({ isEditMode = false }: AddEmployeePageProps) {
                       : 'Select date'}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
+                <PopoverContent className="w-auto p-0 bg-gray-200" align="start">
                   <Calendar
                     mode="single"
                     selected={formData.joiningDate}
@@ -404,7 +420,7 @@ export function AddEmployeePage({ isEditMode = false }: AddEmployeePageProps) {
                 <SelectTrigger>
                   <SelectValue placeholder="Select department" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className='bg-gray-200'>
                   {departments.map(dept => (
                     <SelectItem key={dept.id} value={dept.id}>
                       {dept.name}
@@ -425,7 +441,7 @@ export function AddEmployeePage({ isEditMode = false }: AddEmployeePageProps) {
                 <SelectTrigger>
                   <SelectValue placeholder={formData.departmentId ? "Select role" : "Select department first"} />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className='bg-gray-200'>
                   {formData.departmentId && roles.map((role: string, index: number) => (
                     <SelectItem key={index} value={role}>
                       {role}
@@ -447,7 +463,7 @@ export function AddEmployeePage({ isEditMode = false }: AddEmployeePageProps) {
                     {formData.employmentType ? formData.employmentType.charAt(0).toUpperCase() + formData.employmentType.slice(1) : ''}
                   </SelectValue>
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className='bg-gray-200'>
                   {employmentTypes.map(type => (
                     <SelectItem key={type} value={type.toLowerCase()}>
                       {type}
@@ -469,7 +485,7 @@ export function AddEmployeePage({ isEditMode = false }: AddEmployeePageProps) {
                     {formData.paymentFrequency ? formData.paymentFrequency.charAt(0).toUpperCase() + formData.paymentFrequency.slice(1) : ''}
                   </SelectValue>
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className='bg-gray-200'>
                   {paymentFrequencies.map(frequency => (
                     <SelectItem key={frequency} value={frequency.toLowerCase()}>
                       {frequency}
@@ -500,7 +516,7 @@ export function AddEmployeePage({ isEditMode = false }: AddEmployeePageProps) {
                 <SelectTrigger>
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className='bg-gray-200'>
                   <SelectItem value="active">Active</SelectItem>
                   <SelectItem value="on-leave">On Leave</SelectItem>
                   <SelectItem value="probation">Probation</SelectItem>

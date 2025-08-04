@@ -6,6 +6,7 @@ import { Phone, AlertCircle, ArrowLeft, Loader2 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { BACKEND_URL } from '@/lib/config';
 
 interface AdvanceData {
   totalAdvanceBalance: number;
@@ -41,7 +42,7 @@ export function WithdrawMpesa() {
           return;
         }
 
-        const response = await fetch('http://localhost:4000/employee/advances/data', {
+        const response = await fetch(`${BACKEND_URL}/employee/advances/data`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -97,7 +98,7 @@ export function WithdrawMpesa() {
         return;
       }
 
-      const response = await fetch('http://localhost:4000/employee/advances/request', {
+      const response = await fetch(`${BACKEND_URL}/employee/advances/request`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

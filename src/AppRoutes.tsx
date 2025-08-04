@@ -1,5 +1,6 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { Routes, Route, Navigate, Outlet, useNavigate } from 'react-router-dom';
+import { BACKEND_URL } from './lib/config';
 
 // Lazy load components for better performance
 const AdvancesOverview = lazy(() => import('./pages/super-admin/advances/AdvancesOverview'));
@@ -89,7 +90,7 @@ import PrepareReviewPage from './pages/admin/performance/prepare-review';
 import ThreeSixtyFeedbackPage from './pages/admin/performance/360-feedback';
 
 // Components
-import { ViewSwitcher } from './components/ui/ViewSwitcher';
+
 
 // Types for user roles
 type UserRole = 'employee' | 'admin' | 'superadmin';
@@ -126,7 +127,7 @@ const AppRoutes = () => {
       const token = localStorage.getItem('token');
       if (token) {
         console.log('Calling backend logout endpoint');
-        await fetch('http://localhost:4000/super-admin/auth/logout', {
+        await fetch(`${BACKEND_URL}/super-admin/auth/logout`, {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -145,9 +146,7 @@ const AppRoutes = () => {
     navigate('/signin', { replace: true });
   };
 
-  const toggleAdminView = () => {
-    setUserRole(prev => prev === 'admin' ? 'employee' : 'admin');
-  };
+
 
   // Redirect to the appropriate dashboard based on user role
   const getDashboardRedirect = () => {
@@ -502,4 +501,4 @@ const AppRoutes = () => {
   );
 };
 
-export default AppRoutes; 
+export default AppRoutes;

@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { toast } from "sonner";
 import { ArrowRight } from 'lucide-react';
+import { BACKEND_URL } from '@/lib/config';
 
 type UserRole = 'employee' | 'admin' | 'superadmin';
 
@@ -34,7 +35,7 @@ export function SignUp({ onSignUp }: SignUpProps) {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:4000/company-admin/auth/register', {
+      const response = await fetch(`${BACKEND_URL}/company-admin/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

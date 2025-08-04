@@ -12,6 +12,7 @@ import {
   Download
 } from 'lucide-react';
 import { calculatePAYE, calculateSHIF, calculateNSSF, calculateHousingLevy } from './payrollCalculations';
+import { BACKEND_URL } from '@/lib/config';
 
 // Mock utility function for formatting currency
 const formatCurrency = (amount: number): string => {
@@ -66,7 +67,7 @@ export function CompanyWalletManager({ walletData }: CompanyWalletManagerProps) 
       try {
         const token = localStorage.getItem('token');
         if (!token) throw new Error('No authentication token found');
-        const response = await fetch('http://localhost:4000/company-admin/wallet/transactions', {
+        const response = await fetch(`${BACKEND_URL}/company-admin/wallet/transactions`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (!response.ok) throw new Error('Failed to fetch transactions');
@@ -95,7 +96,7 @@ export function CompanyWalletManager({ walletData }: CompanyWalletManagerProps) 
         const token = localStorage.getItem('token');
         if (!token) throw new Error('No authentication token found');
         // Fetch employees
-        const empResponse = await fetch('http://localhost:4000/company-admin/users', {
+        const empResponse = await fetch(`${BACKEND_URL}/company-admin/users`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (!empResponse.ok) throw new Error('Failed to fetch employees');
@@ -185,7 +186,7 @@ export function CompanyWalletManager({ walletData }: CompanyWalletManagerProps) 
         }
         
         // Send bank transfer request to backend
-        const response = await fetch('http://localhost:4000/super-admin/wallets/bank-transfers', {
+        const response = await fetch(`${BACKEND_URL}/super-admin/wallets/bank-transfers`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
