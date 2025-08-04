@@ -438,10 +438,10 @@ export function AddEmployeePage({ isEditMode = false }: AddEmployeePageProps) {
                 disabled={!formData.departmentId}
                 required
               >
-                <SelectTrigger>
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder={formData.departmentId ? "Select role" : "Select department first"} />
                 </SelectTrigger>
-                <SelectContent className='bg-gray-200'>
+                <SelectContent className='bg-white'>
                   {formData.departmentId && roles.map((role: string, index: number) => (
                     <SelectItem key={index} value={role}>
                       {role}
