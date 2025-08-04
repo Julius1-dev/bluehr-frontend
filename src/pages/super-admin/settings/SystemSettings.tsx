@@ -8,7 +8,7 @@ import {
   MemoryStick,
   Network,
   CheckCircle2,
-  Calendar as CalendarIcon
+  Calendar as CalendarIcon,
 } from 'lucide-react';
 
 // UI Components
@@ -20,6 +20,7 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
+import { BACKEND_URL } from '@/lib/config';
 
 // Custom Components
 import { MaintenanceScheduler } from './MaintenanceScheduler';
@@ -189,7 +190,7 @@ export default function SystemSettings({
       setResourceError(null);
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch('http://localhost:4000/super-admin/companies/system-health', {
+        const res = await fetch(`${BACKEND_URL}/super-admin/companies/system-health`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (!res.ok) throw new Error('Failed to fetch system health');

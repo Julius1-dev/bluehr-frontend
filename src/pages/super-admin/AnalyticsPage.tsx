@@ -1,4 +1,5 @@
-import { useState } from 'react';
+
+import { useState, useEffect } from 'react';
 import { format, subDays, addDays } from 'date-fns';
 import { 
   BarChart, 
@@ -48,293 +49,229 @@ import {
   UserPlus,
   UserX,
   Building2, 
-  FileText, 
   DollarSign, 
   Filter,
   Calendar
 } from 'lucide-react';
 
-// Mock data - in a real app, this would come from an API
-const mockCompanies = [
-  { 
-    id: 1, 
-    name: 'Acme Inc', 
-    users: 45, 
-    activeUsers: 42, 
-    newUsers: 5, 
-    offboardedUsers: 2,
-    mrr: 12500,
-    arr: 150000,
-    churnRate: 2.1,
-    growthRate: 8.2,
-    industry: 'Technology',
-    plan: 'Enterprise',
-    planName: 'Enterprise Plan',
-    planRate: 25, // per user per month
-    subscriptionStart: subDays(new Date(), 120),
-    subscriptionEnd: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
-    usersOnPlan: 42,
-    lastPaymentDate: subDays(new Date(), 30),
-    nextBillingDate: addDays(new Date(), 5), // Expiring soon
-    status: 'active',
-    // Advance program data
-    advanceProgram: {
-      totalAdvanced: 50000,
-      totalRepaid: 45000,
-      outstanding: 5000,
-      lastAdvanceDate: subDays(new Date(), 15),
-      nextRepaymentDate: addDays(new Date(), 15),
-      withdrawalFees: 3000, // 6% of total advanced
-      companyWallet: {
-        balance: 10000,
-        lastTransaction: subDays(new Date(), 5),
-        transactionFee: 100 // KSH 100 per withdrawal
-      }
-    }
-  },
-  { 
-    id: 2, 
-    name: 'TechCorp', 
-    users: 128, 
-    activeUsers: 120, 
-    newUsers: 15, 
-    offboardedUsers: 3,
-    mrr: 32500,
-    arr: 390000,
-    churnRate: 1.5,
-    growthRate: 12.7,
-    industry: 'Finance',
-    plan: 'Business',
-    planName: 'Business Pro',
-    planRate: 20, // per user per month
-    subscriptionStart: subDays(new Date(), 90),
-    subscriptionEnd: new Date(new Date().setMonth(new Date().getMonth() + 6)),
-    usersOnPlan: 120,
-    lastPaymentDate: subDays(new Date(), 30),
-    nextBillingDate: addDays(new Date(), 25),
-    lastActive: new Date(),
-    status: 'active',
-    // Advance program data
-    advanceProgram: {
-      totalAdvanced: 120000,
-      totalRepaid: 100000,
-      outstanding: 20000,
-      lastAdvanceDate: subDays(new Date(), 10),
-      nextRepaymentDate: addDays(new Date(), 20),
-      withdrawalFees: 7200, // 6% of total advanced
-      companyWallet: {
-        balance: 25000,
-        lastTransaction: subDays(new Date(), 2),
-        transactionFee: 100 // KSH 100 per withdrawal
-      }
-    }
-  },
-  { 
-    id: 3, 
-    name: 'Global Solutions', 
-    users: 89, 
-    activeUsers: 85, 
-    newUsers: 8, 
-    offboardedUsers: 1,
-    mrr: 18750,
-    arr: 225000,
-    churnRate: 0.8,
-    growthRate: 5.9,
-    industry: 'Healthcare',
-    plan: 'Professional',
-    planName: 'Professional Plus',
-    planRate: 15, // per user per month
-    subscriptionStart: subDays(new Date(), 180),
-    subscriptionEnd: new Date(new Date().setMonth(new Date().getMonth() + 3)),
-    usersOnPlan: 85,
-    lastPaymentDate: subDays(new Date(), 30),
-    nextBillingDate: addDays(new Date(), 2), // Expiring soon
-    status: 'active',
-    // Advance program data
-    advanceProgram: {
-      totalAdvanced: 35000,
-      totalRepaid: 30000,
-      outstanding: 5000,
-      lastAdvanceDate: subDays(new Date(), 20),
-      nextRepaymentDate: addDays(new Date(), 10),
-      withdrawalFees: 2100, // 6% of total advanced
-      companyWallet: {
-        balance: 8000,
-        lastTransaction: subDays(new Date(), 3),
-        transactionFee: 100 // KSH 100 per withdrawal
-      }
-    }
-  },
-  { 
-    id: 4, 
-    name: 'Initech', 
-    users: 156, 
-    activeUsers: 145, 
-    newUsers: 12, 
-    offboardedUsers: 5,
-    mrr: 23400,
-    arr: 280800,
-    churnRate: 1.2,
-    growthRate: 9.5,
-    industry: 'Technology',
-    plan: 'Professional',
-    planName: 'Professional Standard',
-    planRate: 18, // per user per month
-    subscriptionStart: subDays(new Date(), 60),
-    subscriptionEnd: new Date(new Date().setMonth(new Date().getMonth() + 9)),
-    usersOnPlan: 145,
-    lastPaymentDate: subDays(new Date(), 30),
-    nextBillingDate: addDays(new Date(), 15),
-    lastActive: subDays(new Date(), 2),
-    status: 'active',
-    // Advance program data
-    advanceProgram: {
-      totalAdvanced: 75000,
-      totalRepaid: 60000,
-      outstanding: 15000,
-      lastAdvanceDate: subDays(new Date(), 25),
-      nextRepaymentDate: addDays(new Date(), 5),
-      withdrawalFees: 4500, // 6% of total advanced
-      companyWallet: {
-        balance: 15000,
-        lastTransaction: subDays(new Date(), 1),
-        transactionFee: 100 // KSH 100 per withdrawal
-      }
-    }
-  },
-  { 
-    id: 5, 
-    name: 'Umbrella Corp',
-    industry: 'Healthcare',
-    plan: 'Enterprise',
-    users: 320,
-    activeUsers: 280,
-    newUsers: 45,
-    offboardedUsers: 15,
-    mrr: 7999,
-    churnRate: 1.8,
-    growthRate: 9.2,
-    status: 'active',
-    lastActive: subDays(new Date(), 1),
-  },
-  {
-    id: 6,
-    name: 'Stark Industries',
-    industry: 'Manufacturing',
-    plan: 'Enterprise',
-    users: 420,
-    activeUsers: 380,
-    newUsers: 65,
-    offboardedUsers: 20,
-    mrr: 9999,
-    churnRate: 0.8,
-    growthRate: 12.5,
-    status: 'active',
-    lastActive: new Date(),
-  },
-  {
-    id: 7,
-    name: 'Wayne Enterprises',
-    industry: 'Technology',
-    plan: 'Professional',
-    users: 180,
-    activeUsers: 120,
-    newUsers: 15,
-    offboardedUsers: 10,
-    mrr: 3599,
-    churnRate: 5.6,
-    growthRate: 2.3,
-    status: 'at_risk',
-    lastActive: subDays(new Date(), 7),
-  },
-  {
-    id: 8,
-    name: 'Cyberdyne Systems',
-    industry: 'Technology',
-    plan: 'Starter',
-    users: 65,
-    activeUsers: 30,
-    newUsers: 2,
-    offboardedUsers: 8,
-    mrr: 499,
-    churnRate: 12.3,
-    growthRate: -2.1,
-    status: 'churned',
-    lastActive: subDays(new Date(), 45),
-  },
-];
+// Types for our data
+type Company = {
+  id: string;
+  name: string;
+  users: number;
+  activeUsers: number;
+  newUsers: number;
+  offboardedUsers: number;
+  mrr: number;
+  arr?: number;
+  churnRate: number;
+  growthRate: number;
+  industry: string;
+  plan: string;
+  planName?: string;
+  planRate?: number;
+  subscriptionStart?: Date;
+  subscriptionEnd?: Date;
+  usersOnPlan?: number;
+  lastPaymentDate?: Date;
+  nextBillingDate?: Date;
+  status: 'active' | 'inactive' | 'at_risk' | 'churned';
+  lastActive?: Date;
+  advanceProgram?: {
+    totalAdvanced: number;
+    totalRepaid: number;
+    outstanding: number;
+    lastAdvanceDate?: Date;
+    nextRepaymentDate?: Date;
+    withdrawalFees: number;
+    companyWallet?: {
+      balance: number;
+      lastTransaction?: Date;
+      transactionFee: number;
+    };
+  };
+};
 
-const companyActivity = [
-  { name: 'Logins', value: 85 },
-  { name: 'Active Users', value: 65 },
-  { name: 'Inactive Users', value: 20 },
-];
+type TimeRange = 'last7days' | 'last30days' | 'last3months' | 'last12months' | 'custom';
+type ChartTimeRange = 'monthly' | 'yearly';
 
-// Industry data for charts
-const INDUSTRY_DATA = [
-  { name: 'Technology', value: 35 },
-  { name: 'Healthcare', value: 25 },
-  { name: 'Finance', value: 20 },
-  { name: 'Retail', value: 15 },
-  { name: 'Education', value: 5 }
-] as const;
+interface MonthlyData {
+  month: string;
+  revenue: number;
+  activeUsers: number;
+  newUsers: number;
+  onboarded?: number;
+  offboarded?: number;
+}
+
+interface YearlyData {
+  year: string;
+  revenue: number;
+  activeUsers: number;
+  newUsers: number;
+  onboarded?: number;
+  offboarded?: number;
+}
+
+interface IndustryData {
+  name: string;
+  value: number;
+  color: string;
+}
+
+interface Totals {
+  totalUsers: number;
+  totalActiveUsers: number;
+  totalNewUsers: number;
+  totalOffboarded: number;
+  totalMrr: number;
+}
+
+interface AnalyticsResponse {
+  companies: Company[];
+  totals?: Totals;
+}
+
+function isTimeRange(value: string): value is TimeRange {
+  return ['last7days', 'last30days', 'last3months', 'last12months', 'custom'].includes(value);
+}
 
 const AnalyticsPage = () => {
   // State management
   const [activeTab, setActiveTab] = useState('overview');
-  const [timeRange, setTimeRange] = useState('monthly');
+  const [timeRange, setTimeRange] = useState<ChartTimeRange>('monthly');
   const [selectedCompany, setSelectedCompany] = useState('all');
-  const [dateRange, setDateRange] = useState('last12months');
+  const [dateRange, setDateRange] = useState<TimeRange>('last12months');
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-
-  // Generate monthly data for the past 12 months
-  const monthlyData = Array.from({ length: 12 }, (_, i) => {
-    const date = new Date();
-    date.setMonth(date.getMonth() - (11 - i)); // Go back 11 months from current
-    return {
-      month: format(date, 'MMM yyyy'),
-      onboarded: Math.floor(Math.random() * 20) + 5,
-      offboarded: Math.floor(Math.random() * 8) + 1,
-      activeUsers: Math.floor(Math.random() * 200) + 50,
-    };
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([]);
+  const [yearlyData, setYearlyData] = useState<YearlyData[]>([]);
+  const [totals, setTotals] = useState<Totals>({
+    totalUsers: 0,
+    totalActiveUsers: 0,
+    totalNewUsers: 0,
+    totalOffboarded: 0,
+    totalMrr: 0
   });
 
-  // Generate yearly data for the past 5 years
-  const currentYear = new Date().getFullYear();
-  const yearlyData = Array.from({ length: 5 }, (_, i) => ({
-    year: (currentYear - 4 + i).toString(),
-    onboarded: Math.floor(Math.random() * 100) + 50,
-    offboarded: Math.floor(Math.random() * 40) + 10,
-    activeUsers: Math.floor(Math.random() * 1000) + 500,
-  }));
+  // Fetch data from API
+  const fetchData = async () => {
+    setIsLoading(true);
+    try {
+      // Fetch all data from the new analytics endpoint
+      const analyticsResponse = await fetch('/api/companies/analytics')
+        .then(res => res.json() as Promise<AnalyticsResponse>);
+      
+      // If you kept the monthly/yearly metrics endpoints
+      const [monthlyRes, yearlyRes] = await Promise.all([
+        fetch('/api/metrics/monthly').then(res => res.json() as Promise<{ data?: MonthlyData[] }>),
+        fetch('/api/metrics/yearly').then(res => res.json() as Promise<{ data?: YearlyData[] }>)
+      ]);
+
+      // Set the data states
+      setCompanies(analyticsResponse.companies);
+      setMonthlyData(monthlyRes.data || generateMonthlyData(analyticsResponse.companies));
+      setYearlyData(yearlyRes.data || generateYearlyData(analyticsResponse.companies));
+      
+      // Set totals from backend or calculate locally
+      setTotals(analyticsResponse.totals || calculateTotals(analyticsResponse.companies));
+
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Helper functions for local data generation if endpoints don't exist
+  const generateMonthlyData = (companies: Company[]): MonthlyData[] => {
+    const months: MonthlyData[] = [];
+    const now = new Date();
+    
+    // Generate last 12 months
+    for (let i = 11; i >= 0; i--) {
+      const date = new Date(now);
+      date.setMonth(date.getMonth() - i);
+      
+      const monthKey = format(date, 'MMM yyyy');
+      
+      months.push({
+        month: monthKey,
+        revenue: companies.reduce((sum: number, company: Company) => sum + (company.mrr || 0), 0),
+        activeUsers: companies.reduce((sum: number, company: Company) => sum + (company.activeUsers || 0), 0),
+        newUsers: companies.reduce((sum: number, company: Company) => sum + (company.newUsers || 0), 0),
+        onboarded: Math.floor(Math.random() * 20) + 5, // Sample data
+        offboarded: Math.floor(Math.random() * 8) + 1 // Sample data
+      });
+    }
+    
+    return months;
+  };
+
+  const generateYearlyData = (companies: Company[]): YearlyData[] => {
+    const years: YearlyData[] = [];
+    const currentYear = new Date().getFullYear();
+    
+    // Generate last 5 years
+    for (let i = 4; i >= 0; i--) {
+      const year = (currentYear - i).toString();
+      
+      years.push({
+        year,
+        revenue: companies.reduce((sum: number, company: Company) => sum + (company.mrr || 0) * 12, 0),
+        activeUsers: companies.reduce((sum: number, company: Company) => sum + (company.activeUsers || 0), 0),
+        newUsers: companies.reduce((sum: number, company: Company) => sum + (company.newUsers || 0), 0),
+        onboarded: Math.floor(Math.random() * 100) + 50, // Sample data
+        offboarded: Math.floor(Math.random() * 40) + 10 // Sample data
+      });
+    }
+    
+    return years;
+  };
+
+  const calculateTotals = (companies: Company[]): Totals => ({
+    totalUsers: companies.reduce((sum: number, c: Company) => sum + (c.users || 0), 0),
+    totalActiveUsers: companies.reduce((sum: number, c: Company) => sum + (c.activeUsers || 0), 0),
+    totalNewUsers: companies.reduce((sum: number, c: Company) => sum + (c.newUsers || 0), 0),
+    totalOffboarded: companies.reduce((sum: number, c: Company) => sum + (c.offboardedUsers || 0), 0),
+    totalMrr: companies.reduce((sum: number, c: Company) => sum + (c.mrr || 0), 0)
+  });
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const chartData = timeRange === 'monthly' ? monthlyData : yearlyData;
 
   // Filter companies based on search and selection
-  const filteredCompanies = mockCompanies.filter(company => {
+  const filteredCompanies = companies.filter(company => {
     const searchLower = searchQuery.toLowerCase();
     const matchesSearch = company.name.toLowerCase().includes(searchLower) ||
-                       (company.industry || '').toLowerCase().includes(searchLower);
-    const matchesCompany = selectedCompany === 'all' || company.id.toString() === selectedCompany;
+                       company.industry.toLowerCase().includes(searchLower);
+    const matchesCompany = selectedCompany === 'all' || company.id === selectedCompany;
     return matchesSearch && matchesCompany;
   });
 
   // Calculate metrics
-  const totalUsers = mockCompanies.reduce((sum, company) => sum + company.users, 0);
-  const totalActiveUsers = mockCompanies.reduce((sum, company) => sum + company.activeUsers, 0);
-  const totalNewUsers = mockCompanies.reduce((sum, company) => sum + company.newUsers, 0);
-  const totalOffboarded = mockCompanies.reduce((sum, company) => sum + company.offboardedUsers, 0);
-  const totalMrr = mockCompanies.reduce((sum, company) => sum + company.mrr, 0);
-  const avgChurnRate = mockCompanies.reduce((sum, company) => sum + company.churnRate, 0) / mockCompanies.length;
-  const avgGrowthRate = mockCompanies.reduce((sum, company) => sum + company.growthRate, 0) / mockCompanies.length;
+  const totalUsers = companies.reduce((sum, company) => sum + company.users, 0);
+  const totalActiveUsers = companies.reduce((sum, company) => sum + company.activeUsers, 0);
+  const totalNewUsers = companies.reduce((sum, company) => sum + company.newUsers, 0);
+  const totalOffboarded = companies.reduce((sum, company) => sum + company.offboardedUsers, 0);
+  const totalMrr = companies.reduce((sum, company) => sum + company.mrr, 0);
+  const avgChurnRate = companies.length > 0 
+    ? companies.reduce((sum, company) => sum + company.churnRate, 0) / companies.length 
+    : 0;
+  const avgGrowthRate = companies.length > 0
+    ? companies.reduce((sum, company) => sum + company.growthRate, 0) / companies.length
+    : 0;
 
   // Calculate company health score
-  const calculateHealthScore = (company: any) => {
+  const calculateHealthScore = (company: Company) => {
     const activityScore = (company.activeUsers / company.users) * 40;
     const growthScore = Math.min(company.growthRate * 2, 30);
     const churnPenalty = company.churnRate * 5;
-    const recencyPenalty = company.lastActive > subDays(new Date(), 7) ? 0 : 10;
+    const recencyPenalty = company.lastActive && company.lastActive > subDays(new Date(), 7) ? 0 : 10;
     return Math.max(0, Math.min(100, activityScore + growthScore - churnPenalty - recencyPenalty));
   };
 
@@ -353,13 +290,9 @@ const AnalyticsPage = () => {
     return `${value.toFixed(1)}%`;
   };
 
-  // Refresh data (simulated)
+  // Refresh data
   const handleRefresh = () => {
-    setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
+    fetchData();
   };
 
   // Get status badge
@@ -374,13 +307,19 @@ const AnalyticsPage = () => {
   };
 
   // Generate chart data for industries distribution
-  const industryData = INDUSTRY_DATA.map((industry, index) => ({
-    ...industry,
-    color: ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A4DE6C', '#D0ED57', '#FFC658'][index % 7] || '#999999'
-  }));
-
-  // Add type for the industry data
-  type IndustryData = typeof industryData[number];
+  const industryData = companies.reduce((acc: any[], company) => {
+    const existing = acc.find(item => item.name === company.industry);
+    if (existing) {
+      existing.value += 1;
+    } else {
+      acc.push({
+        name: company.industry,
+        value: 1,
+        color: ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A4DE6C', '#D0ED57', '#FFC658'][acc.length % 7] || '#999999'
+      });
+    }
+    return acc;
+  }, []);
 
   // Render tab content
   const renderTabContent = () => {
@@ -398,7 +337,9 @@ const AnalyticsPage = () => {
                 <CardContent>
                   <div className="text-2xl font-bold">{formatCurrency(totalMrr)}</div>
                   <p className="text-xs text-muted-foreground">
-                    <span className="text-green-600">+12.5%</span> from last month
+                    {companies.length > 0 && (
+                      <span className="text-green-600">+12.5%</span>
+                    )} from last month
                   </p>
                 </CardContent>
               </Card>
@@ -408,9 +349,11 @@ const AnalyticsPage = () => {
                   <Building2 className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{mockCompanies.length}</div>
+                  <div className="text-2xl font-bold">{companies.length}</div>
                   <p className="text-xs text-muted-foreground">
-                    <span className="text-green-600">+2</span> from last month
+                    {companies.length > 0 && (
+                      <span className="text-green-600">+2</span>
+                    )} from last month
                   </p>
                 </CardContent>
               </Card>
@@ -422,7 +365,9 @@ const AnalyticsPage = () => {
                 <CardContent>
                   <div className="text-2xl font-bold">{formatPercent(avgChurnRate)}</div>
                   <p className="text-xs text-muted-foreground">
-                    <span className="text-red-500">+0.5%</span> from last month
+                    {companies.length > 0 && (
+                      <span className="text-red-500">+0.5%</span>
+                    )} from last month
                   </p>
                 </CardContent>
               </Card>
@@ -434,7 +379,9 @@ const AnalyticsPage = () => {
                 <CardContent>
                   <div className="text-2xl font-bold">{formatPercent(avgGrowthRate)}</div>
                   <p className="text-xs text-muted-foreground">
-                    <span className="text-green-600">+3.2%</span> from last month
+                    {companies.length > 0 && (
+                      <span className="text-green-600">+3.2%</span>
+                    )} from last month
                   </p>
                 </CardContent>
               </Card>
@@ -452,7 +399,7 @@ const AnalyticsPage = () => {
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={chartData}>
                         <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="month" />
+                        <XAxis dataKey={timeRange === 'monthly' ? 'month' : 'year'} />
                         <YAxis />
                         <Tooltip />
                         <Area type="monotone" dataKey="revenue" stroke="#8884d8" fill="#8884d8" />
@@ -471,7 +418,7 @@ const AnalyticsPage = () => {
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={chartData}>
                         <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="month" />
+                        <XAxis dataKey={timeRange === 'monthly' ? 'month' : 'year'} />
                         <YAxis />
                         <Tooltip />
                         <Legend />
@@ -583,17 +530,17 @@ const AnalyticsPage = () => {
         );
       case 'revenue':
         // Calculate revenue metrics
-        const totalArr = mockCompanies.reduce((sum, company) => sum + (company.arr || 0), 0);
-        const totalAdvanceFees = mockCompanies.reduce(
+        const totalArr = companies.reduce((sum, company) => sum + (company.arr || 0), 0);
+        const totalAdvanceFees = companies.reduce(
           (sum, company) => sum + (company.advanceProgram?.withdrawalFees || 0), 0
         );
-        const totalWalletFees = mockCompanies.reduce(
+        const totalWalletFees = companies.reduce(
           (sum, company) => sum + (company.advanceProgram?.companyWallet?.transactionFee || 0), 0
         );
         const totalRevenue = totalMrr + totalAdvanceFees + totalWalletFees;
         
         // Get companies with expiring subscriptions (within 30 days)
-        const expiringSoon = mockCompanies.filter(company => {
+        const expiringSoon = companies.filter(company => {
           return company.nextBillingDate && 
                  company.nextBillingDate <= addDays(new Date(), 30) &&
                  company.status === 'active';
@@ -605,25 +552,6 @@ const AnalyticsPage = () => {
           { name: 'Advance Fees (6%)', value: totalAdvanceFees, color: '#00C49F' },
           { name: 'Wallet Fees (KSH 100)', value: totalWalletFees, color: '#FFBB28' },
         ];
-
-        // Monthly revenue data for area chart
-        const monthlyRevenueData = Array.from({ length: 12 }, (_, i) => {
-          const date = new Date();
-          date.setMonth(date.getMonth() - (11 - i));
-          const month = format(date, 'MMM yyyy');
-          
-          // Simulate monthly revenue with some variance
-          const baseRevenue = totalMrr / 12;
-          const variance = 0.2 * baseRevenue * (Math.random() - 0.5);
-          const monthlyRevenue = Math.max(0, baseRevenue + variance);
-          
-          return {
-            month,
-            revenue: Math.round(monthlyRevenue),
-            advanceFees: Math.round((totalAdvanceFees / 12) * (0.8 + Math.random() * 0.4)),
-            walletFees: Math.round((totalWalletFees / 12) * (0.8 + Math.random() * 0.4))
-          };
-        });
 
         return (
           <div className="space-y-6">
@@ -637,7 +565,9 @@ const AnalyticsPage = () => {
                 <CardContent>
                   <div className="text-2xl font-bold">{formatCurrency(totalMrr)}</div>
                   <p className="text-xs text-muted-foreground">
-                    <span className="text-green-600">+12.5%</span> from last month
+                    {companies.length > 0 && (
+                      <span className="text-green-600">+12.5%</span>
+                    )} from last month
                   </p>
                 </CardContent>
               </Card>
@@ -649,7 +579,9 @@ const AnalyticsPage = () => {
                 <CardContent>
                   <div className="text-2xl font-bold">{formatCurrency(totalArr)}</div>
                   <p className="text-xs text-muted-foreground">
-                    <span className="text-green-600">+8.2%</span> from last year
+                    {companies.length > 0 && (
+                      <span className="text-green-600">+8.2%</span>
+                    )} from last year
                   </p>
                 </CardContent>
               </Card>
@@ -673,7 +605,9 @@ const AnalyticsPage = () => {
                 <CardContent>
                   <div className="text-2xl font-bold">{formatCurrency(totalRevenue)}</div>
                   <p className="text-xs text-muted-foreground">
-                    <span className="text-green-600">+15.3%</span> from last month
+                    {companies.length > 0 && (
+                      <span className="text-green-600">+15.3%</span>
+                    )} from last month
                   </p>
                 </CardContent>
               </Card>
@@ -688,7 +622,7 @@ const AnalyticsPage = () => {
                 </CardHeader>
                 <CardContent className="h-80">
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={monthlyRevenueData}>
+                    <AreaChart data={monthlyData}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="month" />
                       <YAxis />
@@ -822,7 +756,18 @@ const AnalyticsPage = () => {
           </p>
         </div>
         <div className="flex items-center space-x-2 mt-4 md:mt-0">
-          <Select value={dateRange} onValueChange={setDateRange}>
+          <Select 
+            value={dateRange}
+            onValueChange={(value) => {
+              if (isTimeRange(value)) {
+                setDateRange(value);
+              } else {
+                console.warn(`Invalid TimeRange value: ${value}`);
+                // Optionally set a default value:
+                // setDateRange('last12months');
+              }
+            }}
+          >
             <SelectTrigger className="w-[180px]">
               <Calendar className="mr-2 h-4 w-4" />
               <SelectValue placeholder="Select date range" />
@@ -975,7 +920,7 @@ const AnalyticsPage = () => {
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={companyActivity}
+                    data={industryData}
                     cx="50%"
                     cy="50%"
                     labelLine={false}
@@ -984,7 +929,7 @@ const AnalyticsPage = () => {
                     dataKey="value"
                     label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                   >
-                    {industryData.map((industry: IndustryData, index: number) => (
+                    {industryData.map((industry, index) => (
                       <Cell key={`cell-${index}`} fill={industry.color} />
                     ))}
                   </Pie>
@@ -1012,8 +957,8 @@ const AnalyticsPage = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Companies</SelectItem>
-                  {mockCompanies.map(company => (
-                    <SelectItem key={company.id} value={company.id.toString()}>
+                  {companies.map(company => (
+                    <SelectItem key={company.id} value={company.id}>
                       {company.name}
                     </SelectItem>
                   ))}

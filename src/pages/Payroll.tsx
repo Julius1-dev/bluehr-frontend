@@ -18,6 +18,7 @@ import {
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { TaxCalculator } from '@/components/payroll/TaxCalculator';
 import { toast } from 'sonner';
+import { BACKEND_URL } from '@/lib/config';
 
 interface PayrollData {
   currentPay: {
@@ -74,7 +75,7 @@ export function Payroll() {
           return;
         }
 
-        const response = await fetch('http://localhost:4000/employee/payroll/data', {
+        const response = await fetch(`${BACKEND_URL}/employee/payroll/data`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -116,7 +117,7 @@ export function Payroll() {
       const currentYear = currentDate.getFullYear();
 
       const response = await fetch(
-        `http://localhost:4000/employee/payroll/payslip/${currentMonth}/${currentYear}`,
+        `${BACKEND_URL}/employee/payroll/payslip/${currentMonth}/${currentYear}`,
         {
           headers: {
             'Authorization': `Bearer ${token}`

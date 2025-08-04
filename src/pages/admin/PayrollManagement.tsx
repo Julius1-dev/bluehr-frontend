@@ -22,7 +22,12 @@ import { AdvanceManagement } from '@/components/payroll/AdvanceManagement';
 import { PayrollProcessor } from '@/components/payroll/PayrollProcessor';
 import { MasterPayroll } from '@/components/payroll/MasterPayroll';
 import { calculatePAYE, calculateSHIF, calculateNSSF, calculateHousingLevy } from '@/components/payroll/payrollCalculations';
-import PayrollExemptionsModal from '@/components/payroll/PayrollExemptionsModal';
+import { BACKEND_URL } from '@/lib/config';
+import { PayrollSummaryWidget } from '@/components/dashboard/PayrollSummaryWidget';
+
+
+
+
 
 // Mock utility function for formatting currency
 const formatCurrency = (amount: number): string => {
@@ -44,7 +49,6 @@ const formatDate = (date: Date): string => {
 
 export function PayrollManagement() {
   const [activeTab, setActiveTab] = useState('overview');
-  const [exemptionsModalOpen, setExemptionsModalOpen] = useState(false);
   
   // Advance settings state
   const [advanceSettings, setAdvanceSettings] = useState({
@@ -111,7 +115,7 @@ export function PayrollManagement() {
         console.log('Fetching wallet data for company ID:', companyId);
         
         // Fetch wallet data from backend using company admin endpoint
-        const response = await fetch(`http://localhost:4000/company-admin/wallet`, {
+        const response = await fetch(`${BACKEND_URL}/company-admin/wallet`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -185,13 +189,13 @@ export function PayrollManagement() {
         const token = localStorage.getItem('token');
         if (!token) return;
         // Fetch departments
-        const deptRes = await fetch('http://localhost:4000/company-admin/departments', {
+        const deptRes = await fetch(`${BACKEND_URL}/company-admin/departments`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const deptData = await deptRes.json();
         setDepartments(deptData);
         // Fetch employees
-        const empRes = await fetch('http://localhost:4000/company-admin/users', {
+        const empRes = await fetch(`${BACKEND_URL}/company-admin/users`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const empData = await empRes.json();
@@ -346,8 +350,10 @@ export function PayrollManagement() {
 
         {/* Tab content with our components */}
         <TabsContent value="overview" className="space-y-4">
+          <PayrollSummaryWidget />
           <PayrollScheduler payrollData={payrollSummary} />
         </TabsContent>
+
         
         <TabsContent value="employees" className="space-y-4">
           <PayrollEmployeeList 
@@ -365,13 +371,7 @@ export function PayrollManagement() {
         </TabsContent>
         
         <TabsContent value="master" className="space-y-4">
-          <div className="flex justify-end mb-4">
-            <Button variant="outline" onClick={() => setExemptionsModalOpen(true)}>
-              Manage Exemptions
-            </Button>
-          </div>
           <MasterPayroll />
-          <PayrollExemptionsModal open={exemptionsModalOpen} onClose={() => setExemptionsModalOpen(false)} />
         </TabsContent>
         
         <TabsContent value="wallet" className="space-y-4">

@@ -4,9 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { BACKEND_URL } from '@/lib/config';
 
-const COMPANIES_API = 'http://localhost:4000/super-admin/companies';
-const PLANS_API = 'http://localhost:4000/super-admin/plans';
+const COMPANIES_API = `${BACKEND_URL}/super-admin/companies`;
+const PLANS_API = `${BACKEND_URL}/super-admin/plans`;
 
 export default function AmendPlan() {
   const { id } = useParams<{ id: string }>();

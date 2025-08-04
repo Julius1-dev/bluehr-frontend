@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { BACKEND_URL } from '@/lib/config';
 
 export function AddCompanyPage() {
   const navigate = useNavigate();
@@ -48,7 +49,7 @@ export function AddCompanyPage() {
     setError('');
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:4000/super-admin/companies', {
+      const response = await fetch(`${BACKEND_URL}/super-admin/companies`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

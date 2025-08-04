@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { BACKEND_URL } from '@/lib/config';
 
 type UserRole = 'employee' | 'admin' | 'superadmin';
 
@@ -34,7 +35,7 @@ export function SignIn({ onLogin }: SignInProps) {
     setError('');
     try {
       // Use unified login endpoint
-      const response = await fetch('http://localhost:4000/auth/login', {
+      const response = await fetch(`${BACKEND_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -75,7 +76,7 @@ export function SignIn({ onLogin }: SignInProps) {
     setTwoFAError('');
     setTwoFALoading(true);
     try {
-      const res = await fetch('http://localhost:4000/auth/2fa/verify', {
+      const res = await fetch(`${BACKEND_URL}/auth/2fa/verify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: twoFAUserId, code: twoFACode })

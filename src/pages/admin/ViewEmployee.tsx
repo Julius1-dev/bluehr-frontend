@@ -4,9 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
+import { BACKEND_URL } from '@/lib/config';
 
-const USER_API = 'http://localhost:4000/company-admin/users';
-const DEPARTMENTS_API = 'http://localhost:4000/company-admin/departments';
+const USER_API = `${BACKEND_URL}/company-admin/users`;
+const DEPARTMENTS_API = `${BACKEND_URL}/company-admin/departments`;
 
 export default function ViewEmployee() {
   const { id } = useParams<{ id: string }>();
@@ -122,4 +123,4 @@ export default function ViewEmployee() {
       </Card>
     </div>
   );
-} 
+}

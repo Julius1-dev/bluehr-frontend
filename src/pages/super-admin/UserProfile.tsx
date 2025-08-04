@@ -5,8 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Mail, Phone, Building, Clock, User, Shield, Calendar, MapPin, Hash, FileText } from 'lucide-react';
+import { BACKEND_URL } from '@/lib/config';
 
-const API_URL = 'http://localhost:4000/super-admin/users';
+const API_URL = `${BACKEND_URL}/super-admin/users`;
 
 export function UserProfile() {
   const { id } = useParams<{ id: string }>();

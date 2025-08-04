@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Search, Filter, Download, MoreHorizontal, ArrowUpDown, CheckCircle2, XCircle, Clock, AlertCircle, Eye, FileText } from 'lucide-react';
+import { BACKEND_URL } from '@/lib/config';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,7 +37,7 @@ interface Payment {
   plan_price: number;
 }
 
-const PAYMENTS_API = 'http://localhost:4000/super-admin/payments';
+const PAYMENTS_API = `${BACKEND_URL}/super-admin/payments`;
 
 const PaymentsPage = () => {
   const [searchQuery, setSearchQuery] = useState('');

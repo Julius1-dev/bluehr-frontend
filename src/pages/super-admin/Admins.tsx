@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { BACKEND_URL } from '@/lib/config';
 import { 
   Search, 
   Filter, 
@@ -25,7 +26,7 @@ import { format } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 
-const API_URL = 'http://localhost:4000/super-admin/admins';
+const API_URL = `${BACKEND_URL}/super-admin/admins`;
 
 type Admin = {
   id: number;
@@ -102,14 +103,21 @@ export default function Admins() {
 
   // Filter and sort admins
   const filteredAdmins = admins.filter(admin => {
+    const name = admin.name || '';
+    const email = admin.email || '';
+    const company = admin.company || '';
+
     const matchesSearch = 
-      admin.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      admin.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (admin.company || '').toLowerCase().includes(searchTerm.toLowerCase());
+      name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      company.toLowerCase().includes(searchTerm.toLowerCase());
+
     const matchesStatus = statusFilter === 'all' || admin.status === statusFilter;
-    const matchesRole = roleFilter === 'all' || admin.role.toLowerCase().includes(roleFilter.toLowerCase());
+    const matchesRole = roleFilter === 'all' || (admin.role || '').toLowerCase().includes(roleFilter.toLowerCase());
+
     return matchesSearch && matchesStatus && matchesRole;
   });
+
 
   // Sort admins
   const sortedAdmins = [...filteredAdmins].sort((a, b) => {

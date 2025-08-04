@@ -3,6 +3,7 @@ import { Card, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
 import { CalendarClock, Clock, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { BACKEND_URL } from '@/lib/config';
 
 export function WelcomeCard() {
   const navigate = useNavigate();
@@ -34,7 +35,7 @@ export function WelcomeCard() {
     if (!token) return;
 
     // Fetch employee profile to get the real name
-    fetch('http://localhost:4000/employee/auth/profile', {
+    fetch(`${BACKEND_URL}/employee/auth/profile`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
       .then(res => res.json())
@@ -49,7 +50,7 @@ export function WelcomeCard() {
       .catch(() => setEmployeeName('Employee'));
 
     // Fetch next pay date
-    fetch('http://localhost:4000/employee/payroll/data', {
+    fetch(`${BACKEND_URL}/employee/payroll/data`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
       .then(res => res.json())
@@ -63,7 +64,7 @@ export function WelcomeCard() {
       .catch(() => setNextPayDate('Not Set'));
 
     // Fetch leave balance (annual leave)
-    fetch('http://localhost:4000/employee/leave/balances', {
+    fetch(`${BACKEND_URL}/employee/leave/balances`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
       .then(res => res.json())
@@ -83,13 +84,13 @@ export function WelcomeCard() {
       .catch(() => setLeaveBalance('N/A'));
 
     // Fetch important notices (announcements)
-    fetch('http://localhost:4000/employee/auth/profile', {
+    fetch(`${BACKEND_URL}/employee/auth/profile`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
       .then(res => res.json())
       .then(profileData => {
         if (profileData.success && profileData.data && profileData.data.companyId) {
-          fetch(`http://localhost:4000/company-admin/announcements?companyId=${profileData.data.companyId}`, {
+          fetch(`${BACKEND_URL}/company-admin/announcements?companyId=${profileData.data.companyId}`, {
             headers: { 'Authorization': `Bearer ${token}` }
           })
             .then(res => res.json())

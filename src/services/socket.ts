@@ -1,6 +1,8 @@
 import { io, Socket } from 'socket.io-client';
 
-const SOCKET_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+import { BACKEND_URL } from '../lib/config';
+
+const SOCKET_URL = BACKEND_URL;
 
 let socket: Socket | null = null;
 
