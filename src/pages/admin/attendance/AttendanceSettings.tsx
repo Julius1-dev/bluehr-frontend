@@ -204,15 +204,13 @@ export default function AttendanceSettings() {
       let response;
 
       if (editingWorkShift) {
-        await fetch(`${BACKEND_URL}/company-admin/attendance/work-shifts/${editingWorkShift.id}`, {
-        response = await fetch(`http://localhost:4000/company-admin/attendance/work-shifts/${editingWorkShift.id}`, {
+        response = await fetch(`${BACKEND_URL}/company-admin/attendance/work-shifts/${editingWorkShift.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify(payload)
         });
       } else {
-        await fetch(`${BACKEND_URL}/company-admin/attendance/work-shifts`, {
-        response = await fetch('http://localhost:4000/company-admin/attendance/work-shifts', {
+        response = await fetch(`${BACKEND_URL}/company-admin/attendance/work-shifts`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify(payload)
@@ -230,10 +228,6 @@ export default function AttendanceSettings() {
       setEditingWorkShift(null);
       // Refresh work shifts
       const wsRes = await fetch(`${BACKEND_URL}/company-admin/attendance/work-shifts`, { headers: { 'Authorization': `Bearer ${token}` } });
-
-      const wsRes = await fetch('http://localhost:4000/company-admin/attendance/work-shifts', {
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
       const wsData = await wsRes.json();
 
       if (Array.isArray(wsData)) {
@@ -271,7 +265,6 @@ export default function AttendanceSettings() {
       });
       // Refresh work shifts
       const wsRes = await fetch(`${BACKEND_URL}/company-admin/attendance/work-shifts`, { headers: { 'Authorization': `Bearer ${token}` } });
-      const wsRes = await fetch('http://localhost:4000/company-admin/attendance/work-shifts', { headers: { 'Authorization': `Bearer ${token}` } });
       const wsData = await wsRes.json();
       if (Array.isArray(wsData)) {
         setWorkShifts(wsData.map((ws: any) => ({
