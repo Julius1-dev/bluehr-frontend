@@ -9,8 +9,9 @@ import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { BACKEND_URL } from '@/lib/config';
 
-const API_URL = 'http://localhost:4000/super-admin/users';
+const API_URL = `${BACKEND_URL}/super-admin/users`;
 
 export function UsersManagement() {
   const navigate = useNavigate();

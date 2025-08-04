@@ -4,6 +4,7 @@ import { Search, Plus, Clock, Mail, Phone, Send, Paperclip, X } from 'lucide-rea
 import { TicketApi, getUserFromToken } from '@/services/ticketApi';
 import { connectSocket, joinTicketRoom, leaveTicketRoom } from '@/services/socket';
 import { PerformanceApi } from '@/services/performanceApi';
+import { BACKEND_URL } from '@/lib/config';
 
 // UI Components
 import { Button } from '@/components/ui/button';
@@ -148,7 +149,7 @@ const HelpAndSupport = ({ dashboardRole }: HelpAndSupportProps) => {
     }
   }, [dashboardRole, userId]);
 
-  const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+  const API_BASE = BACKEND_URL;
   // Fetch super admin ID on mount
   useEffect(() => {
     fetch(`${API_BASE}/super-admin/users/public/super-admin`)

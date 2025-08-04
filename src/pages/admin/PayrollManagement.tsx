@@ -22,7 +22,6 @@ import { AdvanceManagement } from '@/components/payroll/AdvanceManagement';
 import { PayrollProcessor } from '@/components/payroll/PayrollProcessor';
 import { MasterPayroll } from '@/components/payroll/MasterPayroll';
 import { calculatePAYE, calculateSHIF, calculateNSSF, calculateHousingLevy } from '@/components/payroll/payrollCalculations';
-import PayrollExemptionsModal from '@/components/payroll/PayrollExemptionsModal';
 import { BACKEND_URL } from '@/lib/config';
 import { PayrollSummaryWidget } from '@/components/dashboard/PayrollSummaryWidget';
 
@@ -50,7 +49,6 @@ const formatDate = (date: Date): string => {
 
 export function PayrollManagement() {
   const [activeTab, setActiveTab] = useState('overview');
-  const [exemptionsModalOpen, setExemptionsModalOpen] = useState(false);
   
   // Advance settings state
   const [advanceSettings, setAdvanceSettings] = useState({
@@ -373,13 +371,7 @@ export function PayrollManagement() {
         </TabsContent>
         
         <TabsContent value="master" className="space-y-4">
-          <div className="flex justify-end mb-4">
-            <Button variant="outline" onClick={() => setExemptionsModalOpen(true)}>
-              Manage Exemptions
-            </Button>
-          </div>
           <MasterPayroll />
-          <PayrollExemptionsModal open={exemptionsModalOpen} onClose={() => setExemptionsModalOpen(false)} />
         </TabsContent>
         
         <TabsContent value="wallet" className="space-y-4">

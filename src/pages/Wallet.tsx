@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Wallet, CreditCard, ArrowUpRight, ArrowDownRight, Ban as Bank, Receipt, PiggyBank, Banknote, ArrowRight, Phone, Loader2 } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/lib/utils';
+import { BACKEND_URL } from '@/lib/config';
 import { useNavigate } from 'react-router-dom';
 import { LinkBankAccountDialog } from '@/components/wallet/LinkBankAccountDialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
@@ -55,7 +56,7 @@ export function WalletPage() {
           return;
         }
 
-        const response = await fetch('http://localhost:4000/employee/advances/data', {
+        const response = await fetch(`${BACKEND_URL}/employee/advances/data`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }

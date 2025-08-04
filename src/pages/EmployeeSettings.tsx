@@ -3,6 +3,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { BACKEND_URL } from '@/lib/config';
 import { 
   LogOut,
   Mail,
@@ -95,7 +96,7 @@ export function EmployeeSettings({ onLogout }: EmployeeSettingsProps) {
         const token = localStorage.getItem('token');
         if (!token) throw new Error('No authentication token found');
         
-        const res = await fetch('http://localhost:4000/employee/auth/profile', {
+        const res = await fetch(`${BACKEND_URL}/employee/auth/profile`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         
@@ -133,7 +134,7 @@ export function EmployeeSettings({ onLogout }: EmployeeSettingsProps) {
     
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:4000/employee/auth/change-password', {
+      const res = await fetch(`${BACKEND_URL}/employee/auth/change-password`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -178,7 +179,7 @@ export function EmployeeSettings({ onLogout }: EmployeeSettingsProps) {
     setOtpLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:4000/employee/auth/2fa/setup', {
+      const res = await fetch(`${BACKEND_URL}/employee/auth/2fa/setup`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -201,7 +202,7 @@ export function EmployeeSettings({ onLogout }: EmployeeSettingsProps) {
     setOtpLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:4000/employee/auth/2fa/enable', {
+      const res = await fetch(`${BACKEND_URL}/employee/auth/2fa/enable`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -231,7 +232,7 @@ export function EmployeeSettings({ onLogout }: EmployeeSettingsProps) {
     setOtpLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:4000/employee/auth/2fa/disable', {
+      const res = await fetch(`${BACKEND_URL}/employee/auth/2fa/disable`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });

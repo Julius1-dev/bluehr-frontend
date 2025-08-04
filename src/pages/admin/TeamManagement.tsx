@@ -41,8 +41,8 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { BACKEND_URL } from '@/lib/config';
 
-const API_URL = 'http://localhost:4000/company-admin/users';
-const DEPARTMENTS_API = 'http://localhost:4000/company-admin/departments';
+const API_URL = `${BACKEND_URL}/company-admin/users`;
+const DEPARTMENTS_API = `${BACKEND_URL}/company-admin/departments`;
 
 // Replace hardcoded backend URL with BACKEND_URL
 const TEAM_API = `${BACKEND_URL}/company-admin/team`;

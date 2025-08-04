@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import { BACKEND_URL } from '@/lib/config';
 
 interface BankTransferRequest {
   id: string;
@@ -27,7 +28,7 @@ interface BankTransferRequest {
   processed_by_email?: string;
 }
 
-const WALLETS_API = 'http://localhost:4000/super-admin/wallets';
+const WALLETS_API = `${BACKEND_URL}/super-admin/wallets`;
 
 export default function WalletManagement() {
   const [statusFilter, setStatusFilter] = useState('all');

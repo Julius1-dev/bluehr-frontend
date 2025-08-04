@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Plus, Trash2, Edit2, Save, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { BACKEND_URL } from '@/lib/config';
 
 type PlanType = 'monthly' | 'yearly';
 
@@ -21,7 +22,7 @@ interface PricingPlan {
   updatedAt: Date;
 }
 
-const API_URL = 'http://localhost:4000/super-admin/plans';
+const API_URL = `${BACKEND_URL}/super-admin/plans`;
 
 const PricingPlansPage = () => {
   const [plans, setPlans] = useState<PricingPlan[]>([]);

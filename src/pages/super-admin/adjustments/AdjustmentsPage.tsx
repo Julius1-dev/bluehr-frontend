@@ -6,6 +6,7 @@ import { Search, Upload, Download, Plus, ChevronRight } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
+import { BACKEND_URL } from '@/lib/config';
 
 // Mock data for companies
 
@@ -58,7 +59,7 @@ export default function AdjustmentsPage() {
       setLoadingCompanies(true);
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch('http://localhost:4000/super-admin/companies', {
+        const res = await fetch(`${BACKEND_URL}/super-admin/companies`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (!res.ok) throw new Error('Failed to fetch companies');
@@ -120,7 +121,7 @@ export default function AdjustmentsPage() {
       leaveTypes.map(async (lt: any) => {
         const adjustedDays = editingLeaveDays[lt.name];
         if (adjustedDays !== undefined) {
-          await fetch(`http://localhost:4000/super-admin/users/company/${selectedCompany}/leave-adjustment`, {
+          await fetch(`${BACKEND_URL}/super-admin/users/company/${selectedCompany}/leave-adjustment`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -170,7 +171,7 @@ export default function AdjustmentsPage() {
       try {
         const token = localStorage.getItem('token');
         // Fetch employees (all users) for the company
-        const res = await fetch(`http://localhost:4000/super-admin/users/company/${selectedCompany}/employees`, {
+        const res = await fetch(`${BACKEND_URL}/super-admin/users/company/${selectedCompany}/employees`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (!res.ok) throw new Error('Failed to fetch employees');
@@ -201,7 +202,7 @@ export default function AdjustmentsPage() {
       try {
         const token = localStorage.getItem('token');
         // Fetch leave types for the selected company using the new super admin endpoint
-        const res = await fetch(`http://localhost:4000/super-admin/users/company/${selectedCompany}/leave-types`, {
+        const res = await fetch(`${BACKEND_URL}/super-admin/users/company/${selectedCompany}/leave-types`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (!res.ok) throw new Error('Failed to fetch leave types');
