@@ -119,14 +119,9 @@ export function MasterPayroll() {
             ))}
           </TableBody>
         </Table>
-        <div className="mt-4 flex justify-between items-center">
-          <Button onClick={handleProcessPayroll} disabled={processing}>
-            {processing ? 'Processing...' : 'Process Master Payroll'}
-          </Button>
-          <Button variant="outline">
-            Manage Exceptions
-          </Button>
-        </div>
+        <Button className="mt-4" onClick={handleProcessPayroll} disabled={processing}>
+          {processing ? 'Processing...' : 'Process Master Payroll'}
+        </Button>
         {result && result.success && (
           <div className="mt-4 text-green-600">Payroll processed successfully!</div>
         )}
