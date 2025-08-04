@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { BACKEND_URL } from '@/lib/config';
 
 interface PayrollExemptionsModalProps {
   open: boolean;
@@ -30,7 +31,7 @@ export default function PayrollExemptionsModal({ open, onClose }: PayrollExempti
       try {
         const token = localStorage.getItem('token');
         const params = new URLSearchParams({ month: String(month), year: String(year) });
-        const res = await fetch(`http://localhost:4000/company-admin/payroll/attendance-deductions?${params.toString()}`,
+        const res = await fetch(`${BACKEND_URL}/company-admin/payroll/attendance-deductions?${params.toString()}`,
           { headers: { 'Authorization': `Bearer ${token}` } });
         const data = await res.json();
         setRecords(Array.isArray(data) ? data : []);
@@ -47,7 +48,7 @@ export default function PayrollExemptionsModal({ open, onClose }: PayrollExempti
     if (!reason) return;
     try {
       const token = localStorage.getItem('token');
-      await fetch(`http://localhost:4000/company-admin/master-payroll/attendance-records/${recordId}/exempt`, {
+      await fetch(`${BACKEND_URL}/company-admin/master-payroll/attendance-records/${recordId}/exempt`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -58,7 +59,7 @@ export default function PayrollExemptionsModal({ open, onClose }: PayrollExempti
       // Refresh records from backend after exemption
       setLoading(true);
       const params = new URLSearchParams({ month: String(month), year: String(year) });
-      const res = await fetch(`http://localhost:4000/company-admin/payroll/attendance-deductions?${params.toString()}`,
+      const res = await fetch(`${BACKEND_URL}/company-admin/payroll/attendance-deductions?${params.toString()}`,
         { headers: { 'Authorization': `Bearer ${token}` } });
       const data = await res.json();
       setRecords(Array.isArray(data) ? data : []);

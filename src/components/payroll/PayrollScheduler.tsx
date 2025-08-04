@@ -19,6 +19,7 @@ import { EditPayrollModal } from './EditPayrollModal';
 import { jsPDF } from 'jspdf';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { BACKEND_URL } from '@/lib/config';
 
 // Mock utility function for formatting currency
 const formatCurrency = (amount: number): string => {
@@ -103,7 +104,7 @@ export function PayrollScheduler({ payrollData }: PayrollSchedulerProps) {
       // Fetch scheduled payrolls
       try {
         const scheduledResponse = await fetch(
-          `http://localhost:4000/company-admin/payroll/scheduled?paymentFrequency=${selectedFrequencyFilter}`,
+          `${BACKEND_URL}/company-admin/payroll/scheduled?paymentFrequency=${selectedFrequencyFilter}`,
           {
             headers: { 'Authorization': `Bearer ${token}` }
           }
@@ -128,7 +129,7 @@ export function PayrollScheduler({ payrollData }: PayrollSchedulerProps) {
       // Fetch payroll history
       try {
         const historyResponse = await fetch(
-          `http://localhost:4000/company-admin/payroll/history?paymentFrequency=${selectedFrequencyFilter}`,
+          `${BACKEND_URL}/company-admin/payroll/history?paymentFrequency=${selectedFrequencyFilter}`,
           {
             headers: { 'Authorization': `Bearer ${token}` }
           }
@@ -160,13 +161,13 @@ export function PayrollScheduler({ payrollData }: PayrollSchedulerProps) {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('No authentication token found');
       // Fetch departments
-      const deptRes = await fetch('http://localhost:4000/company-admin/departments', {
+      const deptRes = await fetch(`${BACKEND_URL}/company-admin/departments`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const deptData = await deptRes.json();
       setDepartments(deptData);
       // Fetch employees
-      const empRes = await fetch('http://localhost:4000/company-admin/users', {
+      const empRes = await fetch(`${BACKEND_URL}/company-admin/users`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const empData = await empRes.json();
@@ -184,7 +185,7 @@ export function PayrollScheduler({ payrollData }: PayrollSchedulerProps) {
     try {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('No authentication token found');
-      const res = await fetch('http://localhost:4000/company-admin/payroll/history', {
+      const res = await fetch(`${BACKEND_URL}/company-admin/payroll/history`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!res.ok) throw new Error('Failed to fetch completed payrolls');
@@ -246,7 +247,7 @@ export function PayrollScheduler({ payrollData }: PayrollSchedulerProps) {
       const token = localStorage.getItem('token');
       if (!token) return;
 
-      const response = await fetch('http://localhost:4000/company-admin/payroll/schedule', {
+      const response = await fetch(`${BACKEND_URL}/company-admin/payroll/schedule`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -284,7 +285,7 @@ export function PayrollScheduler({ payrollData }: PayrollSchedulerProps) {
     try {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('No authentication token found');
-      const res = await fetch(`http://localhost:4000/company-admin/payroll/run-scheduled/${id}`, {
+      const res = await fetch(`${BACKEND_URL}/company-admin/payroll/run-scheduled/${id}`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -312,7 +313,7 @@ export function PayrollScheduler({ payrollData }: PayrollSchedulerProps) {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('No authentication token found');
       // Store payroll data for scheduled run (use the same endpoint as PayrollProcessor)
-      const res = await fetch('http://localhost:4000/company-admin/payroll/store', {
+      const res = await fetch(`${BACKEND_URL}/company-admin/payroll/store`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -341,7 +342,7 @@ export function PayrollScheduler({ payrollData }: PayrollSchedulerProps) {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('No authentication token found');
       // Process payroll (use the same endpoint as PayrollProcessor)
-      const res = await fetch('http://localhost:4000/company-admin/payroll/process', {
+      const res = await fetch(`${BACKEND_URL}/company-admin/payroll/process`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -427,7 +428,7 @@ export function PayrollScheduler({ payrollData }: PayrollSchedulerProps) {
     try {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('No authentication token found');
-      const res = await fetch(`http://localhost:4000/company-admin/payroll/details/${payrollId}`, {
+      const res = await fetch(`${BACKEND_URL}/company-admin/payroll/details/${payrollId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!res.ok) throw new Error('Failed to fetch payroll details');
@@ -494,7 +495,7 @@ export function PayrollScheduler({ payrollData }: PayrollSchedulerProps) {
       const token = localStorage.getItem('token');
       if (!token) return;
 
-      const response = await fetch(`http://localhost:4000/company-admin/payroll/scheduled/${id}`, {
+      const response = await fetch(`${BACKEND_URL}/company-admin/payroll/scheduled/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });

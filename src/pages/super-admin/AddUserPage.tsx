@@ -6,8 +6,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { BACKEND_URL } from '@/lib/config';
 
-const API_URL = 'http://localhost:4000/super-admin';
+const API_URL = `${BACKEND_URL}/super-admin`;
 
 export function AddUserPage() {
   const navigate = useNavigate();

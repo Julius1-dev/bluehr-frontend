@@ -12,6 +12,7 @@ import {
   Filter,
   ArrowRight
 } from 'lucide-react';
+import { BACKEND_URL } from '@/lib/config';
 
 export function Team() {
   // State
@@ -33,7 +34,7 @@ export function Team() {
       setError(null);
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch('http://localhost:4000/employee/auth/departments-with-counts', {
+        const res = await fetch(`${BACKEND_URL}/employee/auth/departments-with-counts`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await res.json();
@@ -66,7 +67,7 @@ export function Team() {
       setError(null);
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch('http://localhost:4000/employee/auth/team-members', {
+        const res = await fetch(`${BACKEND_URL}/employee/auth/team-members`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await res.json();
@@ -99,7 +100,7 @@ export function Team() {
       setError(null);
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch('http://localhost:4000/employee/auth/announcements', {
+        const res = await fetch(`${BACKEND_URL}/employee/auth/announcements`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await res.json();
@@ -137,7 +138,7 @@ export function Team() {
       setError(null);
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch(`http://localhost:4000/employee/auth/department-employees?departmentId=${selectedDept.id}`, {
+        const res = await fetch(`${BACKEND_URL}/employee/auth/department-employees?departmentId=${selectedDept.id}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await res.json();

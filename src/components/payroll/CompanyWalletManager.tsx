@@ -12,6 +12,7 @@ import {
   Download
 } from 'lucide-react';
 import { calculatePAYE, calculateSHIF, calculateNSSF, calculateHousingLevy } from './payrollCalculations';
+import { BACKEND_URL } from '@/lib/config';
 
 // Mock utility function for formatting currency
 const formatCurrency = (amount: number): string => {
@@ -66,7 +67,7 @@ export function CompanyWalletManager({ walletData }: CompanyWalletManagerProps) 
       try {
         const token = localStorage.getItem('token');
         if (!token) throw new Error('No authentication token found');
-        const response = await fetch('http://localhost:4000/company-admin/wallet/transactions', {
+        const response = await fetch(`${BACKEND_URL}/company-admin/wallet/transactions`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (!response.ok) throw new Error('Failed to fetch transactions');
@@ -95,7 +96,7 @@ export function CompanyWalletManager({ walletData }: CompanyWalletManagerProps) 
         const token = localStorage.getItem('token');
         if (!token) throw new Error('No authentication token found');
         // Fetch employees
-        const empResponse = await fetch('http://localhost:4000/company-admin/users', {
+        const empResponse = await fetch(`${BACKEND_URL}/company-admin/users`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (!empResponse.ok) throw new Error('Failed to fetch employees');
@@ -185,7 +186,7 @@ export function CompanyWalletManager({ walletData }: CompanyWalletManagerProps) 
         }
         
         // Send bank transfer request to backend
-        const response = await fetch('http://localhost:4000/super-admin/wallets/bank-transfers', {
+        const response = await fetch(`${BACKEND_URL}/super-admin/wallets/bank-transfers`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -235,7 +236,52 @@ export function CompanyWalletManager({ walletData }: CompanyWalletManagerProps) 
       }
     } else {
       // M-Pesa integration would go here
-      alert(`Initiating M-Pesa payment of ${amount} KES to phone number ${phoneNumber}`);
+      try {
+        setIsSubmitting(true);
+        setRequestStatus(null);
+
+        const token = localStorage.getItem('token');
+        if (!token) throw new Error('Authentication token not found');
+
+        const response = await fetch('http://localhost:4000/company-admin/mpesa/deposit', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            amount: parseFloat(amount),
+            phone: phoneNumber
+          })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.message || 'M-Pesa payment failed');
+        }
+
+        setRequestStatus({
+          success: true,
+          message: 'M-Pesa STK push sent. Complete the payment on your phone.'
+        });
+
+        setTimeout(() => {
+          setShowAddFundsModal(false);
+          setAmount('');
+          setPhoneNumber('');
+          setRequestStatus(null);
+        }, 5000);
+
+      } catch (error) {
+        console.error('M-Pesa error:', error);
+        setRequestStatus({
+          success: false,
+          message: error instanceof Error ? error.message : 'An error occurred during M-Pesa payment'
+        });
+      } finally {
+        setIsSubmitting(false);
+      }
       
       // Reset form
       setShowAddFundsModal(false);

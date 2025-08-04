@@ -11,7 +11,8 @@ import {
   LogOut,
   Wallet,
   LifeBuoy,
-  UserX
+  UserX,
+  Fingerprint
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Link, useLocation } from 'react-router-dom';
@@ -63,6 +64,12 @@ export function Sidebar() {
       <div className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
         <NavItem icon={<Home className="w-full h-full" />} label="Dashboard" to="/" />
         <NavItem icon={<Clock className="w-full h-full" />} label="Time & Attendance" to="/time-attendance" />
+        {/* Add the Employee Check-In/Out NavItem here */}
+        <NavItem 
+          icon={<Fingerprint className="w-full h-full" />} 
+          label="Check-In/Out" 
+          to="/employee-checkin" 
+        />
         <NavItem icon={<Calendar className="w-full h-full" />} label="Leave" to="/leave" badge={1} />
         <NavItem icon={<CreditCard className="w-full h-full" />} label="Payroll" to="/payroll" />
         <NavItem icon={<Wallet className="w-full h-full" />} label="Advances" to="/wallet" />

@@ -1,6 +1,7 @@
 import axios from 'axios';
+import { BACKEND_URL } from '../lib/config';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+const API_BASE = BACKEND_URL;
 
 function getAuthHeaders() {
   const token = localStorage.getItem('token');
@@ -11,7 +12,7 @@ export const PerformanceApi = {
   // Employee: get own performance
   async getOwnPerformance() {
     const headers = getAuthHeaders();
-    const response = await axios.get(`${API_BASE_URL}/employee/performance`, {
+    const response = await axios.get(`${API_BASE}/employee/performance`, {
       headers,
       withCredentials: true,
     });
@@ -20,7 +21,7 @@ export const PerformanceApi = {
   // Admin: get any employee's performance
   async getPerformance(employeeId) {
     const headers = getAuthHeaders();
-    const response = await axios.get(`${API_BASE_URL}/company-admin/performance/${employeeId}`, {
+    const response = await axios.get(`${API_BASE}/company-admin/performance/${employeeId}`, {
       headers,
       withCredentials: true,
     });
@@ -29,7 +30,7 @@ export const PerformanceApi = {
   // Admin: upsert any employee's performance
   async upsertPerformance(employeeId, data) {
     const headers = getAuthHeaders();
-    const response = await axios.post(`${API_BASE_URL}/company-admin/performance/${employeeId}`, data, {
+    const response = await axios.post(`${API_BASE}/company-admin/performance/${employeeId}`, data, {
       headers,
       withCredentials: true,
     });
@@ -38,7 +39,7 @@ export const PerformanceApi = {
   // Employee: add a new goal with milestones
   async addGoal(goal) {
     const headers = getAuthHeaders();
-    const response = await axios.post(`${API_BASE_URL}/employee/performance/goals`, { goal }, {
+    const response = await axios.post(`${API_BASE}/employee/performance/goals`, { goal }, {
       headers,
       withCredentials: true,
     });
@@ -47,7 +48,7 @@ export const PerformanceApi = {
   // Admin: get all employee goals
   async getAllEmployeeGoals() {
     const headers = getAuthHeaders();
-    const response = await axios.get(`${API_BASE_URL}/company-admin/performance/goals`, {
+    const response = await axios.get(`${API_BASE}/company-admin/performance/goals`, {
       headers,
       withCredentials: true,
     });
@@ -56,7 +57,7 @@ export const PerformanceApi = {
   // Employee: submit milestone progress for approval
   async submitMilestoneForApproval(goalIndex: number, milestoneIndex: number) {
     const headers = getAuthHeaders();
-    const response = await axios.post(`${API_BASE_URL}/employee/performance/milestone/progress`, { goalIndex, milestoneIndex }, {
+    const response = await axios.post(`${API_BASE}/employee/performance/milestone/progress`, { goalIndex, milestoneIndex }, {
       headers,
       withCredentials: true,
     });
@@ -65,7 +66,7 @@ export const PerformanceApi = {
   // Admin: approve a milestone
   async approveMilestone(employeeId: number, goalIndex: number, milestoneIndex: number) {
     const headers = getAuthHeaders();
-    const response = await axios.post(`${API_BASE_URL}/company-admin/performance/milestone/approve`, { employeeId, goalIndex, milestoneIndex }, {
+    const response = await axios.post(`${API_BASE}/company-admin/performance/milestone/approve`, { employeeId, goalIndex, milestoneIndex }, {
       headers,
       withCredentials: true,
     });
@@ -74,7 +75,7 @@ export const PerformanceApi = {
   // Admin: reject a milestone
   async rejectMilestone(employeeId: number, goalIndex: number, milestoneIndex: number, rejectionReason: string) {
     const headers = getAuthHeaders();
-    const response = await axios.post(`${API_BASE_URL}/company-admin/performance/milestone/reject`, { employeeId, goalIndex, milestoneIndex, rejectionReason }, {
+    const response = await axios.post(`${API_BASE}/company-admin/performance/milestone/reject`, { employeeId, goalIndex, milestoneIndex, rejectionReason }, {
       headers,
       withCredentials: true,
     });
@@ -83,7 +84,7 @@ export const PerformanceApi = {
   // Admin: assign a goal to employees/departments
   async assignGoal(data: any) {
     const headers = getAuthHeaders();
-    const response = await axios.post(`${API_BASE_URL}/company-admin/performance/assign-goal`, data, {
+    const response = await axios.post(`${API_BASE}/company-admin/performance/assign-goal`, data, {
       headers,
       withCredentials: true,
     });
@@ -92,7 +93,7 @@ export const PerformanceApi = {
   // Admin: get upcoming reviews
   async getUpcomingReviews() {
     const headers = getAuthHeaders();
-    const response = await axios.get(`${API_BASE_URL}/company-admin/reviews/upcoming`, {
+    const response = await axios.get(`${API_BASE}/company-admin/reviews/upcoming`, {
       headers,
       withCredentials: true,
     });
@@ -101,7 +102,7 @@ export const PerformanceApi = {
   // Admin: schedule a review
   async scheduleReview(data: any) {
     const headers = getAuthHeaders();
-    const response = await axios.post(`${API_BASE_URL}/company-admin/reviews/schedule`, data, {
+    const response = await axios.post(`${API_BASE}/company-admin/reviews/schedule`, data, {
       headers,
       withCredentials: true,
     });
@@ -110,7 +111,7 @@ export const PerformanceApi = {
   // Admin: get review history
   async getReviewHistory() {
     const headers = getAuthHeaders();
-    const response = await axios.get(`${API_BASE_URL}/company-admin/reviews/history`, {
+    const response = await axios.get(`${API_BASE}/company-admin/reviews/history`, {
       headers,
       withCredentials: true,
     });
@@ -119,7 +120,7 @@ export const PerformanceApi = {
   // Admin: get achievements
   async getAchievements() {
     const headers = getAuthHeaders();
-    const response = await axios.get(`${API_BASE_URL}/company-admin/achievements`, {
+    const response = await axios.get(`${API_BASE}/company-admin/achievements`, {
       headers,
       withCredentials: true,
     });
@@ -128,7 +129,7 @@ export const PerformanceApi = {
   // Admin: award an achievement
   async awardAchievement(data: any) {
     const headers = getAuthHeaders();
-    const response = await axios.post(`${API_BASE_URL}/company-admin/achievements/award`, data, {
+    const response = await axios.post(`${API_BASE}/company-admin/achievements/award`, data, {
       headers,
       withCredentials: true,
     });
@@ -137,7 +138,7 @@ export const PerformanceApi = {
   // Admin: get all employees for the company
   async getAllEmployees() {
     const headers = getAuthHeaders();
-    const response = await axios.get(`${API_BASE_URL}/company-admin/users`, {
+    const response = await axios.get(`${API_BASE}/company-admin/users`, {
       headers,
       withCredentials: true,
     });
@@ -146,7 +147,7 @@ export const PerformanceApi = {
   // Admin: get review by ID
   async getReviewById(id: number | string) {
     const headers = getAuthHeaders();
-    const response = await axios.get(`${API_BASE_URL}/company-admin/reviews/${id}`, {
+    const response = await axios.get(`${API_BASE}/company-admin/reviews/${id}`, {
       headers,
       withCredentials: true,
     });
@@ -155,7 +156,7 @@ export const PerformanceApi = {
   // Admin: save review results
   async saveReviewResult(id: number | string, data: any) {
     const headers = getAuthHeaders();
-    const response = await axios.post(`${API_BASE_URL}/company-admin/reviews/${id}/result`, data, {
+    const response = await axios.post(`${API_BASE}/company-admin/reviews/${id}/result`, data, {
       headers,
       withCredentials: true,
     });
@@ -164,7 +165,7 @@ export const PerformanceApi = {
   // Employee: get own completed reviews
   async getOwnReviews() {
     const headers = getAuthHeaders();
-    const response = await axios.get(`${API_BASE_URL}/employee/performance/reviews`, {
+    const response = await axios.get(`${API_BASE}/employee/performance/reviews`, {
       headers,
       withCredentials: true,
     });
@@ -173,7 +174,7 @@ export const PerformanceApi = {
   // Employee: get all employees for the company (for ticket assignment)
   async employeeGetAllEmployees() {
     const headers = getAuthHeaders();
-    const response = await axios.get(`${API_BASE_URL}/employee/tickets/employees`, {
+    const response = await axios.get(`${API_BASE}/employee/tickets/employees`, {
       headers,
       withCredentials: true,
     });

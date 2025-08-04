@@ -6,6 +6,7 @@ import { ArrowLeft, AlertCircle, Banknote, Loader2, AlertTriangle } from 'lucide
 import { formatCurrency } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { BACKEND_URL } from '@/lib/config';
 
 interface AdvanceData {
   totalAdvanceBalance: number;
@@ -51,7 +52,7 @@ export function TransferToBank() {
         }
 
         // Fetch advance data
-        const advanceResponse = await fetch('http://localhost:4000/employee/advances/data', {
+        const advanceResponse = await fetch(`${BACKEND_URL}/employee/advances/data`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -69,7 +70,7 @@ export function TransferToBank() {
         }
 
         // Fetch banking information
-        const bankingResponse = await fetch('http://localhost:4000/employee/advances/banking-info', {
+        const bankingResponse = await fetch(`${BACKEND_URL}/employee/advances/banking-info`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -126,7 +127,7 @@ export function TransferToBank() {
         return;
       }
 
-      const response = await fetch('http://localhost:4000/employee/advances/request', {
+      const response = await fetch(`${BACKEND_URL}/employee/advances/request`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

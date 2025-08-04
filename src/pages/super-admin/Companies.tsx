@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { BACKEND_URL } from '@/lib/config';
 import { 
   Search, 
   Filter, 
@@ -56,7 +57,7 @@ export default function Companies() {
       setError('');
       try {
         const token = localStorage.getItem('token');
-        const response = await fetch('http://localhost:4000/super-admin/companies', {
+        const response = await fetch(`${BACKEND_URL}/super-admin/companies`, {
           headers: {
             'Authorization': `Bearer ${token}`,
           },

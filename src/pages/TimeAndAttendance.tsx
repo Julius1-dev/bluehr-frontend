@@ -6,6 +6,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Clock, Calendar, BarChart2, Download, ChevronRight, Users } from 'lucide-react';
 import { formatTime, formatDate } from '@/lib/utils';
+import { BACKEND_URL } from '@/lib/config';
 
 export function TimeAndAttendance() {
   const [currentTime, setCurrentTime] = useState(formatTime(new Date()));
@@ -36,7 +37,7 @@ export function TimeAndAttendance() {
     setError(null);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:4000/employee/attendance/today', {
+      const res = await fetch(`${BACKEND_URL}/employee/attendance/today`, {
         headers: { 'Authorization': `Bearer ${token}` },
       });
       const data = await res.json();
@@ -111,7 +112,7 @@ export function TimeAndAttendance() {
       const [weekStart, weekEnd] = getWeekRange();
       const [monthStart, monthEnd] = getMonthRange();
       // TODO: Replace with real backend endpoint
-      const res = await fetch(`http://localhost:4000/employee/attendance/history?from=${weekStart.toISOString().slice(0,10)}&to=${monthEnd.toISOString().slice(0,10)}`, {
+      const res = await fetch(`${BACKEND_URL}/employee/attendance/history?from=${weekStart.toISOString().slice(0,10)}&to=${monthEnd.toISOString().slice(0,10)}`, {
         headers: { 'Authorization': `Bearer ${token}` },
       });
       const data = await res.json();
@@ -218,7 +219,7 @@ export function TimeAndAttendance() {
         setLoading(false);
         return;
       }
-      const res = await fetch('http://localhost:4000/employee/attendance/clock-in', {
+      const res = await fetch(`${BACKEND_URL}/employee/attendance/clock-in`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({}),
@@ -239,7 +240,7 @@ export function TimeAndAttendance() {
     setError(null);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:4000/employee/attendance/clock-in', {
+      const res = await fetch(`${BACKEND_URL}/employee/attendance/clock-in`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ reason: lateReason }),
@@ -262,7 +263,7 @@ export function TimeAndAttendance() {
     setError(null);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:4000/employee/attendance/clock-out', {
+      const res = await fetch(`${BACKEND_URL}/employee/attendance/clock-out`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
       });
@@ -283,7 +284,7 @@ export function TimeAndAttendance() {
     try {
       const token = localStorage.getItem('token');
       if (!onBreak) {
-        const res = await fetch('http://localhost:4000/employee/attendance/break-start', {
+        const res = await fetch(`${BACKEND_URL}/employee/attendance/break-start`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         });
@@ -291,13 +292,13 @@ export function TimeAndAttendance() {
         setOnBreak(true);
         showToast('Break Started', 'blue');
       } else {
-        const res = await fetch('http://localhost:4000/employee/attendance/break-end', {
+        const res = await fetch(`${BACKEND_URL}/employee/attendance/break-end`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         });
         if (!res.ok) throw new Error('Failed to end break');
         setOnBreak(false);
-        showToast('Break Ended', 'green');
+        showToast('Break Ended', 'blue');
       }
       await fetchToday();
     } catch (err) {
