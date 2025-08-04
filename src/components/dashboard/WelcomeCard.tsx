@@ -35,7 +35,7 @@ export function WelcomeCard() {
     if (!token) return;
 
     // Fetch employee profile to get the real name
-    fetch('http://localhost:4000/employee/auth/profile', {
+    fetch(`${BACKEND_URL}/employee/auth/profile`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
       .then(res => res.json())

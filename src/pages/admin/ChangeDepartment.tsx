@@ -6,9 +6,10 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 // Toast notifications are not available, using alerts instead
 import { ArrowLeft } from 'lucide-react';
+import { BACKEND_URL } from '@/lib/config';
 
-const API_URL = 'http://localhost:4000/company-admin/users';
-const DEPARTMENTS_API = 'http://localhost:4000/company-admin/departments';
+const API_URL = `${BACKEND_URL}/company-admin/users`;
+const DEPARTMENTS_API = `${BACKEND_URL}/company-admin/departments`;
 
 export default function ChangeDepartment() {
   const { id } = useParams<{ id: string }>();

@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
+import { BACKEND_URL } from '@/lib/config';
 
 export function CompanyDetails() {
   const navigate = useNavigate();
@@ -26,7 +27,7 @@ export function CompanyDetails() {
       setError('');
       try {
         const token = localStorage.getItem('token');
-        const response = await fetch(`http://localhost:4000/super-admin/companies/${companyId}`, {
+        const response = await fetch(`${BACKEND_URL}/super-admin/companies/${companyId}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
@@ -83,7 +84,7 @@ export function CompanyDetails() {
     setEditLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:4000/super-admin/companies/${companyId}`, {
+      const response = await fetch(`${BACKEND_URL}/super-admin/companies/${companyId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -112,7 +113,7 @@ export function CompanyDetails() {
     try {
       const token = localStorage.getItem('token');
       const newStatus = company.status === 'suspended' ? 'active' : 'suspended';
-      const response = await fetch(`http://localhost:4000/super-admin/companies/${companyId}/status`, {
+      const response = await fetch(`${BACKEND_URL}/super-admin/companies/${companyId}/status`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

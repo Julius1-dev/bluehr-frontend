@@ -9,8 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { toast } from 'sonner';
 import { ArrowLeft, Mail, Phone, Building, User, Shield, MapPin, Hash, Save } from 'lucide-react';
+import { BACKEND_URL } from '@/lib/config';
 
-const API_URL = 'http://localhost:4000/super-admin/users';
+const API_URL = `${BACKEND_URL}/super-admin/users`;
 
 export function EditUser() {
   const { id } = useParams<{ id: string }>();

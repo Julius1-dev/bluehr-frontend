@@ -72,7 +72,7 @@ export function CompanyProfile() {
       try {
         const token = localStorage.getItem('token');
         if (!token) throw new Error('No authentication token found');
-        const res = await fetch('http://localhost:4000/company-admin/users', {
+        const res = await fetch(`${BACKEND_URL}/company-admin/users`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (!res.ok) throw new Error('Failed to fetch employees');
