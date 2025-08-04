@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { BACKEND_URL } from '@/lib/config';
+import PayrollExemptionsModal from '@/components/payroll/PayrollExemptionsModal';
 
 export function MasterPayroll() {
   const [selectedEmployees, setSelectedEmployees] = useState<any[]>([]);
@@ -12,6 +13,7 @@ export function MasterPayroll() {
   const [payrollYear, setPayrollYear] = useState<number>(2025);
   const [paymentFrequency, setPaymentFrequency] = useState<string>('monthly');
   const [result, setResult] = useState<any>(null);
+  const [exemptionsModalOpen, setExemptionsModalOpen] = useState(false);
 
   // Fetch processed master payroll data (GET)
   useEffect(() => {
@@ -65,24 +67,34 @@ export function MasterPayroll() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Master Payroll</CardTitle>
+        <CardTitle>Master- Payroll</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="flex gap-4 mb-4">
-          <div>
-            <label>Month:</label>
-            <input type="number" min={1} max={12} value={payrollMonth} onChange={e => setPayrollMonth(Number(e.target.value))} />
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex gap-4">
+            <div>
+              <label>Month:</label>
+              <input type="number" min={1} max={12} value={payrollMonth} onChange={e => setPayrollMonth(Number(e.target.value))} />
+            </div>
+            <div>
+              <label>Year:</label>
+              <input type="number" min={2020} max={2100} value={payrollYear} onChange={e => setPayrollYear(Number(e.target.value))} />
+            </div>
+            <div>
+              <label>Frequency:</label>
+              <select value={paymentFrequency} onChange={e => setPaymentFrequency(e.target.value)}>
+                <option value="monthly">Monthly</option>
+                <option value="weekly">Weekly</option>
+              </select>
+            </div>
           </div>
-          <div>
-            <label>Year:</label>
-            <input type="number" min={2020} max={2100} value={payrollYear} onChange={e => setPayrollYear(Number(e.target.value))} />
-          </div>
-          <div>
-            <label>Frequency:</label>
-            <select value={paymentFrequency} onChange={e => setPaymentFrequency(e.target.value)}>
-              <option value="monthly">Monthly</option>
-              <option value="weekly">Weekly</option>
-            </select>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setExemptionsModalOpen(true)}>
+              Manage Exemptions
+            </Button>
+            <Button onClick={handleProcessPayroll} disabled={processing}>
+              {processing ? 'Processing...' : 'Process Master Payroll'}
+            </Button>
           </div>
         </div>
         <Table>
@@ -119,12 +131,10 @@ export function MasterPayroll() {
             ))}
           </TableBody>
         </Table>
-        <Button className="mt-4" onClick={handleProcessPayroll} disabled={processing}>
-          {processing ? 'Processing...' : 'Process Master Payroll'}
-        </Button>
         {result && result.success && (
           <div className="mt-4 text-green-600">Payroll processed successfully!</div>
         )}
+        <PayrollExemptionsModal open={exemptionsModalOpen} onClose={() => setExemptionsModalOpen(false)} />
       </CardContent>
     </Card>
   );
