@@ -4,7 +4,7 @@ import { AdminWelcomeCard } from './AdminWelcomeCard';
 import { TeamOverviewWidget } from './TeamOverviewWidget';
 import { AttendanceOverviewWidget } from './AttendanceOverviewWidget';
 import { LeaveRequestsWidget } from './LeaveRequestsWidget';
-import { PayrollSummaryWidget } from './PayrollSummaryWidget';
+// import { PayrollSummaryWidget } from './PayrollSummaryWidget';
 import { RecentActivitiesWidget } from './RecentActivitiesWidget';
 import { CompanyAnnouncementsWidget } from './CompanyAnnouncementsWidget';
 
@@ -53,9 +53,9 @@ export function AdminDashboard() {
           <AttendanceOverviewWidget />
         </motion.div>
         
-        <motion.div variants={itemVariants}>
+        {/* <motion.div variants={itemVariants}>
           <PayrollSummaryWidget />
-        </motion.div>
+        </motion.div> */}
         
         <motion.div variants={itemVariants} className="lg:col-span-2">
           <CompanyAnnouncementsWidget />

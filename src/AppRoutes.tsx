@@ -66,6 +66,7 @@ import LocationForm from './pages/admin/attendance/LocationForm';
 import AttendanceAnalytics from './pages/admin/attendance/Analytics';
 import { TeamManagement } from './pages/admin/TeamManagement';
 import { AttendanceManagement } from './pages/admin/AttendanceManagement';
+import EmployeeCheckInOut from './pages/EmployeeCheckInOut';
 import { LeaveManagement } from './pages/admin/LeaveManagement';
 import SubscriptionsPage from './pages/super-admin/SubscriptionsPage';
 import PricingPlansPage from './pages/super-admin/PricingPlansPage';
@@ -224,6 +225,7 @@ const AppRoutes = () => {
               <SuperAdminHelpAndSupport />
             </Suspense>
           } />
+         
           {/* Subscriptions Routes */}
           <Route path="subscriptions" element={<SubscriptionsPage />} />
           {/* Pricing Plans Route */}
@@ -278,15 +280,19 @@ const AppRoutes = () => {
         {/* Admin Routes */}
         <Route element={
           isAuthenticated && isAdmin && !isSuperAdmin ? (
-            <>
-              <AdminDashboardLayout onLogout={handleLogout} isSuperAdmin={false}>
-                <Outlet />
-              </AdminDashboardLayout>
-            </>
+            <AdminDashboardLayout onLogout={handleLogout} isSuperAdmin={false}>
+              <Outlet />
+            </AdminDashboardLayout>
           ) : (
             <Navigate to="/signin" replace />
           )
         }>
+          {/* All /admin pages */}
+          {/* <Route path="/admin/employee-checkin" element={
+            <PermissionGuard requiredPermissions={['manage_attendance']}>
+              <EmployeeCheckInOut />
+            </PermissionGuard>
+          } /> */}
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/admin/team" element={
             <PermissionGuard requiredPermissions={['manage_users']}>
@@ -437,6 +443,8 @@ const AppRoutes = () => {
           } />
         </Route>
 
+
+
         {/* Employee Routes */}
         <Route element={
           isAuthenticated && userRole === 'employee' ? (
@@ -447,8 +455,9 @@ const AppRoutes = () => {
             <Navigate to="/signin" replace />
           )
         }>
-          <Route path="/" element={<EmployeeDashboard />} />
-          <Route path="/time-attendance" element={<TimeAndAttendance />} />
+          <Route index element={<EmployeeDashboard />} />
+          <Route path="time-attendance" element={<TimeAndAttendance />} />
+          <Route path="employee-checkin" element={<EmployeeCheckInOut />} />
           <Route path="/leave" element={<Leave />} />
           <Route path="/request-leave" element={<RequestLeave />} />
           <Route path="/payroll" element={<Payroll />} />
@@ -466,6 +475,11 @@ const AppRoutes = () => {
           <Route path="/offboarding-request" element={<OffboardingRequest />} />
           <Route path="/support" element={<EmployeeHelpAndSupport />} />
           <Route path="/settings" element={<EmployeeSettings onLogout={handleLogout} />} />
+          <Route path="/admin/employee-checkin" element={
+            <PermissionGuard requiredPermissions={['manage_attendance']}>
+              <EmployeeCheckInOut />
+            </PermissionGuard>
+          } />
         </Route>
 
         {/* Fallback route */}

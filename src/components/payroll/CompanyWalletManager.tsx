@@ -236,7 +236,52 @@ export function CompanyWalletManager({ walletData }: CompanyWalletManagerProps) 
       }
     } else {
       // M-Pesa integration would go here
-      alert(`Initiating M-Pesa payment of ${amount} KES to phone number ${phoneNumber}`);
+      try {
+        setIsSubmitting(true);
+        setRequestStatus(null);
+
+        const token = localStorage.getItem('token');
+        if (!token) throw new Error('Authentication token not found');
+
+        const response = await fetch('http://localhost:4000/company-admin/mpesa/deposit', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            amount: parseFloat(amount),
+            phone: phoneNumber
+          })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.message || 'M-Pesa payment failed');
+        }
+
+        setRequestStatus({
+          success: true,
+          message: 'M-Pesa STK push sent. Complete the payment on your phone.'
+        });
+
+        setTimeout(() => {
+          setShowAddFundsModal(false);
+          setAmount('');
+          setPhoneNumber('');
+          setRequestStatus(null);
+        }, 5000);
+
+      } catch (error) {
+        console.error('M-Pesa error:', error);
+        setRequestStatus({
+          success: false,
+          message: error instanceof Error ? error.message : 'An error occurred during M-Pesa payment'
+        });
+      } finally {
+        setIsSubmitting(false);
+      }
       
       // Reset form
       setShowAddFundsModal(false);

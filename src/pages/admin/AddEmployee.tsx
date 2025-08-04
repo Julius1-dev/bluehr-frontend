@@ -11,6 +11,36 @@ import { CalendarIcon, ArrowLeft, UserPlus } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { BACKEND_URL } from '@/lib/config';
 
+
+interface EmployeeFormData {
+  firstName: string;
+  middleName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  dateOfBirth?: Date; // allow Date or undefined
+  gender: string;
+  nationalId: string;
+  kraPin: string;
+  nssfNumber: string;
+  nhifNumber: string;
+  joiningDate: Date;
+  departmentId: string;
+  role: string;
+  employmentType: string;
+  paymentFrequency: string;
+  basicSalary: string;
+  bankName: string;
+  bankBranch: string;
+  accountNumber: string;
+  accountName: string;
+  emergencyContactName: string;
+  emergencyContactPhone: string;
+  emergencyContactRelationship: string;
+  status: string;
+}
+
+
 // Using browser alert instead of toast for now
 const DEPARTMENTS_API = `${BACKEND_URL}/company-admin/departments`;
 
@@ -40,33 +70,33 @@ export function AddEmployeePage({ isEditMode = false }: AddEmployeePageProps) {
   // If isEditMode prop is not provided, check the URL params
   const editMode = isEditMode || !!id;
   
-  const [formData, setFormData] = useState({
-    firstName: '',
-    middleName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    dateOfBirth: undefined,
-    gender: 'prefer-not-to-say', // Default value
-    nationalId: '',
-    kraPin: '',
-    nssfNumber: '',
-    nhifNumber: '',
-    joiningDate: new Date(),
-    departmentId: '',
-    role: '',
-    employmentType: 'full-time', // Default to full-time
-    paymentFrequency: 'monthly', // Default to monthly
-    basicSalary: '',
-    bankName: '',
-    bankBranch: '',
-    accountNumber: '',
-    accountName: '',
-    emergencyContactName: '',
-    emergencyContactPhone: '',
-    emergencyContactRelationship: '',
-    status: 'active',
-  });
+  const [formData, setFormData] = useState<EmployeeFormData>({
+  firstName: '',
+  middleName: '',
+  lastName: '',
+  email: '',
+  phone: '',
+  dateOfBirth: undefined,
+  gender: 'prefer-not-to-say',
+  nationalId: '',
+  kraPin: '',
+  nssfNumber: '',
+  nhifNumber: '',
+  joiningDate: new Date(),
+  departmentId: '',
+  role: '',
+  employmentType: 'full-time',
+  paymentFrequency: 'monthly',
+  basicSalary: '',
+  bankName: '',
+  bankBranch: '',
+  accountNumber: '',
+  accountName: '',
+  emergencyContactName: '',
+  emergencyContactPhone: '',
+  emergencyContactRelationship: '',
+  status: 'active',
+});
 
   const [departments, setDepartments] = useState<any[]>([]);
   const [roles, setRoles] = useState<string[]>([]);
@@ -278,6 +308,7 @@ export function AddEmployeePage({ isEditMode = false }: AddEmployeePageProps) {
               />
             </div>
             
+            {/* Date of Birth Field */}
             <div className="space-y-2">
               <Label>Date of Birth</Label>
               <Popover>
@@ -287,7 +318,11 @@ export function AddEmployeePage({ isEditMode = false }: AddEmployeePageProps) {
                     className="w-full justify-start text-left font-normal"
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {formData.dateOfBirth ? format(formData.dateOfBirth, 'PPP') : <span>Pick a date</span>}
+                    {formData.dateOfBirth ? (
+                      format(formData.dateOfBirth, 'PPP') // Properly formatted date
+                    ) : (
+                      <span>Pick a date</span>
+                    )}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0 bg-gray-200" align="start">
@@ -299,19 +334,29 @@ export function AddEmployeePage({ isEditMode = false }: AddEmployeePageProps) {
                     weekStartsOn={1}
                     fixedWeeks
                     ISOWeek
+                    fromYear={1900}
+                    toYear={new Date().getFullYear() - 18} // Typically employees should be at least 18
+                    captionLayout="dropdown"
                   />
                 </PopoverContent>
               </Popover>
             </div>
             
+           {/* Gender Field */}
             <div className="space-y-2">
               <Label htmlFor="gender">Gender</Label>
               <Select 
                 value={formData.gender}
                 onValueChange={(value) => setFormData({...formData, gender: value})}
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select gender" />
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select gender">
+                    {formData.gender === 'male' ? 'Male' :
+                    formData.gender === 'female' ? 'Female' :
+                    formData.gender === 'other' ? 'Other' :
+                    formData.gender === 'prefer-not-to-say' ? 'Prefer not to say' :
+                    'Select gender'}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent className='bg-gray-200'>
                   <SelectItem value="male">Male</SelectItem>
@@ -321,7 +366,7 @@ export function AddEmployeePage({ isEditMode = false }: AddEmployeePageProps) {
                 </SelectContent>
               </Select>
             </div>
-            
+                        
             <div className="space-y-2">
               <Label htmlFor="nationalId">National ID/Passport</Label>
               <Input 
