@@ -217,11 +217,10 @@ export default function AttendanceSettings() {
         });
       }
 
-      // 🔍 Check for server error response
       if (!response.ok) {
         const errorText = await response.text();
         console.error("Server responded with error:", response.status, errorText);
-        throw new Error(errorText); // This will be caught below
+        throw new Error(errorText);
       }
 
       setShowAddWorkShift(false);
@@ -248,11 +247,11 @@ export default function AttendanceSettings() {
         setWorkShiftError('Failed to fetch work shifts.');
       }
     } catch (err) {
-      // 🔍 Log any fetch or logic errors
       console.error("Error saving work shift:", err);
       setWorkShiftError('Failed to save work shift.');
     }
   };
+
 
 
   const handleDeleteWorkShift = async (id: string) => {
@@ -266,6 +265,7 @@ export default function AttendanceSettings() {
       // Refresh work shifts
       const wsRes = await fetch(`${BACKEND_URL}/company-admin/attendance/work-shifts`, { headers: { 'Authorization': `Bearer ${token}` } });
       const wsData = await wsRes.json();
+
       if (Array.isArray(wsData)) {
         setWorkShifts(wsData.map((ws: any) => ({
           id: ws.id,
@@ -287,6 +287,7 @@ export default function AttendanceSettings() {
       setWorkShiftError('Failed to delete work shift.');
     }
   };
+
 
   useEffect(() => {
     const fetchData = async () => {

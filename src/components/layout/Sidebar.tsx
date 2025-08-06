@@ -51,7 +51,7 @@ function NavItem({ icon, label, to, badge }: NavItemProps) {
   );
 }
 
-export function Sidebar() {
+export function Sidebar({ onLogout }: { onLogout: () => void }) {
   return (
     <aside className="hidden md:flex flex-col w-64 bg-white border-r border-gray-200">
       <div className="p-4 flex items-center gap-2 border-b border-gray-200">
@@ -65,11 +65,11 @@ export function Sidebar() {
         <NavItem icon={<Home className="w-full h-full" />} label="Dashboard" to="/" />
         <NavItem icon={<Clock className="w-full h-full" />} label="Time & Attendance" to="/time-attendance" />
         {/* Add the Employee Check-In/Out NavItem here */}
-        <NavItem 
+        {/* <NavItem 
           icon={<Fingerprint className="w-full h-full" />} 
           label="Check-In/Out" 
           to="/employee-checkin" 
-        />
+        /> */}
         <NavItem icon={<Calendar className="w-full h-full" />} label="Leave" to="/leave" badge={1} />
         <NavItem icon={<CreditCard className="w-full h-full" />} label="Payroll" to="/payroll" />
         <NavItem icon={<Wallet className="w-full h-full" />} label="Advances" to="/wallet" />
@@ -81,7 +81,15 @@ export function Sidebar() {
         <div className="pt-4 mt-4 border-t border-gray-200">
           <NavItem icon={<LifeBuoy className="w-full h-full" />} label="Help & Support" to="/support" />
           <NavItem icon={<Settings className="w-full h-full" />} label="Settings" to="/settings" />
-          <NavItem icon={<LogOut className="w-full h-full" />} label="Logout" to="/logout" />
+          <button
+            onClick={onLogout}
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+          >
+            <div className="flex-shrink-0 w-5 h-5">
+              <LogOut className="w-full h-full" />
+            </div>
+            <span>Logout</span>
+          </button>
         </div>
       </div>
     </aside>

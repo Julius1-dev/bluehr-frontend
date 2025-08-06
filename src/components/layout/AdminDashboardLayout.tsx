@@ -12,7 +12,10 @@ interface AdminDashboardLayoutProps {
 export function AdminDashboardLayout({ children, onLogout, isSuperAdmin = false }: AdminDashboardLayoutProps) {
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {isSuperAdmin ? <SuperAdminSidebar onLogout={onLogout} /> : <AdminSidebar />}
+      {isSuperAdmin 
+        ? <SuperAdminSidebar onLogout={onLogout} /> 
+        : <AdminSidebar onLogout={onLogout} />  // ✅ Add this
+      }
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header onLogout={onLogout} isAdmin={true} isSuperAdmin={isSuperAdmin} />
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
@@ -22,3 +25,4 @@ export function AdminDashboardLayout({ children, onLogout, isSuperAdmin = false 
     </div>
   );
 }
+
