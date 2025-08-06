@@ -77,7 +77,8 @@ const NavItem: React.FC<NavItemProps> = ({
 };
 
 // Then define the AdminSidebar component
-export const AdminSidebar: React.FC = () => {
+export const AdminSidebar: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
+
   const [userPermissions, setUserPermissions] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -247,7 +248,15 @@ export const AdminSidebar: React.FC = () => {
             requiredPermissions={['manage_payroll']}
             userPermissions={userPermissions}
           />
-          <NavItem icon={<LogOut className="w-full h-full" />} label="Logout" to="/logout" userPermissions={userPermissions} />
+          <button
+            onClick={onLogout}
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+          >
+            <div className="flex-shrink-0 w-5 h-5">
+              <LogOut className="w-full h-full" />
+            </div>
+            <span>Logout</span>
+          </button>
         </div>
       </div>
     </aside>
