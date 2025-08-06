@@ -475,11 +475,11 @@ const AppRoutes = () => {
           <Route path="/offboarding-request" element={<OffboardingRequest />} />
           <Route path="/support" element={<EmployeeHelpAndSupport />} />
           <Route path="/settings" element={<EmployeeSettings onLogout={handleLogout} />} />
-          <Route path="/admin/employee-checkin" element={
+          {/* <Route path="/admin/employee-checkin" element={
             <PermissionGuard requiredPermissions={['manage_attendance']}>
               <EmployeeCheckInOut />
             </PermissionGuard>
-          } />
+          } /> */}
         </Route>
 
         {/* Fallback route */}

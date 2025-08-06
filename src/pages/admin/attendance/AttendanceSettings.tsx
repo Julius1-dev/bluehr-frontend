@@ -204,8 +204,7 @@ export default function AttendanceSettings() {
       let response;
 
       if (editingWorkShift) {
-        await fetch(`${BACKEND_URL}/company-admin/attendance/work-shifts/${editingWorkShift.id}`, {
-        response = await fetch(`http://localhost:4000/company-admin/attendance/work-shifts/${editingWorkShift.id}`, {
+        response = await fetch(`${BACKEND_URL}/company-admin/attendance/work-shifts/${editingWorkShift.id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -214,8 +213,7 @@ export default function AttendanceSettings() {
           body: JSON.stringify(payload),
         });
       } else {
-        await fetch(`${BACKEND_URL}/company-admin/attendance/work-shifts`, {
-        response = await fetch('http://localhost:4000/company-admin/attendance/work-shifts', {
+        response = await fetch(`${BACKEND_URL}/company-admin/attendance/work-shifts`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -225,21 +223,19 @@ export default function AttendanceSettings() {
         });
       }
 
-      // 🔍 Check for server error response
       if (!response.ok) {
         const errorText = await response.text();
         console.error("Server responded with error:", response.status, errorText);
-        throw new Error(errorText); // This will be caught below
+        throw new Error(errorText);
       }
 
       setShowAddWorkShift(false);
       setEditingWorkShift(null);
-      // Refresh work shifts
-      const wsRes = await fetch(`${BACKEND_URL}/company-admin/attendance/work-shifts`, { headers: { 'Authorization': `Bearer ${token}` } });
 
-      const wsRes = await fetch('http://localhost:4000/company-admin/attendance/work-shifts', {
+      const wsRes = await fetch(`${BACKEND_URL}/company-admin/attendance/work-shifts`, {
         headers: { 'Authorization': `Bearer ${token}` },
       });
+
       const wsData = await wsRes.json();
 
       if (Array.isArray(wsData)) {
@@ -260,11 +256,11 @@ export default function AttendanceSettings() {
         setWorkShiftError('Failed to fetch work shifts.');
       }
     } catch (err) {
-      // 🔍 Log any fetch or logic errors
       console.error("Error saving work shift:", err);
       setWorkShiftError('Failed to save work shift.');
     }
   };
+
 
 
   const handleDeleteWorkShift = async (id: string) => {
@@ -275,10 +271,14 @@ export default function AttendanceSettings() {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` },
       });
-      // Refresh work shifts
-      const wsRes = await fetch(`${BACKEND_URL}/company-admin/attendance/work-shifts`, { headers: { 'Authorization': `Bearer ${token}` } });
-      const wsRes = await fetch('http://localhost:4000/company-admin/attendance/work-shifts', { headers: { 'Authorization': `Bearer ${token}` } });
+
+      // Refresh work shifts after deletion
+      const wsRes = await fetch(`${BACKEND_URL}/company-admin/attendance/work-shifts`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+
       const wsData = await wsRes.json();
+
       if (Array.isArray(wsData)) {
         setWorkShifts(wsData.map((ws: any) => ({
           id: ws.id,
@@ -300,6 +300,7 @@ export default function AttendanceSettings() {
       setWorkShiftError('Failed to delete work shift.');
     }
   };
+
 
   useEffect(() => {
     const fetchData = async () => {

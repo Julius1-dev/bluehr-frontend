@@ -15,6 +15,6 @@ export interface DocumentType {
   uploaded_by_name: string;
   require_review?: boolean;
   is_shared?: boolean;
-  shared_with?: string | SharedWithEntry[];
-  review_message?: string | null; 
+  shared_with?: SharedWithEntry[];
+  review_message?: string | null;
 }

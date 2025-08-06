@@ -10,7 +10,7 @@ interface DashboardLayoutProps {
 export function DashboardLayout({ children, onLogout }: DashboardLayoutProps) {
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      <Sidebar />
+      <Sidebar onLogout={onLogout} /> {/* ✅ Pass onLogout here */}
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header onLogout={onLogout} />
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-4 md:p-6">

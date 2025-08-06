@@ -92,6 +92,9 @@ export function AttendanceManagement(): JSX.Element {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+
+  
+
   // Helper function to get date string based on filter
   const getDateFromFilter = (filter: string): string => {
     const today = new Date();
@@ -260,6 +263,14 @@ export function AttendanceManagement(): JSX.Element {
         return <Calendar className="h-4 w-4 text-blue-600" />;
     }
   };
+
+
+  const formatTime = (isoString: string | null | undefined) => {
+    if (!isoString) return '-';
+    const date = new Date(isoString);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
   
   const getIssueIcon = (type: string) => {
     switch (type) {
@@ -511,8 +522,8 @@ export function AttendanceManagement(): JSX.Element {
                           </Badge>
                         </div>
                       </TableCell>
-                      <TableCell>{record.clockIn || '-'}</TableCell>
-                      <TableCell>{record.clockOut || '-'}</TableCell>
+                      <TableCell>{formatTime(record.clockIn)}</TableCell>
+                      <TableCell>{formatTime(record.clockOut)}</TableCell>
                       <TableCell>{record.workHours}</TableCell>
                       <TableCell className="text-sm text-gray-500">{record.notes || '-'}</TableCell>
                     </TableRow>

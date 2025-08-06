@@ -7,6 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { Clock, Calendar, BarChart2, Download, ChevronRight, Users } from 'lucide-react';
 import { formatTime, formatDate } from '@/lib/utils';
 import { BACKEND_URL } from '@/lib/config';
+import { format } from 'date-fns';
+
 
 export function TimeAndAttendance() {
   const [currentTime, setCurrentTime] = useState(formatTime(new Date()));
@@ -19,6 +21,11 @@ export function TimeAndAttendance() {
   const [breakTimer, setBreakTimer] = useState(0);
   const [breakInterval, setBreakInterval] = useState<any>(null);
   const [onBreak, setOnBreak] = useState(false);
+  const [currentCoords, setCurrentCoords] = useState<{ lat: number, lng: number } | null>(null);
+  const [officeLocations, setOfficeLocations] = useState<any[]>([]);
+  const [canCheckIn, setCanCheckIn] = useState(false);
+
+
 
   // Fetch all attendance records for the current week and month
   const [attendanceHistoryReal, setAttendanceHistoryReal] = useState<any[]>([]);
@@ -60,6 +67,62 @@ export function TimeAndAttendance() {
   };
   useEffect(() => { fetchToday(); }, []);
 
+
+  useEffect(() => {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const coords = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        };
+        console.log("📍 Got current location:", coords);
+        setCurrentCoords(coords);
+      },
+      (err) => {
+        console.error("❌ Failed to get location:", err);
+      },
+      { enableHighAccuracy: true }
+    );
+  }, []);
+  // Fetch office locations
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    fetch(`${BACKEND_URL}/employee/attendance/office-locations`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        const locations = Array.isArray(data)
+          ? data
+          : Array.isArray(data.officeLocations)
+          ? data.officeLocations
+          : [];
+
+        console.log('✅ Loaded office locations:', locations);
+        setOfficeLocations(locations);
+      })
+      .catch((err) => console.error('❌ Failed to fetch office locations', err));
+  }, []);
+
+
+  useEffect(() => {
+    if (!currentCoords || officeLocations.length === 0) return;
+
+    const isNearAnyOffice = officeLocations.some((loc) =>
+      isWithinRadius(
+        currentCoords.lat,
+        currentCoords.lng,
+        loc.latitude,
+        loc.longitude,
+        loc.radius
+      )
+    );
+
+    setCanCheckIn(isNearAnyOffice);
+  }, [currentCoords, officeLocations]);
+
+
+
   // Break timer effect
   useEffect(() => {
     if (onBreak) {
@@ -88,6 +151,24 @@ export function TimeAndAttendance() {
     if (h1 < h2) return false;
     return m1 > m2;
   }
+
+
+  function isWithinRadius(userLat: number, userLng: number, officeLat: number, officeLng: number, radius: number) {
+    const toRad = (value: number) => (value * Math.PI) / 180;
+    const R = 6371; // Earth radius in km
+
+    const dLat = toRad(officeLat - userLat);
+    const dLon = toRad(officeLng - userLng);
+    const lat1 = toRad(userLat);
+    const lat2 = toRad(officeLat);
+
+    const a =
+      Math.sin(dLat / 2) ** 2 +
+      Math.sin(dLon / 2) ** 2 * Math.cos(lat1) * Math.cos(lat2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c * 1000 <= radius; // meters
+  }
+
 
   // Helper to get start/end of week/month
   function getWeekRange(date = new Date()) {
@@ -209,22 +290,63 @@ export function TimeAndAttendance() {
   const handleClockIn = async () => {
     setLoading(true);
     setError(null);
+
+    const token = localStorage.getItem('token');
+    const now24 = getCurrentTime24();
+    const shiftIn = shift && shift.clock_in ? shift.clock_in.slice(0, 5) : null;
+
+    // 1. Validate location
+    if (!currentCoords || officeLocations.length === 0) {
+      setError("Location or office data missing.");
+      setLoading(false);
+      return;
+    }
+
+    // 2. Find nearby office
+    const matchedOffice = officeLocations.find((office) =>
+      isWithinRadius(
+        currentCoords.lat,
+        currentCoords.lng,
+        office.latitude,
+        office.longitude,
+        office.radius
+      )
+    );
+
+    if (!matchedOffice) {
+      setError("You are not within any authorized office location.");
+      setLoading(false);
+      return;
+    }
+
+    // 3. Check for lateness
+    if (shiftIn && isAfter(now24, shiftIn)) {
+      setShowLateReason(true);
+      setLoading(false);
+      return;
+    }
+
+    // 4. Send clock-in request with location
     try {
-      const token = localStorage.getItem('token');
-      const now24 = getCurrentTime24();
-      const shiftIn = shift && shift.clock_in ? shift.clock_in.slice(0, 5) : null;
-      // If late, prompt for reason
-      if (shiftIn && isAfter(now24, shiftIn)) {
-        setShowLateReason(true);
-        setLoading(false);
-        return;
-      }
       const res = await fetch(`${BACKEND_URL}/employee/attendance/clock-in`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({}),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          timestamp: new Date().toISOString(),
+          location: {
+            latitude: currentCoords.lat,
+            longitude: currentCoords.lng,
+            address: matchedOffice.address,
+          },
+          officeLocationId: matchedOffice.id,
+        }),
       });
+
       if (!res.ok) throw new Error('Failed to clock in');
+
       await fetchToday();
       showToast('Clocked In Successfully', 'green');
     } catch (err) {
@@ -234,18 +356,56 @@ export function TimeAndAttendance() {
     }
   };
 
+
   // Handle late clock in with reason
   const handleLateClockIn = async () => {
     setLoading(true);
     setError(null);
+
+    if (!currentCoords || officeLocations.length === 0) {
+      setError("Location or office data missing.");
+      setLoading(false);
+      return;
+    }
+
+    const matchedOffice = officeLocations.find((office) =>
+      isWithinRadius(
+        currentCoords.lat,
+        currentCoords.lng,
+        office.latitude,
+        office.longitude,
+        office.radius
+      )
+    );
+
+    if (!matchedOffice) {
+      setError("You are not within any authorized office location.");
+      setLoading(false);
+      return;
+    }
+
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(`${BACKEND_URL}/employee/attendance/clock-in`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ reason: lateReason }),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          reason: lateReason,
+          timestamp: new Date().toISOString(),
+          location: {
+            latitude: currentCoords.lat,
+            longitude: currentCoords.lng,
+            address: matchedOffice.address,
+          },
+          officeLocationId: matchedOffice.id,
+        }),
       });
+
       if (!res.ok) throw new Error('Failed to clock in');
+
       setShowLateReason(false);
       setLateReason('');
       await fetchToday();
@@ -256,6 +416,7 @@ export function TimeAndAttendance() {
       setLoading(false);
     }
   };
+
 
   // Handle clock out
   const handleClockOut = async () => {
@@ -380,14 +541,14 @@ export function TimeAndAttendance() {
               </div>
               <div className="flex flex-col gap-2 items-end">
               <Button 
-  size="sm" 
-                  className={isClockedIn ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'}
-                  onClick={isClockedIn ? handleClockOut : handleClockIn}
-                  disabled={loading || isClockedOut}
->
-  <Clock className="mr-2 h-4 w-4" />
-  {isClockedIn ? 'Clock Out' : 'Clock In'}
-</Button>
+              size="sm" 
+                              className={isClockedIn ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'}
+                              onClick={isClockedIn ? handleClockOut : handleClockIn}
+                              disabled={loading || isClockedOut}
+            >
+              <Clock className="mr-2 h-4 w-4" />
+              {isClockedIn ? 'Clock Out' : 'Clock In'}
+            </Button>
                 <Button
                   size="sm"
                   className={onBreak ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-blue-500 hover:bg-blue-600'}
@@ -476,9 +637,10 @@ export function TimeAndAttendance() {
                       <div>
                         <p className="font-medium">{formatDate(new Date(rec.date))}</p>
                         <div className="flex items-center gap-2 text-sm text-gray-500">
-                          <span>{rec.clock_in}</span>
+                          <span>{rec.clock_in ? format(new Date(rec.clock_in), 'hh:mm a') : '--:--'}</span>
                           <ChevronRight className="h-4 w-4" />
-                          <span>{rec.clock_out || '--:--'}</span>
+                          <span>{rec.clock_out ? format(new Date(rec.clock_out), 'hh:mm a') : '--:--'}</span>
+
                         </div>
                       </div>
                     </div>
@@ -487,7 +649,11 @@ export function TimeAndAttendance() {
                         {rec.clock_out ? (rec.late ? 'Present, Late' : 'Present') : rec.late ? 'Late' : 'Current'}
                         {rec.incomplete ? ', Incomplete' : ''}
                       </Badge>
-                      <span className="font-medium">{rec.clock_in && rec.clock_out ? `${rec.clock_in} - ${rec.clock_out}` : '--'}</span>
+                     <span className="font-medium">
+                        {rec.clock_in && rec.clock_out 
+                          ? `${format(new Date(rec.clock_in), 'hh:mm a')} - ${format(new Date(rec.clock_out), 'hh:mm a')}` 
+                          : '--'}
+                      </span>
                     </div>
                   </div>
                 ))}

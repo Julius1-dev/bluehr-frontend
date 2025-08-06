@@ -701,43 +701,50 @@ export function Documents() {
                       <DialogContent style={{ background: 'white', opacity: 1 }}>
                         <DialogHeader>
                           <DialogTitle>Review Document</DialogTitle>
+
+                          {/* ✅ Use DialogDescription ONLY for inline content */}
                           <DialogDescription>
-                            <div className="mb-2">
-                              <span className="font-medium">{doc.name}</span> ({doc.category})<br />
-                              <span className="text-xs text-gray-400">Shared by {doc.uploaded_by_name}</span>
-                            </div>
-                            <div className="mb-2">
-                              <Button
-                                size="sm"
-                                variant="secondary"
-                                onClick={async () => {
-                                  try {
-                                    const blob = await DocumentApi.downloadDocument(doc.id);
-                                    const url = window.URL.createObjectURL(blob);
-                                    const a = document.createElement('a');
-                                    a.href = url;
-                                    a.download = doc.name;
-                                    document.body.appendChild(a);
-                                    a.click();
-                                    window.URL.revokeObjectURL(url);
-                                    document.body.removeChild(a);
-                                  } catch (error) {
-                                    alert('Failed to download document');
-                                  }
-                                }}
-                              >
-                                <Download className="h-4 w-4 mr-1 inline" /> Download
-                      </Button>
-                    </div>
-                            {doc.review_message && (
-                              <div className="mb-2 p-2 bg-gray-50 rounded text-sm">
-                                <span className="font-semibold">Message from sender:</span><br />
-                                {doc.review_message}
-                  </div>
-                            )}
+                            <span className="font-medium">{doc.name}</span> ({doc.category})<br />
+                            <span className="text-xs text-gray-400">Shared by {doc.uploaded_by_name}</span>
                           </DialogDescription>
+
+                          {/* ✅ Move all block elements below */}
+                          <div className="mb-2 mt-2">
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              onClick={async () => {
+                                try {
+                                  const blob = await DocumentApi.downloadDocument(doc.id);
+                                  const url = window.URL.createObjectURL(blob);
+                                  const a = document.createElement('a');
+                                  a.href = url;
+                                  a.download = doc.name;
+                                  document.body.appendChild(a);
+                                  a.click();
+                                  window.URL.revokeObjectURL(url);
+                                  document.body.removeChild(a);
+                                } catch (error) {
+                                  alert('Failed to download document');
+                                }
+                              }}
+                            >
+                              <Download className="h-4 w-4 mr-1 inline" /> Download
+                            </Button>
+                          </div>
+
+                          {doc.review_message && (
+                            <div className="mb-2 p-2 bg-gray-50 rounded text-sm">
+                              <span className="font-semibold">Message from sender:</span><br />
+                              {doc.review_message}
+                            </div>
+                          )}
                         </DialogHeader>
-                        {reviewError && <div className="text-red-500 text-sm mb-2">{reviewError}</div>}
+
+                        {reviewError && (
+                          <div className="text-red-500 text-sm mb-2">{reviewError}</div>
+                        )}
+
                         {showRejectReason ? (
                           <div className="mb-2">
                             <Textarea
@@ -749,6 +756,7 @@ export function Documents() {
                             />
                           </div>
                         ) : null}
+
                         <div className="flex flex-row justify-end gap-2 mt-2">
                           {showRejectReason ? (
                             <Button
@@ -802,6 +810,7 @@ export function Documents() {
                           )}
                         </div>
                       </DialogContent>
+
                     </Dialog>
                   ))
                 )}

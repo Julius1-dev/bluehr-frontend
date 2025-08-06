@@ -76,10 +76,12 @@ export const DocumentApi = {
     const params = sharedOnly ? { shared_only: 'true' } : {};
     const headers = getAuthHeaders();
     const role = getUserRoleFromToken();
-    let url = `${API_BASE_URL}/company-admin/documents`;
-    if (role && role !== 'admin') {
-      url = `${API_BASE_URL}/employee/documents`;
-    }
+    const isEmployee = role === 'employee';
+
+    const url = isEmployee
+      ? `${API_BASE_URL}/employee/documents`
+      : `${API_BASE_URL}/company-admin/documents`;
+
     const response = await axios.get(url, {
       params,
       headers,
@@ -91,10 +93,12 @@ export const DocumentApi = {
   async getDocument(id: number): Promise<Document> {
     const headers = getAuthHeaders();
     const role = getUserRoleFromToken();
-    let url = `${API_BASE_URL}/company-admin/documents/${id}`;
-    if (role && role !== 'admin') {
-      url = `${API_BASE_URL}/employee/documents/${id}`;
-    }
+    const isEmployee = role === 'employee';
+
+    const url = isEmployee
+      ? `${API_BASE_URL}/employee/documents/${id}`
+      : `${API_BASE_URL}/company-admin/documents/${id}`;
+
     const response = await axios.get(url, {
       headers,
       withCredentials: true,
@@ -105,10 +109,12 @@ export const DocumentApi = {
   async downloadDocument(id: number): Promise<Blob> {
     const headers = getAuthHeaders();
     const role = getUserRoleFromToken();
-    let url = `${API_BASE_URL}/company-admin/documents/${id}/download`;
-    if (role && role !== 'admin') {
-      url = `${API_BASE_URL}/employee/documents/${id}/download`;
-    }
+    const isEmployee = role === 'employee';
+
+    const url = isEmployee
+      ? `${API_BASE_URL}/employee/documents/${id}/download`
+      : `${API_BASE_URL}/company-admin/documents/${id}/download`;
+
     const response = await axios.get(url, {
       headers,
       responseType: 'blob',
@@ -147,24 +153,29 @@ export const DocumentApi = {
   async getPolicies(): Promise<any[]> {
     const headers = getAuthHeaders();
     const role = getUserRoleFromToken();
-    let url = `${API_BASE_URL}/company-admin/policies`;
-    if (role && role !== 'admin') {
-      url = `${API_BASE_URL}/employee/policies`;
-    }
+    const isEmployee = role === 'employee';
+
+    const url = isEmployee
+      ? `${API_BASE_URL}/employee/policies`
+      : `${API_BASE_URL}/company-admin/policies`;
+
     const response = await axios.get(url, {
       headers,
       withCredentials: true,
     });
+
     return response.data.policies || [];
   },
 
   async getDocumentById(id: number): Promise<Document> {
     const headers = getAuthHeaders();
     const role = getUserRoleFromToken();
-    let url = `${API_BASE_URL}/company-admin/documents/${id}`;
-    if (role && role !== 'admin') {
-      url = `${API_BASE_URL}/employee/documents/${id}`;
-    }
+    const isEmployee = role === 'employee';
+
+    const url = isEmployee
+      ? `${API_BASE_URL}/employee/documents/${id}`
+      : `${API_BASE_URL}/company-admin/documents/${id}`;
+
     const response = await axios.get(url, {
       headers,
       withCredentials: true,
@@ -175,14 +186,17 @@ export const DocumentApi = {
   async reviewDocument(id: number, action: 'approve' | 'reject', rejectionReason?: string): Promise<{ message: string; document: Document }> {
     const headers = getAuthHeaders();
     const role = getUserRoleFromToken();
-    let url = `${API_BASE_URL}/company-admin/documents/${id}/review`;
-    if (role && role !== 'admin') {
-      url = `${API_BASE_URL}/employee/documents/${id}/review`;
-    }
+    const isEmployee = role === 'employee';
+
+    const url = isEmployee
+      ? `${API_BASE_URL}/employee/documents/${id}/review`
+      : `${API_BASE_URL}/company-admin/documents/${id}/review`;
+
     const payload: any = { action };
     if (action === 'reject' && rejectionReason) {
       payload.rejection_reason = rejectionReason;
     }
+
     const response = await axios.patch(url, payload, {
       headers,
       withCredentials: true,
