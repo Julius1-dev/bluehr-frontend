@@ -7,6 +7,7 @@ import { Check, Clock, MapPin, StopCircle } from 'lucide-react';
 import axios from 'axios';
 import { getLocations } from '@/api/officeLocationApi';
 import type { OfficeLocationData } from '@/types';
+import { BACKEND_URL } from '@/lib/config';
 
 export default function EmployeeCheckInOut() {
   const [isCheckedIn, setIsCheckedIn] = useState(false);
@@ -33,7 +34,7 @@ export default function EmployeeCheckInOut() {
 
    try {
     // 1. Fetch today's shift
-    const shiftRes = await axios.get('http://localhost:4000/employee/attendance/my-shift-today', {
+    const shiftRes = await axios.get(`${BACKEND_URL}/employee/attendance/my-shift-today`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     setAssignedShift(shiftRes.data);
@@ -134,7 +135,7 @@ export default function EmployeeCheckInOut() {
 
     try {
       await axios.post(
-        'http://localhost:4000/employee/attendance/clock-in',
+        `${BACKEND_URL}/employee/attendance/clock-in`,
         {
           timestamp: time.toISOString(),
           location: {
@@ -168,7 +169,7 @@ export default function EmployeeCheckInOut() {
 
     try {
       await axios.post(
-        'http://localhost:4000/employee/attendance/clock-out',
+        `${BACKEND_URL}/employee/attendance/clock-out`,
         {
           timestamp: time.toISOString(),
         },
