@@ -243,7 +243,7 @@ export function CompanyWalletManager({ walletData }: CompanyWalletManagerProps) 
         const token = localStorage.getItem('token');
         if (!token) throw new Error('Authentication token not found');
 
-        const response = await fetch('http://localhost:4000/company-admin/mpesa/deposit', {
+        const response = await fetch(`${BACKEND_URL}/company-admin/mpesa/deposit`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
