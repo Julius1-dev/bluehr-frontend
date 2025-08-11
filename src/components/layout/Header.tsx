@@ -31,7 +31,7 @@ export function Header({ onLogout, isAdmin = false, isSuperAdmin = false }: Head
           </span>
         </div>
       </div>
-      <div className="flex items-center ml-auto gap-3 md:gap-4">
+      {/* <div className="flex items-center ml-auto gap-3 md:gap-4">
         <NotificationDropdown />
         <Button 
           variant="ghost" 
@@ -41,7 +41,7 @@ export function Header({ onLogout, isAdmin = false, isSuperAdmin = false }: Head
         >
           Logout
         </Button>
-      </div>
+      </div> */}
     </header>
   );
 }
