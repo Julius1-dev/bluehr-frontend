@@ -42,7 +42,7 @@ export default function LocationForm() {
   const [isLoading, setIsLoading] = useState(isEditing);
 
   const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string,
+    googleMapsApiKey: 'AIzaSyCN5ua2SpAFaL1KIX5KSS0IMB0om2dsdQE',
     libraries: ['places']
   });
 

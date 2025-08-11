@@ -3,6 +3,7 @@ import { AdvanceSettings as AdvanceSettingsComponent } from '@/components/settin
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink } from '@/components/ui/breadcrumb';
 import { Home, Settings } from 'lucide-react';
 import { toast } from 'sonner';
+import { BACKEND_URL } from '@/lib/config';
 
 export default function AdvanceSettingsPage() {
   const [advanceSettings, setAdvanceSettings] = useState({
@@ -22,7 +23,7 @@ export default function AdvanceSettingsPage() {
         return;
       }
 
-      const response = await fetch('http://localhost:4000/company-admin/advance-settings', {
+      const response = await fetch(`${BACKEND_URL}/company-admin/advance-settings`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -66,7 +67,7 @@ export default function AdvanceSettingsPage() {
         return;
       }
 
-      const response = await fetch('http://localhost:4000/company-admin/advance-settings', {
+      const response = await fetch(`${BACKEND_URL}/company-admin/advance-settings`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,

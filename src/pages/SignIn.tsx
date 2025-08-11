@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { Mail, Lock } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { BACKEND_URL } from '@/lib/config';
@@ -19,57 +18,50 @@ export function SignIn({ onLogin }: SignInProps) {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [role, setRole] = useState<UserRole>('admin'); // Default to company admin
   const [show2FAModal, setShow2FAModal] = useState(false);
   const [twoFAUserId, setTwoFAUserId] = useState<string | null>(null);
   const [twoFACode, setTwoFACode] = useState('');
   const [twoFAError, setTwoFAError] = useState('');
   const [twoFALoading, setTwoFALoading] = useState(false);
+  const [detectedRole, setDetectedRole] = useState<UserRole | null>(null);
+  const [redirectPath, setRedirectPath] = useState<string>('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
     try {
-      // Use correct endpoint based on role
-      let endpoint = `${BACKEND_URL}/company-admin/auth/login`;
-      let redirect = '/admin';
-      if (role === 'superadmin') {
-        endpoint = `${BACKEND_URL}/super-admin/login`;
-        redirect = '/super-admin';
-      } else if (role === 'employee') {
-        endpoint = `${BACKEND_URL}/employee/auth/login`;
-        redirect = '/';
-      }
-      const response = await fetch(endpoint, {
+      // Use unified login endpoint
+      const response = await fetch(`${BACKEND_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
-      let data;
-      const text = await response.text();
-      if (text) {
-        data = JSON.parse(text);
-      } else {
-        throw new Error('Empty response from server');
-      }
+      
       if (!response.ok) {
-        throw new Error(data.message || 'Login failed');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Login failed');
       }
       
-      // 2FA flow for company admin and employee
-      if ((role === 'admin' || role === 'employee') && data.require2FA && data.userId) {
+      const data = await response.json();
+      
+      // 2FA flow
+      if (data.require2FA && data.userId) {
         setTwoFAUserId(data.userId);
+        setDetectedRole(data.role);
+        setRedirectPath(data.redirectPath);
         setShow2FAModal(true);
         setIsLoading(false);
         return;
       }
       
-      localStorage.setItem('token', data.data?.token || data.token);
-      if (onLogin) onLogin(role);
-      navigate(redirect);
+      // Regular login success
+      localStorage.setItem('token', data.data.token);
+      if (onLogin) onLogin(data.data.role);
+      navigate(data.data.redirectPath);
     } catch (err: any) {
       setError(err.message);
       console.error('Sign in error:', err);
@@ -84,27 +76,23 @@ export function SignIn({ onLogin }: SignInProps) {
     setTwoFAError('');
     setTwoFALoading(true);
     try {
-      // Use correct endpoint based on role
-      let endpoint = `${BACKEND_URL}/company-admin/auth/2fa/verify`;
-      let redirect = '/admin';
-      if (role === 'employee') {
-        endpoint = `${BACKEND_URL}/employee/auth/2fa/verify`;
-        redirect = '/';
-      }
-      
-      const res = await fetch(endpoint, {
+      const res = await fetch(`${BACKEND_URL}/auth/2fa/verify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: twoFAUserId, code: twoFACode })
       });
+      
       const data = await res.json();
-      if (!data.success || !data.token) throw new Error(data.error || 'Invalid 2FA code');
-      localStorage.setItem('token', data.token);
+      if (!data.success || !data.data.token) {
+        throw new Error(data.error || 'Invalid 2FA code');
+      }
+      
+      localStorage.setItem('token', data.data.token);
       setShow2FAModal(false);
       setTwoFACode('');
       setTwoFAUserId(null);
-      if (onLogin) onLogin(role);
-      navigate(redirect);
+      if (onLogin && detectedRole) onLogin(detectedRole);
+      navigate(redirectPath);
     } catch (err: any) {
       setTwoFAError(err.message || 'Invalid 2FA code');
     } finally {
@@ -152,21 +140,6 @@ export function SignIn({ onLogin }: SignInProps) {
           
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor="role">
-                Role
-              </label>
-              <Select value={role} onValueChange={v => setRole(v as UserRole)}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select role" />
-                </SelectTrigger>
-                <SelectContent className="bg-gray-50">
-                  <SelectItem value="admin">Company Admin</SelectItem>
-                  <SelectItem value="superadmin">Super Admin</SelectItem>
-                  <SelectItem value="employee">Employee</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
               <label className="text-sm font-medium" htmlFor="email">
                 Email
               </label>
@@ -201,13 +174,24 @@ export function SignIn({ onLogin }: SignInProps) {
                 <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                 <input
                   id="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-3 py-2 border rounded-md"
+                  className="w-full pl-10 pr-10 py-2 border rounded-md"
                   placeholder="••••••••"
                   required
                 />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
               </div>
             </div>
             <Button 
