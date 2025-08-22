@@ -25,9 +25,15 @@ ChartJS.register(
 
 interface OverviewChartProps extends React.HTMLAttributes<HTMLDivElement> {
   className?: string;
+  chartData?: {
+    organizations: number[];
+    users: number[];
+    apiRequests: number[];
+  };
 }
 
-export function OverviewChart({ className, ...props }: OverviewChartProps) {
+export function OverviewChart({ className, chartData, ...props }: OverviewChartProps) {
+  
   const labels = [
     'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
   ];
@@ -37,7 +43,7 @@ export function OverviewChart({ className, ...props }: OverviewChartProps) {
     datasets: [
       {
         label: 'Organizations',
-        data: [12, 15, 18, 16, 20, 22, 24, 26, 28, 26, 24, 24],
+        data: chartData?.organizations || [12, 15, 18, 16, 20, 22, 24, 26, 28, 26, 24, 24],
         borderColor: 'hsl(221.2 83.2% 53.3%)',
         backgroundColor: 'rgba(59, 130, 246, 0.1)',
         tension: 0.3,
@@ -45,7 +51,7 @@ export function OverviewChart({ className, ...props }: OverviewChartProps) {
       },
       {
         label: 'Active Users',
-        data: [300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1250, 1234],
+        data: chartData?.users || [300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1250, 1234],
         borderColor: 'hsl(142.1 76.2% 36.3%)',
         backgroundColor: 'rgba(16, 185, 129, 0.1)',
         tension: 0.3,
@@ -53,7 +59,7 @@ export function OverviewChart({ className, ...props }: OverviewChartProps) {
       },
       {
         label: 'API Requests (K)',
-        data: [200, 300, 400, 350, 500, 600, 700, 800, 750, 850, 900, 950],
+        data: chartData?.apiRequests || [200, 300, 400, 350, 500, 600, 700, 800, 750, 850, 900, 950],
         borderColor: 'hsl(262.1 83.3% 57.8%)',
         backgroundColor: 'rgba(139, 92, 246, 0.1)',
         tension: 0.3,
