@@ -12,6 +12,11 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  server: {
+    proxy: {
+      '/ai-oversight': 'http://localhost:4000', // Change 5000 to your backend port if different
+    },
+  },
   preview: {
     port: 3012,
     host: true,

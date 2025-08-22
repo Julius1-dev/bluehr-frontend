@@ -18,6 +18,8 @@ import {
 
 import type { OfficeLocationData } from '@/types';
 
+
+
 // Mock data (you might want to move these to separate files)
 const mockLocations = [
   { id: 1, name: 'Main Office', address: '123 Main St', radius: 100 },
@@ -121,22 +123,22 @@ export default function AttendanceSettings() {
   }, []);
 
 
-  const handleSave = async (location: OfficeLocationData) => {
-    try {
-      setLoading(true);
-      const saved = await saveLocation(location);
-      if (location.id) {
-        setLocations(prev => prev.map(l => (l.id === saved.id ? saved : l)));
-      } else {
-        setLocations(prev => [...prev, saved]);
-      }
-      setSelectedLocation(null);
-    } catch (err) {
-      console.error('Error saving location:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // const handleSave = async (location: OfficeLocationData) => {
+  //   try {
+  //     setLoading(true);
+  //     const saved = await saveLocation(location);
+  //     if (location.id) {
+  //       setLocations(prev => prev.map(l => (l.id === saved.id ? saved : l)));
+  //     } else {
+  //       setLocations(prev => [...prev, saved]);
+  //     }
+  //     setSelectedLocation(null);
+  //   } catch (err) {
+  //     console.error('Error saving location:', err);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   const handleDelete = async (id: string) => {
     try {

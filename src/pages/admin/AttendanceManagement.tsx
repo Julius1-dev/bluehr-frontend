@@ -186,10 +186,10 @@ export function AttendanceManagement(): JSX.Element {
       setError(null);
 
       const departmentId = selectedDepartment === 'All Departments' ? undefined : selectedDepartment;
-      
+
       // Determine if we need date range or single date
       const needsDateRange = ['This Week', 'Last Week', 'This Month'].includes(selectedDate);
-      
+
       let date: string | undefined;
       let startDate: string | undefined;
       let endDate: string | undefined;
@@ -209,6 +209,11 @@ export function AttendanceManagement(): JSX.Element {
         attendanceApi.getRecentIssues(7),
         attendanceApi.getDepartments()
       ]);
+
+      console.log('Attendance Records Response:', recordsResponse);
+      console.log('Attendance Summary Response:', summaryResponse);
+      console.log('Recent Issues Response:', issuesResponse);
+      console.log('Departments Response:', departmentsResponse);
 
       setAttendanceRecords(recordsResponse.records || []);
       setAttendanceSummary(summaryResponse);
