@@ -42,7 +42,7 @@ export default function LocationForm() {
   const [isLoading, setIsLoading] = useState(isEditing);
 
   const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string,
+    googleMapsApiKey: 'AIzaSyCN5ua2SpAFaL1KIX5KSS0IMB0om2dsdQE',
     libraries: ['places']
   });
 
@@ -214,7 +214,7 @@ export default function LocationForm() {
                 </div>
 
                 <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="address">Site Address *</Label>
+                  <Label htmlFor="address"> Site Address *</Label>
                   <Input
                     id="address"
                     name="address"
