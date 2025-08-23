@@ -10,6 +10,8 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { BACKEND_URL } from '@/lib/config';
 
 // Define types
 interface LeaveEvent {
@@ -39,167 +41,60 @@ interface LeaveRequest {
   reason?: string;
 }
 
-// Mock data for employees
-const MOCK_EMPLOYEES = [
-  { id: '1', name: 'Alice Johnson', department: 'Engineering', avatar: '', color: 'bg-blue-100 text-blue-800' },
-  { id: '2', name: 'Bob Smith', department: 'Design', avatar: '', color: 'bg-red-100 text-red-800' },
-  { id: '3', name: 'Charlie Brown', department: 'Marketing', avatar: '', color: 'bg-green-100 text-green-800' },
-  { id: '4', name: 'Diana Prince', department: 'HR', avatar: '', color: 'bg-purple-100 text-purple-800' },
-  { id: '5', name: 'Eve Wilson', department: 'Finance', avatar: '', color: 'bg-yellow-100 text-yellow-800' },
-  { id: '6', name: 'Frank Miller', department: 'Engineering', avatar: '', color: 'bg-pink-100 text-pink-800' },
-];
+// API configuration
+const API_BASE = `${BACKEND_URL}/company-admin/leave-calendar`;
 
-// Mock leave events data
-const MOCK_LEAVE_EVENTS: LeaveEvent[] = [
-  {
-    id: '1',
-    employeeId: '1',
-    employeeName: 'Alice Johnson',
-    department: 'Engineering',
-    leaveType: 'Annual Leave',
-    startDate: '2025-01-15',
-    endDate: '2025-01-19',
-    status: 'approved',
-    reason: 'Vacation',
-    color: 'bg-blue-100 text-blue-800'
-  },
-  {
-    id: '2',
-    employeeId: '2',
-    employeeName: 'Bob Smith',
-    department: 'Design',
-    leaveType: 'Sick Leave',
-    startDate: '2025-01-20',
-    endDate: '2025-01-21',
-    status: 'approved',
-    reason: 'Medical appointment',
-    color: 'bg-red-100 text-red-800'
-  },
-  {
-    id: '3',
-    employeeId: '3',
-    employeeName: 'Charlie Brown',
-    department: 'Marketing',
-    leaveType: 'Study Leave',
-    startDate: '2025-01-25',
-    endDate: '2025-01-27',
-    status: 'pending',
-    reason: 'Training course',
-    color: 'bg-green-100 text-green-800'
-  },
-  {
-    id: '4',
-    employeeId: '4',
-    employeeName: 'Diana Prince',
-    department: 'HR',
-    leaveType: 'Annual Leave',
-    startDate: '2025-02-01',
-    endDate: '2025-02-05',
-    status: 'approved',
-    reason: 'Family vacation',
-    color: 'bg-purple-100 text-purple-800'
-  },
-  {
-    id: '5',
-    employeeId: '5',
-    employeeName: 'Eve Wilson',
-    department: 'Finance',
-    leaveType: 'Maternity Leave',
-    startDate: '2025-02-10',
-    endDate: '2025-05-10',
-    status: 'approved',
-    reason: 'Maternity leave',
-    color: 'bg-yellow-100 text-yellow-800'
-  },
-  {
-    id: '6',
-    employeeId: '6',
-    employeeName: 'Frank Miller',
-    department: 'Engineering',
-    leaveType: 'Annual Leave',
-    startDate: '2025-01-30',
-    endDate: '2025-02-02',
-    status: 'pending',
-    reason: 'Personal time',
-    color: 'bg-pink-100 text-pink-800'
-  },
-];
+const getAuthToken = () => {
+  return localStorage.getItem('token');
+};
 
-// Mock upcoming leave requests
-const MOCK_UPCOMING_LEAVES: LeaveRequest[] = [
-  {
-    id: '1',
-    employeeId: '1',
-    employeeName: 'Alice Johnson',
-    department: 'Engineering',
-    startDate: '2025-01-15',
-    endDate: '2025-01-19',
-    type: 'Annual Leave',
-    status: 'approved',
-    reason: 'Vacation'
+const api = axios.create({
+  baseURL: API_BASE,
+  headers: {
+    'Content-Type': 'application/json',
   },
-  {
-    id: '2',
-    employeeId: '2',
-    employeeName: 'Bob Smith',
-    department: 'Design',
-    startDate: '2025-01-20',
-    endDate: '2025-01-21',
-    type: 'Sick Leave',
-    status: 'approved',
-    reason: 'Medical appointment'
-  },
-  {
-    id: '3',
-    employeeId: '3',
-    employeeName: 'Charlie Brown',
-    department: 'Marketing',
-    startDate: '2025-01-25',
-    endDate: '2025-01-27',
-    type: 'Study Leave',
-    status: 'pending',
-    reason: 'Training course'
-  },
-  {
-    id: '4',
-    employeeId: '4',
-    employeeName: 'Diana Prince',
-    department: 'HR',
-    startDate: '2025-02-01',
-    endDate: '2025-02-05',
-    type: 'Annual Leave',
-    status: 'approved',
-    reason: 'Family vacation'
-  },
-  {
-    id: '5',
-    employeeId: '5',
-    employeeName: 'Eve Wilson',
-    department: 'Finance',
-    startDate: '2025-02-10',
-    endDate: '2025-05-10',
-    type: 'Maternity Leave',
-    status: 'approved',
-    reason: 'Maternity leave'
-  },
-  {
-    id: '6',
-    employeeId: '6',
-    employeeName: 'Frank Miller',
-    department: 'Engineering',
-    startDate: '2025-01-30',
-    endDate: '2025-02-02',
-    type: 'Annual Leave',
-    status: 'pending',
-    reason: 'Personal time'
-  },
-];
+});
+
+api.interceptors.request.use((config) => {
+  const token = getAuthToken();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 export default function LeaveCalendar() {
   const navigate = useNavigate();
   const [date, setDate] = useState<Date>(new Date());
-  const [leaveEvents, setLeaveEvents] = useState<LeaveEvent[]>(MOCK_LEAVE_EVENTS);
-  const [upcomingLeaves, setUpcomingLeaves] = useState<LeaveRequest[]>(MOCK_UPCOMING_LEAVES);
+  const [leaveEvents, setLeaveEvents] = useState<LeaveEvent[]>([]);
+  const [upcomingLeaves, setUpcomingLeaves] = useState<LeaveRequest[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch leave events data
+  useEffect(() => {
+    const fetchLeaveData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const [eventsResponse, upcomingResponse] = await Promise.all([
+          api.get('/leave-events'),
+          api.get('/upcoming-leaves')
+        ]);
+
+        setLeaveEvents(eventsResponse.data.leaveEvents || []);
+        setUpcomingLeaves(upcomingResponse.data.upcomingLeaves || []);
+      } catch (err) {
+        console.error('Error fetching leave data:', err);
+        setError('Failed to load leave calendar data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLeaveData();
+  }, []);
 
   // Get events for a specific day
   const getDayEvents = (day: Date) => {
@@ -223,6 +118,34 @@ export default function LeaveCalendar() {
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
   };
+
+  if (loading) {
+    return (
+      <div className="container mx-auto py-8">
+        <div className="flex justify-center items-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-500">Loading leave calendar data...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto py-8">
+        <div className="flex justify-center items-center h-64">
+          <div className="text-center">
+            <p className="text-red-500 mb-4">{error}</p>
+            <Button onClick={() => window.location.reload()} variant="outline">
+              Try Again
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto py-8">
@@ -425,7 +348,7 @@ export default function LeaveCalendar() {
           <Card>
             <CardHeader>
               <CardTitle>Upcoming Leave Requests</CardTitle>
-              <CardDescription>View and manage all upcoming employee time off</CardDescription>
+              <CardDescription>View and manage all upcoming employee time off (Approved leaves only)</CardDescription>
             </CardHeader>
             <CardContent>
               {upcomingLeaves.length > 0 ? (
@@ -457,25 +380,16 @@ export default function LeaveCalendar() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Badge variant={
-                          request.status === 'approved' ? 'default' : 
-                          request.status === 'pending' ? 'secondary' : 'destructive'
-                        }>
-                          {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                        <Badge variant="default">
+                          Approved
                         </Badge>
-                        {request.status === 'pending' && (
-                          <div className="flex gap-2">
-                            <Button variant="outline" size="sm">Approve</Button>
-                            <Button variant="outline" size="sm">Reject</Button>
-                          </div>
-                        )}
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
                 <div className="text-center py-8">
-                  <p className="text-muted-foreground">No upcoming leave requests</p>
+                  <p className="text-muted-foreground">No upcoming approved leave requests</p>
                 </div>
               )}
             </CardContent>
