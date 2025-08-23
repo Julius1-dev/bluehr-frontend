@@ -226,7 +226,7 @@ export function TeamManagement(): JSX.Element {
   };
   
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-4 md:p-6">
       <input
         ref={fileInputRef}
         type="file"
@@ -258,19 +258,21 @@ export function TeamManagement(): JSX.Element {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      <div className="flex justify-between items-center">
+      
+      {/* Header Section - Mobile Responsive */}
+      <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Team Management</h1>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Team Management</h1>
           <p className="text-gray-500">Manage your team members, departments, and roles.</p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
           <Button variant="outline" size="sm" className="gap-1" onClick={handleImportClick}>
             <Upload className="h-4 w-4" />
-            Import
+            <span className="hidden sm:inline">Import</span>
           </Button>
           <Button variant="outline" size="sm" className="gap-1" onClick={handleExport}>
             <Download className="h-4 w-4" />
-            Export
+            <span className="hidden sm:inline">Export</span>
           </Button>
           <Button 
             size="sm" 
@@ -278,7 +280,8 @@ export function TeamManagement(): JSX.Element {
             onClick={handleAddEmployee}
           >
             <UserPlus className="h-4 w-4" />
-            Add Employee
+            <span className="hidden sm:inline">Add Employee</span>
+            <span className="sm:hidden">Add</span>
           </Button>
         </div>
       </div>
@@ -291,7 +294,8 @@ export function TeamManagement(): JSX.Element {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col md:flex-row gap-4 mb-6">
+          {/* Search and Filters - Mobile Responsive */}
+          <div className="flex flex-col gap-4 mb-6">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input 
@@ -301,10 +305,10 @@ export function TeamManagement(): JSX.Element {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <div className="flex gap-2">
-              <div className="relative">
+            <div className="flex flex-col sm:flex-row gap-2">
+              <div className="relative flex-1">
                 <select 
-                  className="appearance-none bg-white border border-gray-300 rounded-md pl-3 pr-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full appearance-none bg-white border border-gray-300 rounded-md pl-3 pr-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   value={selectedDepartment}
                   onChange={(e) => setSelectedDepartment(e.target.value)}
                 >
@@ -314,9 +318,9 @@ export function TeamManagement(): JSX.Element {
                 </select>
                 <Filter className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
               </div>
-              <div className="relative">
+              <div className="relative flex-1">
                 <select 
-                  className="appearance-none bg-white border border-gray-300 rounded-md pl-3 pr-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full appearance-none bg-white border border-gray-300 rounded-md pl-3 pr-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   value={selectedStatus}
                   onChange={(e) => setSelectedStatus(e.target.value)}
                 >
@@ -329,96 +333,103 @@ export function TeamManagement(): JSX.Element {
             </div>
           </div>
           
+          {/* Mobile Responsive Table */}
           <div className="border rounded-md overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[250px]">Employee</TableHead>
-                  <TableHead>Department</TableHead>
-                  <TableHead>Position</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Join Date</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredTeamMembers.map((member) => {
-                  const department = departmentsList.find((d) => d.id?.toString() === member.department_id?.toString());
-                  return (
-                    <TableRow key={member.id}>
-                      <TableCell className="font-medium">
-                        <div className="flex items-center gap-3">
-                          <Avatar>
-                            <AvatarImage src={member.avatar} alt={member.name || ''} />
-                            <AvatarFallback>{member.name?.split(' ').map((n: string) => n[0]).join('') || ''}</AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <div className="font-medium">{member.name && member.name.trim() !== '' ? member.name : 'Unnamed Employee'}</div>
-                            <div className="text-sm text-gray-500">{member.email || ''}</div>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[200px] md:w-[250px]">Employee</TableHead>
+                    <TableHead className="hidden md:table-cell">Department</TableHead>
+                    <TableHead className="hidden lg:table-cell">Position</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="hidden md:table-cell">Join Date</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredTeamMembers.map((member) => {
+                    const department = departmentsList.find((d) => d.id?.toString() === member.department_id?.toString());
+                    return (
+                      <TableRow key={member.id}>
+                        <TableCell className="font-medium">
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-8 w-8 md:h-10 md:w-10">
+                              <AvatarImage src={member.avatar} alt={member.name || ''} />
+                              <AvatarFallback className="text-xs md:text-sm">{member.name?.split(' ').map((n: string) => n[0]).join('') || ''}</AvatarFallback>
+                            </Avatar>
+                            <div className="min-w-0 flex-1">
+                              <div className="font-medium text-sm md:text-base truncate">{member.name && member.name.trim() !== '' ? member.name : 'Unnamed Employee'}</div>
+                              <div className="text-xs md:text-sm text-gray-500 truncate">{member.email || ''}</div>
+                              <div className="text-xs text-gray-400 md:hidden">
+                                {department ? department.name : ''} • {member.role || ''}
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="font-normal">
-                          {department ? department.name : ''}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{member.role || ''}</TableCell>
-                      <TableCell>
-                        <Badge className={`${getStatusColor(member.status || '')} font-normal`}>
-                          {member.status?.charAt(0).toUpperCase() + member.status?.slice(1) || ''}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{member.joining_date ? new Date(member.joining_date).toLocaleDateString() : ''}</TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                              <span className="sr-only">Actions</span>
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent className='bg-gray-200' align="end">
-                            <DropdownMenuLabel className='text-center'>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem 
-                              className="cursor-pointer hover:underline hover:underline-offset-2" 
-                              onClick={() => navigate(`/admin/team/view/${member.id}`)}
-                            >
-                              <Mail className="mr-2 h-4 w-4" />
-                              View Details
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              className="cursor-pointer hover:underline hover:underline-offset-2" 
-                              onClick={() => handleEditEmployee(member.id)}
-                            >
-                              <Pencil className="mr-2 h-4 w-4" />
-                              Edit Details
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              className="cursor-pointer hover:underline hover:underline-offset-2"
-                              onClick={() => navigate(`/admin/team/${member.id}/department`)}
-                            >
-                              <Building className="mr-2 h-4 w-4" />
-                              Change Department
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              className="cursor-pointer hover:underline hover:underline-offset-2"
-                              onClick={() => navigate(`/admin/team/${member.id}/schedule`)}
-                            >
-                              <Calendar className="mr-2 h-4 w-4" />
-                              View Schedule
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          <Badge variant="outline" className="font-normal">
+                            {department ? department.name : ''}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="hidden lg:table-cell">{member.role || ''}</TableCell>
+                        <TableCell>
+                          <Badge className={`${getStatusColor(member.status || '')} font-normal text-xs`}>
+                            {member.status?.charAt(0).toUpperCase() + member.status?.slice(1) || ''}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell text-sm">{member.joining_date ? new Date(member.joining_date).toLocaleDateString() : ''}</TableCell>
+                        <TableCell className="text-right">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8">
+                                <MoreHorizontal className="h-4 w-4" />
+                                <span className="sr-only">Actions</span>
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent className='bg-gray-200' align="end">
+                              <DropdownMenuLabel className='text-center'>Actions</DropdownMenuLabel>
+                              <DropdownMenuItem 
+                                className="cursor-pointer hover:underline hover:underline-offset-2" 
+                                onClick={() => navigate(`/admin/team/view/${member.id}`)}
+                              >
+                                <Mail className="mr-2 h-4 w-4" />
+                                View Details
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                className="cursor-pointer hover:underline hover:underline-offset-2" 
+                                onClick={() => handleEditEmployee(member.id)}
+                              >
+                                <Pencil className="mr-2 h-4 w-4" />
+                                Edit Details
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                className="cursor-pointer hover:underline hover:underline-offset-2"
+                                onClick={() => navigate(`/admin/team/${member.id}/department`)}
+                              >
+                                <Building className="mr-2 h-4 w-4" />
+                                Change Department
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                className="cursor-pointer hover:underline hover:underline-offset-2"
+                                onClick={() => navigate(`/admin/team/${member.id}/schedule`)}
+                              >
+                                <Calendar className="mr-2 h-4 w-4" />
+                                View Schedule
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
           </div>
           
-          <div className="flex items-center justify-between mt-4 text-sm text-gray-500">
+          {/* Pagination - Mobile Responsive */}
+          <div className="flex flex-col sm:flex-row items-center justify-between mt-4 text-sm text-gray-500 gap-2">
             <div>Showing {filteredTeamMembers.length} of {teamMembers.length} team members</div>
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" disabled>Previous</Button>

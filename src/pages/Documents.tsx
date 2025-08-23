@@ -454,11 +454,17 @@ export function Documents() {
   }, []);
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Documents</h1>
-        <div className="flex gap-2">
-          <div className="relative w-64">
+    <div className="space-y-6 p-4 md:p-6">
+      {/* Header Section - Mobile Responsive */}
+      <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Documents</h1>
+          <p className="text-gray-500">
+            {isAdmin ? 'Manage and share documents with your team.' : 'Access and view shared documents.'}
+          </p>
+        </div>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
+          <div className="relative flex-1 sm:w-64">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <Input
               type="search"
@@ -469,7 +475,7 @@ export function Documents() {
             />
           </div>
           <Select onValueChange={(value) => setSelectedCategory(value)} value={selectedCategory}>
-            <SelectTrigger className="w-40">
+            <SelectTrigger className="w-full sm:w-40">
               <SelectValue placeholder="Filter by category" />
             </SelectTrigger>
             <SelectContent>
@@ -483,13 +489,15 @@ export function Documents() {
           {isAdmin && (
             <Button onClick={() => setIsUploadModalOpen(true)}>
               <Upload className="mr-2 h-4 w-4" />
-              Upload Document
+              <span className="hidden sm:inline">Upload Document</span>
+              <span className="sm:hidden">Upload</span>
             </Button>
           )}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Summary Cards - Mobile Responsive */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardContent className="pt-4">
             <div className="flex items-center gap-3">
