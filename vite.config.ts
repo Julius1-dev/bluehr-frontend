@@ -12,9 +12,12 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
-  preview: {
-    port: 3012,
+  server: {
     host: true,
-    allowedHosts: ['bluehr.joinbluehr.com', 'dev-bluehr.joinbluehr.com'],
+    port: Number(process.env.PORT) || 3012,
+  },
+  preview: {
+    host: true,
+    port: Number(process.env.PORT) || 3012,
   },
 });
