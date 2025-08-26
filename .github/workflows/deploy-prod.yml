@@ -2,7 +2,7 @@ name: CD Pipeline (Prod)
 
 on:
   push:
-    branches: [ master ]
+    branches: [ production ]
   workflow_dispatch:
 
 jobs:
