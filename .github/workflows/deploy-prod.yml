@@ -2,7 +2,7 @@ name: CD Pipeline (Prod)
 
 on:
   push:
-    branches: [ master ]
+    branches: [ production ]
   workflow_dispatch:
 
 jobs:
@@ -31,7 +31,7 @@ jobs:
           password: $$$Telemux01!int
           port: 22
           script: |
-            cd /var/www/blue--hr/dev/bluehr-frontend-v2
+            cd /var/www/blue--hr/bluehr-frontend-v2
             rm -f package-lock.json
             git config pull.rebase false
             git pull origin production
