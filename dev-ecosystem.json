@@ -7,7 +7,7 @@
       "args": "run dev -- --port 3013 --host",
       "env": {
         "NODE_ENV": "production",
-        "PORT": "3013"
+        "PORT": "3014"
       },
       "env_file": ".env",
       "log_file": "/root/.pm2/logs/bluehr-frontend-v2-dev-combined.log",
