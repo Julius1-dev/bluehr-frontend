@@ -15,6 +15,6 @@ export default defineConfig({
   preview: {
     port: 3012,
     host: true,
-    allowedHosts: ['bluehr.joinbluehr.com', "dev-bluehr.joinbluehr.com"],
+    allowedHosts: ['bluehr.joinbluehr.com', 'dev-bluehr.joinbluehr.com'],
   },
 });
