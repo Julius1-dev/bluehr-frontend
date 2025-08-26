@@ -15,6 +15,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { SearchableSelect } from '@/components/ui/SearchableSelect';
 
 interface Message {
   id: string;
@@ -448,7 +449,7 @@ const HelpAndSupport = ({ dashboardRole }: HelpAndSupportProps) => {
             <CardContent className="space-y-4">
               <div className="flex items-center space-x-2">
                 <Mail className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">support@jojnbluecollar.com</span>
+                <span className="text-sm">support@joinbluecollar.com</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Phone className="h-4 w-4 text-muted-foreground" />
@@ -672,68 +673,158 @@ const HelpAndSupport = ({ dashboardRole }: HelpAndSupportProps) => {
       </div>
 
       {showNewTicketModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-30 z-50 flex items-center justify-center">
-          <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md relative">
-            <Button variant="ghost" size="sm" className="absolute top-4 right-4" onClick={() => setShowNewTicketModal(false)}><X className="h-4 w-4 mr-2" />Cancel</Button>
-            <h2 className="text-xl font-bold mb-4">Create New Ticket</h2>
-            <div className="mb-4">
-              <label className="block mb-1 font-medium">Subject</label>
-              <Input
-                className="w-full border rounded p-2"
-                value={newTicket.subject}
-                onChange={e => setNewTicket(f => ({ ...f, subject: e.target.value }))}
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block mb-1 font-medium">Description</label>
-              <Textarea
-                className="w-full border rounded p-2"
-                value={newTicket.description}
-                onChange={e => setNewTicket(f => ({ ...f, description: e.target.value }))}
-                rows={3}
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block mb-1 font-medium">Priority</label>
-              <select
-                className="w-full border rounded p-2"
-                value={newTicket.priority}
-                onChange={e => setNewTicket(f => ({ ...f, priority: e.target.value }))}
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-4 flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-bold">Create New Ticket</h2>
+                <p className="text-blue-100 text-sm mt-1">Fill in the details below to create a new support ticket</p>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-white hover:bg-blue-600 hover:text-white" 
+                onClick={() => setShowNewTicketModal(false)}
               >
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-                <option value="urgent">Urgent</option>
-              </select>
+                <X className="h-5 w-5" />
+              </Button>
             </div>
-            <div className="mb-4">
-              <label className="block mb-1 font-medium">Assign To</label>
-              <select
-                className="w-full border rounded p-2"
-                value={newTicket.assignedTo}
-                onChange={e => setNewTicket(f => ({ ...f, assignedTo: e.target.value }))}
-              >
-                <option value="">Select assignee</option>
-                {assignees.length > 0 ? assignees.map((user: any) => (
-                  <option key={user.id} value={user.id}>{user.name || `${user.first_name || ''} ${user.last_name || ''}`.trim()}</option>
-                )) : null}
-                {superAdmin && (
-                  <option value={superAdmin.id}>Send to Super Admin</option>
-                )}
-              </select>
+
+            {/* Form Content */}
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Left Column */}
+                <div className="space-y-6">
+                  {/* Subject */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Subject <span className="text-red-500">*</span>
+                    </label>
+                    <Input
+                      className="w-full border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg"
+                      placeholder="Enter ticket subject..."
+                      value={newTicket.subject}
+                      onChange={e => setNewTicket(f => ({ ...f, subject: e.target.value }))}
+                    />
+                  </div>
+
+                  {/* Description */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Description <span className="text-red-500">*</span>
+                    </label>
+                    <Textarea
+                      className="w-full border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg resize-none"
+                      placeholder="Describe your issue or request..."
+                      value={newTicket.description}
+                      onChange={e => setNewTicket(f => ({ ...f, description: e.target.value }))}
+                      rows={4}
+                    />
+                  </div>
+
+                  {/* Initial Message */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Initial Message <span className="text-red-500">*</span>
+                    </label>
+                    <Textarea
+                      className="w-full border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg resize-none"
+                      placeholder="Add your initial message..."
+                      value={newTicket.initialMessage}
+                      onChange={e => setNewTicket(f => ({ ...f, initialMessage: e.target.value }))}
+                      rows={3}
+                    />
+                  </div>
+                </div>
+
+                {/* Right Column */}
+                <div className="space-y-6">
+                  {/* Priority */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Priority <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      className="w-full border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg px-3 py-2 bg-white"
+                      value={newTicket.priority}
+                      onChange={e => setNewTicket(f => ({ ...f, priority: e.target.value }))}
+                    >
+                      <option value="">Select priority level</option>
+                      <option value="low" className="text-green-600">🟢 Low</option>
+                      <option value="medium" className="text-yellow-600">🟡 Medium</option>
+                      <option value="high" className="text-orange-600">🟠 High</option>
+                      <option value="urgent" className="text-red-600">🔴 Urgent</option>
+                    </select>
+                  </div>
+
+                  {/* Assign To */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Assign To <span className="text-red-500">*</span>
+                    </label>
+                    <SearchableSelect
+                      options={assignees.map((user: any) => ({
+                        id: user.id,
+                        name: user.name || `${user.first_name || ''} ${user.last_name || ''}`.trim(),
+                        email: user.email,
+                        role: user.role,
+                        department: user.department?.name
+                      }))}
+                      value={newTicket.assignedTo}
+                      onChange={value => setNewTicket(f => ({ ...f, assignedTo: value.toString() }))}
+                      placeholder="Select assignee"
+                      className="w-full"
+                    />
+                  </div>
+
+                  {/* Send to Super Admin - Available for both admin and employee */}
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <label className="block text-sm font-semibold text-blue-800 mb-2">
+                      🚨 Escalate to Super Admin
+                    </label>
+                    <SearchableSelect
+                      options={superAdmin ? [{
+                        id: superAdmin.id,
+                        name: 'Send to Super Admin',
+                        role: 'super-admin'
+                      }] : []}
+                      value={newTicket.assignedTo === (superAdmin?.id?.toString() || '') ? (superAdmin?.id || '') : ''}
+                      onChange={value => setNewTicket(f => ({ ...f, assignedTo: value.toString() }))}
+                      placeholder="Send to Super Admin"
+                      className="w-full"
+                    />
+                    <p className="text-xs text-blue-600 mt-2">
+                      Use this option for urgent issues that require immediate attention
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="mb-4">
-              <label className="block mb-1 font-medium">Initial Message</label>
-              <Textarea
-                className="w-full border rounded p-2"
-                value={newTicket.initialMessage}
-                onChange={e => setNewTicket(f => ({ ...f, initialMessage: e.target.value }))}
-                rows={2}
-              />
+
+            {/* Footer */}
+            <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+              <div className="text-sm text-gray-600">
+                All fields marked with <span className="text-red-500">*</span> are required
+              </div>
+              <div className="flex space-x-3">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowNewTicketModal(false)}
+                  className="border-gray-300 hover:bg-gray-50"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-6"
+                  onClick={handleCreateTicket} 
+                  disabled={!newTicket.subject || !newTicket.description || !newTicket.initialMessage || !newTicket.assignedTo}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Ticket
+                </Button>
+              </div>
             </div>
-            <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white" onClick={handleCreateTicket} disabled={!newTicket.subject || !newTicket.description || !newTicket.initialMessage || !newTicket.assignedTo}>
-              Create Ticket
-            </Button>
           </div>
         </div>
       )}

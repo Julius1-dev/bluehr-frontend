@@ -186,10 +186,10 @@ export function AttendanceManagement(): JSX.Element {
       setError(null);
 
       const departmentId = selectedDepartment === 'All Departments' ? undefined : selectedDepartment;
-      
+
       // Determine if we need date range or single date
       const needsDateRange = ['This Week', 'Last Week', 'This Month'].includes(selectedDate);
-      
+
       let date: string | undefined;
       let startDate: string | undefined;
       let endDate: string | undefined;
@@ -209,6 +209,11 @@ export function AttendanceManagement(): JSX.Element {
         attendanceApi.getRecentIssues(7),
         attendanceApi.getDepartments()
       ]);
+
+      console.log('Attendance Records Response:', recordsResponse);
+      console.log('Attendance Summary Response:', summaryResponse);
+      console.log('Recent Issues Response:', issuesResponse);
+      console.log('Departments Response:', departmentsResponse);
 
       setAttendanceRecords(recordsResponse.records || []);
       setAttendanceSummary(summaryResponse);
@@ -313,13 +318,14 @@ export function AttendanceManagement(): JSX.Element {
   }
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-6 p-4 md:p-6">
+      {/* Header Section - Mobile Responsive */}
+      <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Attendance Management</h1>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Attendance Management</h1>
           <p className="text-gray-500">Monitor and manage employee attendance records.</p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
           <Button 
             variant="outline" 
             size="sm" 
@@ -327,11 +333,11 @@ export function AttendanceManagement(): JSX.Element {
             onClick={() => navigate('/admin/attendance-settings')}
           >
             <Settings className="h-4 w-4" />
-            Attendance Settings
+            <span className="hidden sm:inline">Settings</span>
           </Button>
           <Button variant="outline" size="sm" className="gap-1">
             <Download className="h-4 w-4" />
-            Export Report
+            <span className="hidden sm:inline">Export</span>
           </Button>
           <Button 
             size="sm" 
@@ -339,15 +345,16 @@ export function AttendanceManagement(): JSX.Element {
             onClick={() => navigate('/admin/attendance/analytics')}
           >
             <BarChart2 className="h-4 w-4" />
-            Analytics
+            <span className="hidden sm:inline">Analytics</span>
           </Button>
         </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      {/* Summary Cards - Mobile Responsive */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         <Card className="col-span-1">
           <CardHeader className="pb-3">
-            <CardTitle>
+            <CardTitle className="text-lg">
               {selectedDate === 'Today' ? "Today's Summary" :
                selectedDate === 'Yesterday' ? "Yesterday's Summary" :
                selectedDate === 'This Week' ? "This Week's Summary" :
@@ -355,7 +362,7 @@ export function AttendanceManagement(): JSX.Element {
                selectedDate === 'This Month' ? "This Month's Summary" :
                "Attendance Summary"}
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-sm">
               {selectedDate === 'Today' || selectedDate === 'Yesterday' ? 
                 new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) :
                selectedDate === 'This Week' || selectedDate === 'Last Week' ? 
@@ -381,39 +388,39 @@ export function AttendanceManagement(): JSX.Element {
                     <CheckCircle2 className="h-4 w-4 text-green-600" />
                     <span className="text-sm font-medium">Present</span>
                   </div>
-                  <p className="text-2xl font-bold mt-1">{attendanceSummary.present}</p>
+                  <p className="text-xl md:text-2xl font-bold mt-1">{attendanceSummary.present}</p>
                 </div>
                 <div className="bg-amber-50 p-3 rounded-md">
                   <div className="flex items-center gap-2">
                     <Clock className="h-4 w-4 text-amber-600" />
                     <span className="text-sm font-medium">Late</span>
                   </div>
-                  <p className="text-2xl font-bold mt-1">{attendanceSummary.late}</p>
+                  <p className="text-xl md:text-2xl font-bold mt-1">{attendanceSummary.late}</p>
                 </div>
                 <div className="bg-red-50 p-3 rounded-md">
                   <div className="flex items-center gap-2">
                     <XCircle className="h-4 w-4 text-red-600" />
                     <span className="text-sm font-medium">Absent</span>
                   </div>
-                  <p className="text-2xl font-bold mt-1">{attendanceSummary.absent}</p>
+                  <p className="text-xl md:text-2xl font-bold mt-1">{attendanceSummary.absent}</p>
                 </div>
                 <div className="bg-blue-50 p-3 rounded-md">
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4 text-blue-600" />
                     <span className="text-sm font-medium">On Leave</span>
                   </div>
-                  <p className="text-2xl font-bold mt-1">{attendanceSummary.onLeave}</p>
+                  <p className="text-xl md:text-2xl font-bold mt-1">{attendanceSummary.onLeave}</p>
                 </div>
               </div>
               
-              <div className="pt-4 border-t">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium">Total Employees</span>
-                  <span className="font-semibold">{attendanceSummary.totalEmployees}</span>
+              <div className="pt-3 border-t">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600">Total Employees</span>
+                  <span className="font-medium">{attendanceSummary.totalEmployees}</span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Avg. Work Hours</span>
-                  <span className="font-semibold">{attendanceSummary.averageWorkHours}</span>
+                <div className="flex items-center justify-between text-sm mt-1">
+                  <span className="text-gray-600">Avg. Work Hours</span>
+                  <span className="font-medium">{attendanceSummary.averageWorkHours}</span>
                 </div>
               </div>
               
@@ -439,7 +446,7 @@ export function AttendanceManagement(): JSX.Element {
           </CardContent>
         </Card>
         
-        <Card className="col-span-1 md:col-span-3">
+        <Card className="col-span-1 lg:col-span-3">
           <CardHeader className="pb-3">
             <CardTitle>Attendance Records</CardTitle>
             <CardDescription>
@@ -447,10 +454,11 @@ export function AttendanceManagement(): JSX.Element {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-col md:flex-row gap-4 mb-6">
-              <div className="relative">
+            {/* Filters - Mobile Responsive */}
+            <div className="flex flex-col sm:flex-row gap-3 mb-6">
+              <div className="relative flex-1">
                 <select 
-                  className="appearance-none bg-white border border-gray-300 rounded-md pl-3 pr-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full appearance-none bg-white border border-gray-300 rounded-md pl-3 pr-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
                 >
@@ -460,9 +468,9 @@ export function AttendanceManagement(): JSX.Element {
                 </select>
                 <CalendarRange className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
               </div>
-              <div className="relative">
+              <div className="relative flex-1">
                 <select 
-                  className="appearance-none bg-white border border-gray-300 rounded-md pl-3 pr-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full appearance-none bg-white border border-gray-300 rounded-md pl-3 pr-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   value={selectedDepartment}
                   onChange={(e) => setSelectedDepartment(e.target.value)}
                 >
@@ -473,9 +481,9 @@ export function AttendanceManagement(): JSX.Element {
                 </select>
                 <Filter className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
               </div>
-              <div className="relative">
+              <div className="relative flex-1">
                 <select 
-                  className="appearance-none bg-white border border-gray-300 rounded-md pl-3 pr-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full appearance-none bg-white border border-gray-300 rounded-md pl-3 pr-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   value={selectedStatus}
                   onChange={(e) => setSelectedStatus(e.target.value)}
                 >
@@ -487,49 +495,55 @@ export function AttendanceManagement(): JSX.Element {
               </div>
             </div>
             
+            {/* Mobile Responsive Table */}
             <div className="border rounded-md overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[250px]">Employee</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Clock In</TableHead>
-                    <TableHead>Clock Out</TableHead>
-                    <TableHead>Work Hours</TableHead>
-                    <TableHead>Notes</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredAttendanceRecords.map((record) => (
-                    <TableRow key={record.id}>
-                      <TableCell className="font-medium">
-                        <div className="flex items-center gap-3">
-                          <Avatar>
-                            <AvatarImage src={record.employeeAvatar} alt={record.employeeName} />
-                            <AvatarFallback>{record.employeeName.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <div className="font-medium">{record.employeeName}</div>
-                            <div className="text-xs text-gray-500">{record.department}</div>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          {getStatusIcon(record.status)}
-                          <Badge className={`${getStatusColor(record.status)} font-normal`}>
-                            {record.status.charAt(0).toUpperCase() + record.status.slice(1)}
-                          </Badge>
-                        </div>
-                      </TableCell>
-                      <TableCell>{formatTime(record.clockIn)}</TableCell>
-                      <TableCell>{formatTime(record.clockOut)}</TableCell>
-                      <TableCell>{record.workHours}</TableCell>
-                      <TableCell className="text-sm text-gray-500">{record.notes || '-'}</TableCell>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[200px] md:w-[250px]">Employee</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="hidden md:table-cell">Clock In</TableHead>
+                      <TableHead className="hidden md:table-cell">Clock Out</TableHead>
+                      <TableHead className="hidden lg:table-cell">Work Hours</TableHead>
+                      <TableHead className="hidden lg:table-cell">Notes</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredAttendanceRecords.map((record) => (
+                      <TableRow key={record.id}>
+                        <TableCell className="font-medium">
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-8 w-8 md:h-10 md:w-10">
+                              <AvatarImage src={record.employeeAvatar} alt={record.employeeName} />
+                              <AvatarFallback className="text-xs md:text-sm">{record.employeeName.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                            </Avatar>
+                            <div className="min-w-0 flex-1">
+                              <div className="font-medium text-sm md:text-base truncate">{record.employeeName}</div>
+                              <div className="text-xs text-gray-500 truncate">{record.department}</div>
+                              <div className="text-xs text-gray-400 md:hidden">
+                                {formatTime(record.clockIn)} - {formatTime(record.clockOut)} • {record.workHours}
+                              </div>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            {getStatusIcon(record.status)}
+                            <Badge className={`${getStatusColor(record.status)} font-normal text-xs`}>
+                              {record.status.charAt(0).toUpperCase() + record.status.slice(1)}
+                            </Badge>
+                          </div>
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell text-sm">{formatTime(record.clockIn)}</TableCell>
+                        <TableCell className="hidden md:table-cell text-sm">{formatTime(record.clockOut)}</TableCell>
+                        <TableCell className="hidden lg:table-cell text-sm">{record.workHours}</TableCell>
+                        <TableCell className="hidden lg:table-cell text-sm text-gray-500">{record.notes || '-'}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             </div>
             
             {filteredAttendanceRecords.length === 0 && (

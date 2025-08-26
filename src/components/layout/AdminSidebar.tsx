@@ -29,6 +29,7 @@ interface NavItemProps {
   badge?: number;
   requiredPermissions?: string[];
   userPermissions?: string[];
+  onMobileClose?: () => void;
 }
 
 const NavItem: React.FC<NavItemProps> = ({ 
@@ -37,7 +38,8 @@ const NavItem: React.FC<NavItemProps> = ({
   to, 
   badge, 
   requiredPermissions, 
-  userPermissions 
+  userPermissions,
+  onMobileClose
 }) => {
   const location = useLocation();
   const isActive = location.pathname === to;
@@ -56,6 +58,7 @@ const NavItem: React.FC<NavItemProps> = ({
   return (
     <Link 
       to={to}
+      onClick={onMobileClose}
       className={cn(
         "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium cursor-pointer transition-colors",
         isActive 
@@ -77,7 +80,7 @@ const NavItem: React.FC<NavItemProps> = ({
 };
 
 // Then define the AdminSidebar component
-export const AdminSidebar: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
+export const AdminSidebar: React.FC<{ onLogout: () => void; onMobileClose?: () => void }> = ({ onLogout, onMobileClose }) => {
 
   const [userPermissions, setUserPermissions] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -121,15 +124,27 @@ export const AdminSidebar: React.FC<{ onLogout: () => void }> = ({ onLogout }) =
 
   if (loading) {
     return (
-      <aside className="hidden md:flex flex-col w-64 bg-white border-r border-gray-200">
-        <div className="p-4 flex items-center gap-2 border-b border-gray-200">
-          <div className="h-8 w-8 bg-purple-600 rounded-md flex items-center justify-center">
-            <span className="text-white font-bold text-lg">B</span>
+      <aside className="flex flex-col w-64 bg-white border-r border-gray-200">
+        <div className="p-4 flex items-center justify-between border-b border-gray-200">
+          <div className="flex items-center gap-2">
+            <div className="h-8 w-8 bg-purple-600 rounded-md flex items-center justify-center">
+              <span className="text-white font-bold text-lg">B</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="font-semibold text-purple-600">BlueHR</span>
+              <span className="text-xs text-gray-500">Admin Portal</span>
+            </div>
           </div>
-          <div className="flex flex-col">
-            <span className="font-semibold text-purple-600">BlueHR</span>
-            <span className="text-xs text-gray-500">Admin Portal</span>
-          </div>
+          {onMobileClose && (
+            <button
+              onClick={onMobileClose}
+              className="md:hidden p-1 rounded-md hover:bg-gray-100"
+            >
+              <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
         </div>
         <div className="flex-1 py-4 px-3 flex items-center justify-center">
           <div className="text-gray-500">Loading...</div>
@@ -139,25 +154,38 @@ export const AdminSidebar: React.FC<{ onLogout: () => void }> = ({ onLogout }) =
   }
 
   return (
-    <aside className="hidden md:flex flex-col w-64 bg-white border-r border-gray-200">
-      <div className="p-4 flex items-center gap-2 border-b border-gray-200">
-        <div className="h-8 w-8 bg-purple-600 rounded-md flex items-center justify-center">
-          <span className="text-white font-bold text-lg">B</span>
+    <aside className="flex flex-col w-64 bg-white border-r border-gray-200">
+      <div className="p-4 flex items-center justify-between border-b border-gray-200">
+        <div className="flex items-center gap-2">
+          <div className="h-8 w-8 bg-purple-600 rounded-md flex items-center justify-center">
+            <span className="text-white font-bold text-lg">B</span>
+          </div>
+          <div className="flex flex-col">
+            <span className="font-semibold text-purple-600">BlueHR</span>
+            <span className="text-xs text-gray-500">Admin Portal</span>
+          </div>
         </div>
-        <div className="flex flex-col">
-          <span className="font-semibold text-purple-600">BlueHR</span>
-          <span className="text-xs text-gray-500">Admin Portal</span>
-        </div>
+        {onMobileClose && (
+          <button
+            onClick={onMobileClose}
+            className="md:hidden p-1 rounded-md hover:bg-gray-100"
+          >
+            <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        )}
       </div>
       
       <div className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
-        <NavItem icon={<Home className="w-full h-full" />} label="Dashboard" to="/admin" userPermissions={userPermissions} />
+        <NavItem icon={<Home className="w-full h-full" />} label="Dashboard" to="/admin" userPermissions={userPermissions} onMobileClose={onMobileClose} />
         <NavItem 
           icon={<Users className="w-full h-full" />} 
           label="Team Management" 
           to="/admin/team" 
           requiredPermissions={['manage_users']}
           userPermissions={userPermissions}
+          onMobileClose={onMobileClose}
         />
         <NavItem 
           icon={<Building2 className="w-full h-full" />} 
@@ -165,6 +193,7 @@ export const AdminSidebar: React.FC<{ onLogout: () => void }> = ({ onLogout }) =
           to="/admin/departments" 
           requiredPermissions={['manage_users']}
           userPermissions={userPermissions}
+          onMobileClose={onMobileClose}
         />
         {/* <NavItem 
           icon={<Fingerprint className="w-full h-full" />} 
@@ -179,6 +208,7 @@ export const AdminSidebar: React.FC<{ onLogout: () => void }> = ({ onLogout }) =
           to="/admin/attendance" 
           requiredPermissions={['manage_attendance']}
           userPermissions={userPermissions}
+          onMobileClose={onMobileClose}
         />
         <NavItem 
           icon={<Calendar className="w-full h-full" />} 
@@ -187,6 +217,7 @@ export const AdminSidebar: React.FC<{ onLogout: () => void }> = ({ onLogout }) =
           badge={3} 
           requiredPermissions={['manage_leave']}
           userPermissions={userPermissions}
+          onMobileClose={onMobileClose}
         />
         <NavItem 
           icon={<UserX className="w-full h-full" />} 
@@ -194,6 +225,7 @@ export const AdminSidebar: React.FC<{ onLogout: () => void }> = ({ onLogout }) =
           to="/admin/offboarding" 
           requiredPermissions={['manage_users']}
           userPermissions={userPermissions}
+          onMobileClose={onMobileClose}
         />
         <NavItem 
           icon={<CreditCard className="w-full h-full" />} 
@@ -201,6 +233,7 @@ export const AdminSidebar: React.FC<{ onLogout: () => void }> = ({ onLogout }) =
           to="/admin/payroll" 
           requiredPermissions={['manage_payroll']}
           userPermissions={userPermissions}
+          onMobileClose={onMobileClose}
         />
         <NavItem 
           icon={<BarChart2 className="w-full h-full" />} 
@@ -208,6 +241,7 @@ export const AdminSidebar: React.FC<{ onLogout: () => void }> = ({ onLogout }) =
           to="/admin/performance" 
           requiredPermissions={['manage_performance']}
           userPermissions={userPermissions}
+          onMobileClose={onMobileClose}
         />
         <NavItem 
           icon={<FileText className="w-full h-full" />} 
@@ -215,6 +249,7 @@ export const AdminSidebar: React.FC<{ onLogout: () => void }> = ({ onLogout }) =
           to="/admin/documents" 
           requiredPermissions={['manage_documents']}
           userPermissions={userPermissions}
+          onMobileClose={onMobileClose}
         />
         <NavItem 
           icon={<Megaphone className="w-full h-full" />} 
@@ -222,6 +257,7 @@ export const AdminSidebar: React.FC<{ onLogout: () => void }> = ({ onLogout }) =
           to="/admin/announcements" 
           requiredPermissions={['manage_announcements']}
           userPermissions={userPermissions}
+          onMobileClose={onMobileClose}
         />
         <NavItem 
           icon={<Building className="w-full h-full" />} 
@@ -229,24 +265,27 @@ export const AdminSidebar: React.FC<{ onLogout: () => void }> = ({ onLogout }) =
           to="/admin/company-profile" 
           requiredPermissions={['manage_settings']}
           userPermissions={userPermissions}
+          onMobileClose={onMobileClose}
         />
         
         <div className="pt-4 mt-4 border-t border-gray-200">
-          <NavItem icon={<LifeBuoy className="w-full h-full" />} label="Help & Support" to="/admin/support" userPermissions={userPermissions} />
+          <NavItem icon={<LifeBuoy className="w-full h-full" />} label="Help & Support" to="/admin/support" userPermissions={userPermissions} onMobileClose={onMobileClose} />
           <NavItem 
             icon={<Shield className="w-full h-full" />} 
             label="Roles & Permissions" 
             to="/admin/roles" 
             requiredPermissions={['manage_roles']}
             userPermissions={userPermissions}
+            onMobileClose={onMobileClose}
           />
-          <NavItem icon={<Settings className="w-full h-full" />} label="Settings" to="/admin/settings" userPermissions={userPermissions} />
+          <NavItem icon={<Settings className="w-full h-full" />} label="Settings" to="/admin/settings" userPermissions={userPermissions} onMobileClose={onMobileClose} />
           <NavItem 
             icon={<CreditCard className="w-full h-full" />} 
             label="Advance Settings" 
             to="/admin/advance-settings" 
             requiredPermissions={['manage_payroll']}
             userPermissions={userPermissions}
+            onMobileClose={onMobileClose}
           />
           <button
             onClick={onLogout}

@@ -10,7 +10,8 @@ import {
   Activity, 
   Download, 
   Plus, 
-  ChevronDown 
+  ChevronDown,
+  Settings
 } from 'lucide-react';
 
 type MetricCardProps = {

@@ -1,43 +1,125 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { LineChart, BarChart, PieChart, Users, CheckCircle2 } from 'lucide-react';
+import { LineChart, BarChart, PieChart, Users, CheckCircle2, Building2, DollarSign, Activity } from 'lucide-react';
 import { OverviewChart } from '@/components/dashboard/OverviewChart';
 import { RecentActivity } from '@/components/dashboard/RecentActivity';
 import { QuickActions } from '@/components/dashboard/QuickActions';
 import { StatsGrid } from '@/components/dashboard/StatsGrid';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { useEffect, useState } from 'react';
+import { BACKEND_URL } from '@/lib/config';
 
 export function SuperAdminDashboard() {
-  // Mock data - in a real app, this would come from an API
-  const stats = [
+  const [stats, setStats] = useState([
     {
       title: 'Total Organizations',
-      value: '24',
-      change: '+12%',
+      value: '0',
+      change: '0%',
       changeType: 'positive',
-      icon: <LineChart className="h-4 w-4 text-muted-foreground" />,
+      icon: <Building2 className="h-4 w-4 text-purple-500" />,
     },
     {
       title: 'Active Users',
-      value: '1,234',
-      change: '+19%',
+      value: '0',
+      change: '0%',
       changeType: 'positive',
-      icon: <BarChart className="h-4 w-4 text-muted-foreground" />,
+      icon: <Users className="h-4 w-4 text-blue-500" />,
     },
     {
       title: 'Active Subscriptions',
-      value: '18',
-      change: '+2',
+      value: '0',
+      change: '0',
       changeType: 'positive',
-      icon: <PieChart className="h-4 w-4 text-muted-foreground" />,
+      icon: <DollarSign className="h-4 w-4 text-green-500" />,
     },
     {
       title: 'System Health',
       value: '99.9%',
       change: 'Stable',
       changeType: 'neutral',
-      icon: <div className="h-2 w-2 rounded-full bg-green-500" />,
+      icon: <Activity className="h-4 w-4 text-amber-500" />,
     },
-  ];
+  ]);
+
+  const [chartData, setChartData] = useState<{
+    organizations: number[];
+    users: number[];
+    apiRequests: number[];
+  } | null>(null);
+
+  useEffect(() => {
+    const fetchDashboardMetrics = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const response = await fetch(`${BACKEND_URL}/super-admin/dashboard/metrics`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch dashboard metrics');
+        }
+
+        const result = await response.json();
+        
+        if (result.success) {
+          setStats([
+            {
+              title: 'Total Organizations',
+              value: result.data.totalCompanies?.toLocaleString() || '0',
+              change: '0%',
+              changeType: 'positive',
+              icon: <Building2 className="h-4 w-4 text-purple-500" />,
+            },
+            {
+              title: 'Active Users',
+              value: result.data.activeUsers?.toLocaleString() || '0',
+              change: '0%',
+              changeType: 'positive',
+              icon: <Users className="h-4 w-4 text-blue-500" />,
+            },
+            {
+              title: 'Active Subscriptions',
+              value: result.data.activeSubscriptions?.toLocaleString() || '0',
+              change: '0',
+              changeType: 'positive',
+              icon: <DollarSign className="h-4 w-4 text-green-500" />,
+            },
+            {
+              title: 'System Health',
+              value: '99.9%',
+              change: 'Stable',
+              changeType: 'neutral',
+              icon: <Activity className="h-4 w-4 text-amber-500" />,
+            },
+          ]);
+        }
+
+        // Fetch chart data
+        const chartResponse = await fetch(`${BACKEND_URL}/super-admin/dashboard/chart-data`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (chartResponse.ok) {
+          const chartResult = await chartResponse.json();
+          
+          if (chartResult.success) {
+            setChartData(chartResult.data);
+          }
+        }
+      } catch (error) {
+        // Error handling
+      }
+    };
+
+    fetchDashboardMetrics();
+  }, []);
 
   const quickActions = [
     { title: 'Add New Organization', icon: '🏢', path: '/super-admin/organizations/new' },
@@ -73,7 +155,7 @@ export function SuperAdminDashboard() {
             <CardTitle>Platform Overview</CardTitle>
           </CardHeader>
           <CardContent className="pl-2">
-            <OverviewChart className="h-[300px]" />
+            <OverviewChart className="h-[300px]" chartData={chartData} />
           </CardContent>
         </Card>
 
@@ -90,7 +172,7 @@ export function SuperAdminDashboard() {
             <BarChart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">24</div>
+            <div className="text-2xl font-bold">{stats[0].value}</div>
             <p className="text-xs text-muted-foreground">+19% from last month</p>
             <div className="mt-4 h-[80px]">
               {/* Mini chart would go here */}
@@ -113,7 +195,7 @@ export function SuperAdminDashboard() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">1,234</div>
+            <div className="text-2xl font-bold">{stats[1].value}</div>
             <p className="text-xs text-muted-foreground">+201 since last hour</p>
             <div className="mt-4">
               <div className="flex -space-x-2">

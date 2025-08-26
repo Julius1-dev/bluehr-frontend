@@ -195,20 +195,35 @@ export function Documents() {
         try {
           const token = localStorage.getItem('token');
           const headers = token ? { Authorization: `Bearer ${token}` } : {};
+          
+          // Use different endpoints based on user role
+          const deptUrl = isAdmin 
+            ? `${BACKEND_URL}/company-admin/departments`
+            : `${BACKEND_URL}/employee/auth/departments-with-counts`;
+          const empUrl = isAdmin 
+            ? `${BACKEND_URL}/company-admin/users`
+            : `${BACKEND_URL}/employee/auth/company-employees`;
+          
           const [deptRes, empRes] = await Promise.all([
-            axios.get(`${BACKEND_URL}/company-admin/departments`, { headers, withCredentials: true }),
-            axios.get(`${BACKEND_URL}/company-admin/users`, { headers, withCredentials: true })
+            axios.get(deptUrl, { headers, withCredentials: true }),
+            axios.get(empUrl, { headers, withCredentials: true })
           ]);
-          setDepartments(deptRes.data);
-          setEmployees(empRes.data);
+          
+          // Handle different response formats
+          const deptData = isAdmin ? deptRes.data : deptRes.data.departments;
+          const empData = isAdmin ? empRes.data : empRes.data;
+          
+          setDepartments(deptData);
+          setEmployees(empData);
         } catch (err) {
+          console.error('Error fetching departments/employees:', err);
           setDepartments([]);
           setEmployees([]);
         }
       };
       fetchData();
     }
-  }, [isShareModalOpen]);
+  }, [isShareModalOpen, isAdmin]);
 
   // Filtered recipients for search
   const filteredDepartments: Department[] = departments.filter(d => d.name.toLowerCase().includes(shareSearch.toLowerCase()));
@@ -454,11 +469,17 @@ export function Documents() {
   }, []);
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Documents</h1>
-        <div className="flex gap-2">
-          <div className="relative w-64">
+    <div className="space-y-6 p-4 md:p-6">
+      {/* Header Section - Mobile Responsive */}
+      <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Documents</h1>
+          <p className="text-gray-500">
+            {isAdmin ? 'Manage and share documents with your team.' : 'Access and view shared documents.'}
+          </p>
+        </div>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
+          <div className="relative flex-1 sm:w-64">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <Input
               type="search"
@@ -469,7 +490,7 @@ export function Documents() {
             />
           </div>
           <Select onValueChange={(value) => setSelectedCategory(value)} value={selectedCategory}>
-            <SelectTrigger className="w-40">
+            <SelectTrigger className="w-full sm:w-40">
               <SelectValue placeholder="Filter by category" />
             </SelectTrigger>
             <SelectContent>
@@ -480,16 +501,16 @@ export function Documents() {
               ))}
             </SelectContent>
           </Select>
-          {isAdmin && (
-            <Button onClick={() => setIsUploadModalOpen(true)}>
-              <Upload className="mr-2 h-4 w-4" />
-              Upload Document
-            </Button>
-          )}
+          <Button onClick={() => setIsUploadModalOpen(true)}>
+            <Upload className="mr-2 h-4 w-4" />
+            <span className="hidden sm:inline">Upload Document</span>
+            <span className="sm:hidden">Upload</span>
+          </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Summary Cards - Mobile Responsive */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardContent className="pt-4">
             <div className="flex items-center gap-3">
@@ -641,7 +662,7 @@ export function Documents() {
                           >
                             <Download className="h-4 w-4" />
                           </Button>
-                          {isAdmin && (
+                          {(isAdmin || doc.uploaded_by === currentUserId) && (
                             <Button 
                               variant="ghost" 
                               size="icon" 
@@ -701,50 +722,43 @@ export function Documents() {
                       <DialogContent style={{ background: 'white', opacity: 1 }}>
                         <DialogHeader>
                           <DialogTitle>Review Document</DialogTitle>
-
-                          {/* ✅ Use DialogDescription ONLY for inline content */}
                           <DialogDescription>
-                            <span className="font-medium">{doc.name}</span> ({doc.category})<br />
-                            <span className="text-xs text-gray-400">Shared by {doc.uploaded_by_name}</span>
-                          </DialogDescription>
-
-                          {/* ✅ Move all block elements below */}
-                          <div className="mb-2 mt-2">
-                            <Button
-                              size="sm"
-                              variant="secondary"
-                              onClick={async () => {
-                                try {
-                                  const blob = await DocumentApi.downloadDocument(doc.id);
-                                  const url = window.URL.createObjectURL(blob);
-                                  const a = document.createElement('a');
-                                  a.href = url;
-                                  a.download = doc.name;
-                                  document.body.appendChild(a);
-                                  a.click();
-                                  window.URL.revokeObjectURL(url);
-                                  document.body.removeChild(a);
-                                } catch (error) {
-                                  alert('Failed to download document');
-                                }
-                              }}
-                            >
-                              <Download className="h-4 w-4 mr-1 inline" /> Download
-                            </Button>
-                          </div>
-
-                          {doc.review_message && (
-                            <div className="mb-2 p-2 bg-gray-50 rounded text-sm">
-                              <span className="font-semibold">Message from sender:</span><br />
-                              {doc.review_message}
+                            <div className="mb-2">
+                              <span className="font-medium">{doc.name}</span> ({doc.category})<br />
+                              <span className="text-xs text-gray-400">Shared by {doc.uploaded_by_name}</span>
                             </div>
-                          )}
+                            <div className="mb-2">
+                              <Button
+                                size="sm"
+                                variant="secondary"
+                                onClick={async () => {
+                                  try {
+                                    const blob = await DocumentApi.downloadDocument(doc.id);
+                                    const url = window.URL.createObjectURL(blob);
+                                    const a = document.createElement('a');
+                                    a.href = url;
+                                    a.download = doc.name;
+                                    document.body.appendChild(a);
+                                    a.click();
+                                    window.URL.revokeObjectURL(url);
+                                    document.body.removeChild(a);
+                                  } catch (error) {
+                                    alert('Failed to download document');
+                                  }
+                                }}
+                              >
+                                <Download className="h-4 w-4 mr-1 inline" /> Download
+                      </Button>
+                    </div>
+                            {doc.review_message && (
+                              <div className="mb-2 p-2 bg-gray-50 rounded text-sm">
+                                <span className="font-semibold">Message from sender:</span><br />
+                                {doc.review_message}
+                  </div>
+                            )}
+                          </DialogDescription>
                         </DialogHeader>
-
-                        {reviewError && (
-                          <div className="text-red-500 text-sm mb-2">{reviewError}</div>
-                        )}
-
+                        {reviewError && <div className="text-red-500 text-sm mb-2">{reviewError}</div>}
                         {showRejectReason ? (
                           <div className="mb-2">
                             <Textarea
@@ -756,7 +770,6 @@ export function Documents() {
                             />
                           </div>
                         ) : null}
-
                         <div className="flex flex-row justify-end gap-2 mt-2">
                           {showRejectReason ? (
                             <Button
@@ -810,7 +823,6 @@ export function Documents() {
                           )}
                         </div>
                       </DialogContent>
-
                     </Dialog>
                   ))
                 )}
@@ -936,10 +948,10 @@ export function Documents() {
         </TabsContent>
       </Tabs>
 
-      {/* Share Document Modal */}
-      {isShareModalOpen && selectedDocument && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white rounded-lg w-full max-w-md p-6">
+             {/* Share Document Modal */}
+       {isShareModalOpen && selectedDocument && (
+         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+           <div className="bg-white rounded-lg w-full max-w-4xl p-6">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">Share Document</h3>
               <Button 
@@ -955,118 +967,131 @@ export function Documents() {
               </Button>
             </div>
             
-            <form onSubmit={handleShareSubmit}>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Search Departments/Employees</label>
-                  <Input
-                    type="text"
-                    placeholder="Type to search..."
-                    value={shareSearch}
-                    onChange={e => setShareSearch(e.target.value)}
-                  />
-                  </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Departments</label>
-                  <div className="h-24 border rounded p-2 overflow-y-auto">
-                    {filteredDepartments.map(dept => (
-                      <label key={dept.id} className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded">
-                        <input
-                          type="checkbox"
-                          checked={shareFormData.recipients.some(r => r.id === String(dept.id) && r.type === 'department')}
-                          onChange={e => {
-                            if (e.target.checked) {
-                              setShareFormData(prev => ({
-                                ...prev,
-                                recipients: [...prev.recipients, { id: String(dept.id), name: dept.name, type: 'department' }]
-                              }));
-                            } else {
-                              setShareFormData(prev => ({
-                                ...prev,
-                                recipients: prev.recipients.filter(r => !(r.id === String(dept.id) && r.type === 'department'))
-                              }));
-                            }
-                          }}
-                          className="rounded"
-                        />
-                        <span className="text-sm">{dept.name}</span>
-                      </label>
-                    ))}
-                </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Employees</label>
-                  <div className="h-24 border rounded p-2 overflow-y-auto">
-                    {filteredEmployees.map(emp => (
-                      <label key={emp.id} className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded">
-                        <input
-                          type="checkbox"
-                          checked={shareFormData.recipients.some(r => r.id === String(emp.id) && r.type === 'employee')}
-                          onChange={e => {
-                            if (e.target.checked) {
-                        setShareFormData(prev => ({
-                          ...prev,
-                                recipients: [...prev.recipients, { id: String(emp.id), name: `${emp.first_name} ${emp.last_name}`, type: 'employee' }]
-                              }));
-                            } else {
-                            setShareFormData(prev => ({
-                              ...prev,
-                                recipients: prev.recipients.filter(r => !(r.id === String(emp.id) && r.type === 'employee'))
-                            }));
-                            }
-                          }}
-                          className="rounded"
-                        />
-                        <span className="text-sm">{emp.first_name} {emp.last_name}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={requireReview}
-                      onChange={e => setRequireReview(e.target.checked)}
-                      className="rounded"
-                    />
-                    Require Review (document will appear in Pending Actions for recipients)
-                  </label>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Access Level</label>
-                  <Input value="View Only" disabled className="bg-gray-100" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Message (optional)</label>
-                  <Textarea
-                    placeholder="Add a message..."
-                    value={shareFormData.message}
-                    onChange={e => setShareFormData(prev => ({ ...prev, message: e.target.value }))}
-                    rows={3}
-                  />
-                </div>
-                <div className="flex justify-end gap-2 pt-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      setIsShareModalOpen(false);
-                      setShareFormData({ recipients: [], message: '', access: 'view' });
-                      setRequireReview(false);
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button 
-                    type="submit" 
-                    disabled={shareFormData.recipients.length === 0}
-                  >
-                    Share Document
-                  </Button>
-                </div>
-              </div>
-            </form>
+                         <form onSubmit={handleShareSubmit}>
+               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                 {/* Left Column - Recipients Selection */}
+                 <div className="space-y-4">
+                   <div>
+                     <label className="block text-sm font-medium mb-2">Search Departments/Employees</label>
+                     <Input
+                       type="text"
+                       placeholder="Type to search..."
+                       value={shareSearch}
+                       onChange={e => setShareSearch(e.target.value)}
+                     />
+                   </div>
+                   
+                   <div>
+                     <label className="block text-sm font-medium mb-2">Departments</label>
+                     <div className="h-32 border rounded p-2 overflow-y-auto">
+                       {filteredDepartments.map(dept => (
+                         <label key={dept.id} className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded">
+                           <input
+                             type="checkbox"
+                             checked={shareFormData.recipients.some(r => r.id === String(dept.id) && r.type === 'department')}
+                             onChange={e => {
+                               if (e.target.checked) {
+                                 setShareFormData(prev => ({
+                                   ...prev,
+                                   recipients: [...prev.recipients, { id: String(dept.id), name: dept.name, type: 'department' }]
+                                 }));
+                               } else {
+                                 setShareFormData(prev => ({
+                                   ...prev,
+                                   recipients: prev.recipients.filter(r => !(r.id === String(dept.id) && r.type === 'department'))
+                                 }));
+                               }
+                             }}
+                             className="rounded"
+                           />
+                           <span className="text-sm">{dept.name}</span>
+                         </label>
+                       ))}
+                     </div>
+                   </div>
+                   
+                   <div>
+                     <label className="block text-sm font-medium mb-2">Employees</label>
+                     <div className="h-32 border rounded p-2 overflow-y-auto">
+                       {filteredEmployees.map(emp => (
+                         <label key={emp.id} className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded">
+                           <input
+                             type="checkbox"
+                             checked={shareFormData.recipients.some(r => r.id === String(emp.id) && r.type === 'employee')}
+                             onChange={e => {
+                               if (e.target.checked) {
+                                 setShareFormData(prev => ({
+                                   ...prev,
+                                   recipients: [...prev.recipients, { id: String(emp.id), name: `${emp.first_name} ${emp.last_name}`, type: 'employee' }]
+                                 }));
+                               } else {
+                                 setShareFormData(prev => ({
+                                   ...prev,
+                                   recipients: prev.recipients.filter(r => !(r.id === String(emp.id) && r.type === 'employee'))
+                                 }));
+                               }
+                             }}
+                             className="rounded"
+                           />
+                           <span className="text-sm">{emp.first_name} {emp.last_name}</span>
+                         </label>
+                       ))}
+                     </div>
+                   </div>
+                 </div>
+                 
+                 {/* Right Column - Settings and Message */}
+                 <div className="space-y-4">
+                   <div>
+                     <label className="flex items-center gap-2">
+                       <input
+                         type="checkbox"
+                         checked={requireReview}
+                         onChange={e => setRequireReview(e.target.checked)}
+                         className="rounded"
+                       />
+                       Require Review (document will appear in Pending Actions for recipients)
+                     </label>
+                   </div>
+                   
+                   <div>
+                     <label className="block text-sm font-medium mb-2">Access Level</label>
+                     <Input value="View Only" disabled className="bg-gray-100" />
+                   </div>
+                   
+                   <div>
+                     <label className="block text-sm font-medium mb-2">Message (optional)</label>
+                     <Textarea
+                       placeholder="Add a message..."
+                       value={shareFormData.message}
+                       onChange={e => setShareFormData(prev => ({ ...prev, message: e.target.value }))}
+                       rows={4}
+                       className="h-32"
+                     />
+                   </div>
+                   
+                   <div className="flex justify-end gap-2 pt-4">
+                     <Button
+                       type="button"
+                       variant="outline"
+                       onClick={() => {
+                         setIsShareModalOpen(false);
+                         setShareFormData({ recipients: [], message: '', access: 'view' });
+                         setRequireReview(false);
+                       }}
+                     >
+                       Cancel
+                     </Button>
+                     <Button 
+                       type="submit" 
+                       disabled={shareFormData.recipients.length === 0}
+                     >
+                       Share Document
+                     </Button>
+                   </div>
+                 </div>
+               </div>
+             </form>
           </div>
         </div>
       )}
@@ -1113,7 +1138,7 @@ export function Documents() {
                         <p className="pl-1">or drag and drop</p>
                       </div>
                       <p className="text-xs text-gray-500">
-                        PDF, DOCX, XLSX up to 10MB
+                        PDF, DOCX, XLSX up to 20MB
                       </p>
                     </div>
                   </div>

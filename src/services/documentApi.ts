@@ -21,6 +21,25 @@ function getUserRoleFromToken() {
   return null;
 }
 
+// Helper function to determine if user is an employee
+function isEmployeeRole(role: string | null): boolean {
+  if (!role) return false;
+  
+  // List of employee role variations
+  const employeeRoles = [
+    'employee',
+    'staff',
+    'user',
+    'Sales Rep',
+    'sales rep',
+    'sales_rep',
+    'salesrep',
+    'SalesRep'
+  ];
+  
+  return employeeRoles.includes(role.toLowerCase());
+}
+
 export interface Document {
   id: number;
   name: string;
@@ -61,7 +80,18 @@ export const DocumentApi = {
     }
 
     const headers = getAuthHeaders();
-    const response = await axios.post(`${API_BASE_URL}/company-admin/documents/upload`, formData, {
+    const role = getUserRoleFromToken();
+    const isEmployee = isEmployeeRole(role);
+
+    console.log('🔍 DocumentApi Debug:', { role, isEmployee });
+
+    const url = isEmployee
+      ? `${API_BASE_URL}/employee/documents/upload`
+      : `${API_BASE_URL}/company-admin/documents/upload`;
+
+    console.log('🔍 Upload URL:', url);
+
+    const response = await axios.post(url, formData, {
       headers: {
         ...headers,
         'Content-Type': 'multipart/form-data',
@@ -76,7 +106,7 @@ export const DocumentApi = {
     const params = sharedOnly ? { shared_only: 'true' } : {};
     const headers = getAuthHeaders();
     const role = getUserRoleFromToken();
-    const isEmployee = role === 'employee';
+    const isEmployee = isEmployeeRole(role);
 
     const url = isEmployee
       ? `${API_BASE_URL}/employee/documents`
@@ -93,7 +123,7 @@ export const DocumentApi = {
   async getDocument(id: number): Promise<Document> {
     const headers = getAuthHeaders();
     const role = getUserRoleFromToken();
-    const isEmployee = role === 'employee';
+    const isEmployee = isEmployeeRole(role);
 
     const url = isEmployee
       ? `${API_BASE_URL}/employee/documents/${id}`
@@ -109,7 +139,7 @@ export const DocumentApi = {
   async downloadDocument(id: number): Promise<Blob> {
     const headers = getAuthHeaders();
     const role = getUserRoleFromToken();
-    const isEmployee = role === 'employee';
+    const isEmployee = isEmployeeRole(role);
 
     const url = isEmployee
       ? `${API_BASE_URL}/employee/documents/${id}/download`
@@ -125,7 +155,14 @@ export const DocumentApi = {
 
   async shareDocument(id: number, shareData: DocumentShareData): Promise<{ message: string; document: Document }> {
     const headers = getAuthHeaders();
-    const response = await axios.post(`${API_BASE_URL}/company-admin/documents/${id}/share`, shareData, {
+    const role = getUserRoleFromToken();
+    const isEmployee = isEmployeeRole(role);
+
+    const url = isEmployee
+      ? `${API_BASE_URL}/employee/documents/${id}/share`
+      : `${API_BASE_URL}/company-admin/documents/${id}/share`;
+
+    const response = await axios.post(url, shareData, {
       headers,
       withCredentials: true,
     });
@@ -153,7 +190,7 @@ export const DocumentApi = {
   async getPolicies(): Promise<any[]> {
     const headers = getAuthHeaders();
     const role = getUserRoleFromToken();
-    const isEmployee = role === 'employee';
+    const isEmployee = isEmployeeRole(role);
 
     const url = isEmployee
       ? `${API_BASE_URL}/employee/policies`
@@ -170,7 +207,7 @@ export const DocumentApi = {
   async getDocumentById(id: number): Promise<Document> {
     const headers = getAuthHeaders();
     const role = getUserRoleFromToken();
-    const isEmployee = role === 'employee';
+    const isEmployee = isEmployeeRole(role);
 
     const url = isEmployee
       ? `${API_BASE_URL}/employee/documents/${id}`
@@ -186,7 +223,7 @@ export const DocumentApi = {
   async reviewDocument(id: number, action: 'approve' | 'reject', rejectionReason?: string): Promise<{ message: string; document: Document }> {
     const headers = getAuthHeaders();
     const role = getUserRoleFromToken();
-    const isEmployee = role === 'employee';
+    const isEmployee = isEmployeeRole(role);
 
     const url = isEmployee
       ? `${API_BASE_URL}/employee/documents/${id}/review`
