@@ -74,11 +74,12 @@ export function CompanyWalletManager({ walletData }: CompanyWalletManagerProps) 
         const data = await response.json();
         setTransactions(data.map((tx: any) => ({
           id: tx.id,
-          type: tx.transaction_type === 'credit' ? 'deposit' : 'withdrawal',
+          type: tx.type === 'bank_transfer' ? 'deposit' : (tx.type === 'debit' ? 'deposit' : (tx.type === 'credit' ? 'deposit' : 'withdrawal')),
           amount: parseFloat(tx.amount),
           date: new Date(tx.created_at),
           description: tx.description,
-          status: 'completed',
+          status: tx.status === 'rejected' ? 'failed' : tx.status || 'completed',
+          rejection_reason: tx.rejection_reason || null,
         })));
       } catch (err) {
         setTransactions([]);
@@ -243,7 +244,7 @@ export function CompanyWalletManager({ walletData }: CompanyWalletManagerProps) 
         const token = localStorage.getItem('token');
         if (!token) throw new Error('Authentication token not found');
 
-        const response = await fetch('http://localhost:4000/company-admin/mpesa/deposit', {
+        const response = await fetch(`${BACKEND_URL}/company-admin/mpesa/deposit`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -452,20 +453,31 @@ export function CompanyWalletManager({ walletData }: CompanyWalletManagerProps) 
                 transactions.map((transaction) => (
                   <TableRow key={transaction.id}>
                     <TableCell>{formatDate(transaction.date)}</TableCell>
-                    <TableCell>{transaction.description}</TableCell>
-                    <TableCell>
-                      <Badge 
-                        variant={transaction.type === 'deposit' ? 'success' : 'destructive'}
-                      >
-                        {transaction.type === 'deposit' ? 'Deposit' : 'Withdrawal'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className={transaction.type === 'deposit' ? 'text-green-600 font-medium' : 'text-red-600 font-medium'}>
-                      {transaction.type === 'deposit' ? '+' : '-'}{formatCurrency(transaction.amount)}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{transaction.status}</Badge>
-                    </TableCell>
+                                         <TableCell>
+                       <div>
+                         <div>{transaction.description}</div>
+                         {transaction.status === 'failed' && transaction.rejection_reason && (
+                           <div className="text-xs text-red-600 mt-1">
+                             Reason: {transaction.rejection_reason}
+                           </div>
+                         )}
+                       </div>
+                     </TableCell>
+                     <TableCell>
+                       <Badge 
+                         variant={transaction.type === 'deposit' ? 'success' : 'destructive'}
+                       >
+                         {transaction.type === 'deposit' ? 'Deposit' : 'Withdrawal'}
+                       </Badge>
+                     </TableCell>
+                     <TableCell className={transaction.type === 'deposit' ? 'text-green-600 font-medium' : 'text-red-600 font-medium'}>
+                       {transaction.type === 'deposit' ? '+' : '-'}{formatCurrency(transaction.amount)}
+                     </TableCell>
+                     <TableCell>
+                       <Badge variant={transaction.status === 'failed' ? 'destructive' : 'outline'}>
+                         {transaction.status === 'failed' ? 'Failed' : transaction.status}
+                       </Badge>
+                     </TableCell>
                     <TableCell>
                       <Button variant="ghost" size="sm" onClick={() => handleDownloadStatement(transaction)}>
                         <Download className="h-4 w-4" />

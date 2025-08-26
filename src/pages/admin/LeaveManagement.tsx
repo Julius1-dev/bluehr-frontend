@@ -181,24 +181,25 @@ export function LeaveManagement(): JSX.Element {
   }
   
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-6 p-4 md:p-6">
+      {/* Header Section - Mobile Responsive */}
+      <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Leave Management</h1>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Leave Management</h1>
           <p className="text-gray-500">Review and manage employee leave requests.</p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
           <Button variant="outline" size="sm" className="gap-1" onClick={() => navigate('/admin/leave-policies')}>
             <Settings className="h-4 w-4" />
-            Leave Policies
+            <span className="hidden sm:inline">Policies</span>
           </Button>
           <Button variant="outline" size="sm" className="gap-1">
             <Download className="h-4 w-4" />
-            Export Report
+            <span className="hidden sm:inline">Export</span>
           </Button>
           <Button size="sm" className="gap-1" onClick={() => navigate('/admin/leave-calendar')}>
             <CalendarDays className="h-4 w-4" />
-            Leave Calendar
+            <span className="hidden sm:inline">Calendar</span>
           </Button>
         </div>
       </div>

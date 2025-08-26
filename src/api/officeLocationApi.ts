@@ -1,10 +1,11 @@
 import axios from 'axios';
-import type { OfficeLocationData } from '@/types'; // ✅ Use the shared type
+import type { OfficeLocationData } from '@/types'; 
+import { BACKEND_URL } from '@/lib/config';
 
 const token = localStorage.getItem('token');
 
 const axiosInstance = axios.create({
-  baseURL: 'http://localhost:4000/company-admin/attendance/locations',
+  baseURL: `${BACKEND_URL}/company-admin/office-location`,
   headers: {
     Authorization: `Bearer ${token}`,
     'Content-Type': 'application/json',

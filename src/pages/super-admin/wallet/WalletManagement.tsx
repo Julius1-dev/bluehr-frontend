@@ -203,12 +203,12 @@ export default function WalletManagement() {
                           {transaction.account_name}
                         </div>
                       </TableCell>
-                      <TableCell className="font-medium">
-                        {new Intl.NumberFormat('en-KE', {
-                          style: 'currency',
-                          currency: transaction.currency,
-                        }).format(transaction.amount)}
-                      </TableCell>
+                                             <TableCell className="font-medium">
+                         {new Intl.NumberFormat('en-KE', {
+                           style: 'currency',
+                           currency: transaction.currency && transaction.currency.trim() ? transaction.currency : 'KES',
+                         }).format(transaction.amount)}
+                       </TableCell>
                       <TableCell className="font-mono text-sm">
                         {transaction.reference}
                       </TableCell>
@@ -244,7 +244,7 @@ export default function WalletManagement() {
                         ) : transaction.status === 'rejected' ? (
                           <div className="text-sm text-muted-foreground text-right">
                             <div className="font-medium">Reason:</div>
-                            <div>{transaction.reason}</div>
+                            <div className="text-red-600">{transaction.reason || 'No reason provided'}</div>
                           </div>
                         ) : (
                           <div className="text-sm text-muted-foreground">

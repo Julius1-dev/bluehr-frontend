@@ -238,31 +238,38 @@ export function PayrollManagement() {
   }, []);
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Payroll Management</h1>
-        <div className="flex gap-2">
+    <div className="space-y-6 p-4 md:p-6">
+      {/* Header Section - Mobile Responsive */}
+      <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Payroll Management</h1>
+          <p className="text-gray-500">Manage payroll processing, employee payments, and company wallet.</p>
+        </div>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
           <Button variant="outline" asChild>
             <Link to="/admin/advance-settings">
               <CreditCard className="mr-2 h-4 w-4" />
-              Advance Settings
+              <span className="hidden sm:inline">Advance Settings</span>
+              <span className="sm:hidden">Settings</span>
             </Link>
           </Button>
           <Button variant="outline" asChild>
             <Link to="/admin/payroll-reports">
               <FileSpreadsheet className="mr-2 h-4 w-4" />
-              Generate Reports
+              <span className="hidden sm:inline">Generate Reports</span>
+              <span className="sm:hidden">Reports</span>
             </Link>
           </Button>
           <Button>
             <Calendar className="mr-2 h-4 w-4" />
-            Schedule Payroll
+            <span className="hidden sm:inline">Schedule Payroll</span>
+            <span className="sm:hidden">Schedule</span>
           </Button>
         </div>
       </div>
 
-      {/* Payroll Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Payroll Summary Cards - Mobile Responsive */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardContent className="pt-4">
             <div className="flex items-center gap-3">

@@ -18,6 +18,8 @@ import {
 
 import type { OfficeLocationData } from '@/types';
 
+
+
 // Mock data (you might want to move these to separate files)
 const mockLocations = [
   { id: 1, name: 'Main Office', address: '123 Main St', radius: 100 },
@@ -121,22 +123,22 @@ export default function AttendanceSettings() {
   }, []);
 
 
-  const handleSave = async (location: OfficeLocationData) => {
-    try {
-      setLoading(true);
-      const saved = await saveLocation(location);
-      if (location.id) {
-        setLocations(prev => prev.map(l => (l.id === saved.id ? saved : l)));
-      } else {
-        setLocations(prev => [...prev, saved]);
-      }
-      setSelectedLocation(null);
-    } catch (err) {
-      console.error('Error saving location:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // const handleSave = async (location: OfficeLocationData) => {
+  //   try {
+  //     setLoading(true);
+  //     const saved = await saveLocation(location);
+  //     if (location.id) {
+  //       setLocations(prev => prev.map(l => (l.id === saved.id ? saved : l)));
+  //     } else {
+  //       setLocations(prev => [...prev, saved]);
+  //     }
+  //     setSelectedLocation(null);
+  //   } catch (err) {
+  //     console.error('Error saving location:', err);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   const handleDelete = async (id: string) => {
     try {
@@ -206,28 +208,36 @@ export default function AttendanceSettings() {
       if (editingWorkShift) {
         response = await fetch(`${BACKEND_URL}/company-admin/attendance/work-shifts/${editingWorkShift.id}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify(payload)
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
         });
       } else {
         response = await fetch(`${BACKEND_URL}/company-admin/attendance/work-shifts`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify(payload)
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
         });
       }
 
-      // 🔍 Check for server error response
       if (!response.ok) {
         const errorText = await response.text();
         console.error("Server responded with error:", response.status, errorText);
-        throw new Error(errorText); // This will be caught below
+        throw new Error(errorText);
       }
 
       setShowAddWorkShift(false);
       setEditingWorkShift(null);
-      // Refresh work shifts
-      const wsRes = await fetch(`${BACKEND_URL}/company-admin/attendance/work-shifts`, { headers: { 'Authorization': `Bearer ${token}` } });
+
+      const wsRes = await fetch(`${BACKEND_URL}/company-admin/attendance/work-shifts`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+
       const wsData = await wsRes.json();
 
       if (Array.isArray(wsData)) {
@@ -248,11 +258,11 @@ export default function AttendanceSettings() {
         setWorkShiftError('Failed to fetch work shifts.');
       }
     } catch (err) {
-      // 🔍 Log any fetch or logic errors
       console.error("Error saving work shift:", err);
       setWorkShiftError('Failed to save work shift.');
     }
   };
+
 
 
   const handleDeleteWorkShift = async (id: string) => {
@@ -261,11 +271,16 @@ export default function AttendanceSettings() {
     try {
       await fetch(`${BACKEND_URL}/company-admin/attendance/work-shifts/${id}`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { 'Authorization': `Bearer ${token}` },
       });
-      // Refresh work shifts
-      const wsRes = await fetch(`${BACKEND_URL}/company-admin/attendance/work-shifts`, { headers: { 'Authorization': `Bearer ${token}` } });
+
+      // Refresh work shifts after deletion
+      const wsRes = await fetch(`${BACKEND_URL}/company-admin/attendance/work-shifts`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+
       const wsData = await wsRes.json();
+
       if (Array.isArray(wsData)) {
         setWorkShifts(wsData.map((ws: any) => ({
           id: ws.id,
@@ -287,6 +302,7 @@ export default function AttendanceSettings() {
       setWorkShiftError('Failed to delete work shift.');
     }
   };
+
 
   useEffect(() => {
     const fetchData = async () => {

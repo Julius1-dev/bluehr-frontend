@@ -1,18 +1,18 @@
 {
   "apps": [
     {
-      "name": "bluehr-frontend-v2-dev",
-      "cwd": "/var/www/blue--hr/dev/bluehr-frontend-v2",
+      "name": "bluehr-frontend-v2",
+      "cwd": "/var/www/blue--hr/bluehr-frontend-v2",
       "script": "npm",
-      "args": "run dev -- --port 3014 --host",
+      "args": "run preview -- --port 3012 --host",
       "env": {
         "NODE_ENV": "production",
-        "PORT": "3014"
+        "PORT": "3012"
       },
       "env_file": ".env",
-      "log_file": "/root/.pm2/logs/bluehr-frontend-v2-dev-combined.log",
-      "error_file": "/root/.pm2/logs/bluehr-frontend-v2-dev-err.log",
-      "out_file": "/root/.pm2/logs/bluehr-frontend-v2-dev-out.log",
+      "log_file": "/root/.pm2/logs/bluehr-frontend-v2-combined.log",
+      "error_file": "/root/.pm2/logs/bluehr-frontend-v2-err.log",
+      "out_file": "/root/.pm2/logs/bluehr-frontend-v2-out.log",
       "merge_logs": false,
       "log_date_format": "YYYY-MM-DD HH:mm:ss Z",
       "instances": "1",

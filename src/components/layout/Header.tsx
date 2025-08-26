@@ -7,13 +7,14 @@ interface HeaderProps {
   onLogout: () => void;
   isAdmin?: boolean;
   isSuperAdmin?: boolean;
+  onMobileMenuToggle?: () => void;
 }
 
-export function Header({ onLogout, isAdmin = false, isSuperAdmin = false }: HeaderProps) {
+export function Header({ onLogout, isAdmin = false, isSuperAdmin = false, onMobileMenuToggle }: HeaderProps) {
   return (
     <header className="bg-white border-b border-gray-200 h-16 flex items-center px-4 sticky top-0 z-10">
       <div className="md:hidden">
-        <Button variant="ghost" size="icon" className="mr-2">
+        <Button variant="ghost" size="icon" className="mr-2" onClick={onMobileMenuToggle}>
           <Menu className="h-5 w-5" />
           <span className="sr-only">Toggle menu</span>
         </Button>
@@ -31,7 +32,7 @@ export function Header({ onLogout, isAdmin = false, isSuperAdmin = false }: Head
           </span>
         </div>
       </div>
-      <div className="flex items-center ml-auto gap-3 md:gap-4">
+      {/* <div className="flex items-center ml-auto gap-3 md:gap-4">
         <NotificationDropdown />
         <Button 
           variant="ghost" 
@@ -41,7 +42,7 @@ export function Header({ onLogout, isAdmin = false, isSuperAdmin = false }: Head
         >
           Logout
         </Button>
-      </div>
+      </div> */}
     </header>
   );
 }
