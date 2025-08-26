@@ -1,8 +1,8 @@
-name: CD Pipeline
+name: CD Pipeline (Dev)
 
 on:
   push:
-    branches: [ master ]
+    branches: [ dev ]
   workflow_dispatch:
 
 jobs:
@@ -20,7 +20,7 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build the production version
+      - name: Build the development version
         run: CI='' npm run build
 
       - name: Deploy to server via SSH
@@ -31,10 +31,10 @@ jobs:
           password: $$$Telemux01!int
           port: 22
           script: |
-            cd /var/www/blue--hr/bluehr-frontend-v2
+            cd /var/www/blue--hr/dev/bluehr-frontend-v2
             rm -f package-lock.json
             git config pull.rebase false
-            git pull origin master
+            git pull origin dev
             npm install
             npm run build
-            pm2 start /var/www/blue--hr/bluehr-frontend-v2/dev-ecosystem.json --env production || pm2 restart bluehr-frontend-v2
+            pm2 start /var/www/blue--hr/dev/bluehr-frontend-v2/dev-ecosystem.json --env production || pm2 restart bluehr-frontend-v2-dev

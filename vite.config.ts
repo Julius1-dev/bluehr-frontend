@@ -13,13 +13,14 @@ export default defineConfig({
     },
   },
   server: {
+    host: true,
+    port: Number(process.env.PORT) || 3012,
     proxy: {
       '/ai-oversight': 'http://localhost:4000', // Change 5000 to your backend port if different
     },
   },
   preview: {
-    port: 3012,
     host: true,
-    allowedHosts: ['bluehr.joinbluehr.com'],
+    port: Number(process.env.PORT) || 3012,
   },
 });

@@ -449,7 +449,7 @@ const HelpAndSupport = ({ dashboardRole }: HelpAndSupportProps) => {
             <CardContent className="space-y-4">
               <div className="flex items-center space-x-2">
                 <Mail className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">support@jojnbluecollar.com</span>
+                <span className="text-sm">support@joinbluecollar.com</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Phone className="h-4 w-4 text-muted-foreground" />
