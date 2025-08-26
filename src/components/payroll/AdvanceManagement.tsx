@@ -75,8 +75,8 @@ interface AdvanceManagementProps {
   };
 }
 
-// Link to advance settings page
-const ADVANCE_SETTINGS_URL = '/admin/advance-settings';
+// Link to settings page (advanced settings tab)
+const ADVANCE_SETTINGS_URL = '/admin/settings';
 
 export function AdvanceManagement({ advanceSettings }: AdvanceManagementProps) {
   const [searchQuery, setSearchQuery] = useState('');

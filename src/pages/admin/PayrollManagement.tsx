@@ -247,9 +247,9 @@ export function PayrollManagement() {
         </div>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
           <Button variant="outline" asChild>
-            <Link to="/admin/advance-settings">
+            <Link to="/admin/settings">
               <CreditCard className="mr-2 h-4 w-4" />
-              <span className="hidden sm:inline">Advance Settings</span>
+              <span className="hidden sm:inline">Settings</span>
               <span className="sm:hidden">Settings</span>
             </Link>
           </Button>

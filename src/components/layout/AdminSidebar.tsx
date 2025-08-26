@@ -279,14 +279,6 @@ export const AdminSidebar: React.FC<{ onLogout: () => void; onMobileClose?: () =
             onMobileClose={onMobileClose}
           />
           <NavItem icon={<Settings className="w-full h-full" />} label="Settings" to="/admin/settings" userPermissions={userPermissions} onMobileClose={onMobileClose} />
-          <NavItem 
-            icon={<CreditCard className="w-full h-full" />} 
-            label="Advance Settings" 
-            to="/admin/advance-settings" 
-            requiredPermissions={['manage_payroll']}
-            userPermissions={userPermissions}
-            onMobileClose={onMobileClose}
-          />
           <button
             onClick={onLogout}
             className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"

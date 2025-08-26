@@ -44,7 +44,7 @@ import { RequestLeave } from './pages/RequestLeave';
 import { Payroll } from './pages/Payroll';
 import { PayrollManagement } from "./pages/admin/PayrollManagement";
 import { PayrollReports } from "./pages/admin/PayrollReports";
-import AdvanceSettingsPage from "./pages/admin/AdvanceSettings";
+
 import { WalletPage } from './pages/Wallet';
 import { AdvanceStatementPage } from './pages/AdvanceStatement';
 import { SavingsAccount } from './pages/SavingsAccount';
@@ -86,6 +86,7 @@ import ImportPreview from './pages/admin/ImportPreview';
 import AssignGoal from './pages/admin/performance/AssignGoal';
 import LeaveTypes from './pages/admin/leave';
 import LeaveCalendar from './pages/admin/leave/LeaveCalendar';
+import EmployeeLeaveCalendar from './pages/admin/leave/EmployeeLeaveCalendar';
 import PrepareReviewPage from './pages/admin/performance/prepare-review';
 import ThreeSixtyFeedbackPage from './pages/admin/performance/360-feedback';
 
@@ -359,11 +360,7 @@ const AppRoutes = () => {
               <PayrollReports />
             </PermissionGuard>
           } />
-          <Route path="/admin/advance-settings" element={
-            <PermissionGuard requiredPermissions={['manage_payroll']}>
-              <AdvanceSettingsPage />
-            </PermissionGuard>
-          } />
+
           <Route path="/admin/performance" element={
             <PermissionGuard requiredPermissions={['manage_performance']}>
               <PerformancePage />
@@ -439,6 +436,11 @@ const AppRoutes = () => {
           <Route path="/admin/leave-calendar" element={
             <PermissionGuard requiredPermissions={['manage_leave']}>
               <LeaveCalendar />
+            </PermissionGuard>
+          } />
+          <Route path="/admin/team/:employeeId/schedule" element={
+            <PermissionGuard requiredPermissions={['manage_leave']}>
+              <EmployeeLeaveCalendar />
             </PermissionGuard>
           } />
         </Route>

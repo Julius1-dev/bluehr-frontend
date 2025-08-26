@@ -35,6 +35,7 @@ export default function LeaveTypes() {
   const [leaveTypes, setLeaveTypes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingLeaveType, setEditingLeaveType] = useState(null);
   const [departments, setDepartments] = useState<any[]>([]);
@@ -75,11 +76,6 @@ export default function LeaveTypes() {
 
   useEffect(() => {
     fetchLeaveTypes();
-    // Set up interval to refresh every 10 seconds
-    const interval = setInterval(() => {
-      fetchLeaveTypes();
-    }, 10000);
-    return () => clearInterval(interval);
   }, [departments, employees]);
 
   const handleAdd = () => {
@@ -95,9 +91,18 @@ export default function LeaveTypes() {
   const handleDelete = async (id: any) => {
     if (window.confirm('Are you sure you want to delete this leave type?')) {
       try {
+        setError(null); // Clear any previous errors
         await LeaveTypeApi.deleteLeaveType(id);
-        setLeaveTypes((leaveTypes as any[]).filter((lt: any) => lt.id !== id));
-      } catch {
+        // Refresh the list to ensure it's up to date
+        await fetchLeaveTypes();
+        setSuccess('Leave type deleted successfully!');
+        
+        // Clear success message after 3 seconds
+        setTimeout(() => {
+          setSuccess(null);
+        }, 3000);
+      } catch (error) {
+        console.error('Error deleting leave type:', error);
         alert('Failed to delete leave type.');
       }
     }
@@ -105,15 +110,26 @@ export default function LeaveTypes() {
 
   const handleSave = async (leaveType: any) => {
     try {
-    if (editingLeaveType) {
-        const updated = await LeaveTypeApi.updateLeaveType(editingLeaveType.id, leaveType);
-        setLeaveTypes((leaveTypes as any[]).map((lt: any) => lt.id === editingLeaveType.id ? updated : lt));
-    } else {
-        const created = await LeaveTypeApi.createLeaveType(leaveType);
-        setLeaveTypes([...(leaveTypes as any[]), created]);
-    }
-    setIsFormOpen(false);
-    } catch {
+      setError(null); // Clear any previous errors
+      if (editingLeaveType) {
+        await LeaveTypeApi.updateLeaveType(editingLeaveType.id, leaveType);
+        // Refresh the list to ensure it's up to date
+        await fetchLeaveTypes();
+        setSuccess('Leave type updated successfully!');
+      } else {
+        await LeaveTypeApi.createLeaveType(leaveType);
+        // Refresh the entire list to get the newly created leave type
+        await fetchLeaveTypes();
+        setSuccess('Leave type created successfully!');
+      }
+      setIsFormOpen(false);
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => {
+        setSuccess(null);
+      }, 3000);
+    } catch (error) {
+      console.error('Error saving leave type:', error);
       alert('Failed to save leave type.');
     }
   };
@@ -122,9 +138,18 @@ export default function LeaveTypes() {
     const leaveType = leaveTypes.find(lt => lt.id === id);
     if (!leaveType) return;
     try {
-      const updated = await LeaveTypeApi.updateLeaveType(id, { ...leaveType, status: leaveType.status === 'active' ? 'inactive' : 'active' });
-      setLeaveTypes((leaveTypes as any[]).map((lt: any) => lt.id === id ? updated : lt));
-    } catch {
+      setError(null); // Clear any previous errors
+      await LeaveTypeApi.updateLeaveType(id, { ...leaveType, status: leaveType.status === 'active' ? 'inactive' : 'active' });
+      // Refresh the list to ensure it's up to date
+      await fetchLeaveTypes();
+      setSuccess(`Leave type ${leaveType.status === 'active' ? 'deactivated' : 'activated'} successfully!`);
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => {
+        setSuccess(null);
+      }, 3000);
+    } catch (error) {
+      console.error('Error updating status:', error);
       alert('Failed to update status.');
     }
   };
@@ -147,6 +172,22 @@ export default function LeaveTypes() {
           <Plus className="mr-2 h-4 w-4" /> Add Leave Type
         </Button>
       </div>
+
+      {/* Success Message */}
+      {success && (
+        <div className="bg-green-50 border border-green-200 rounded-md p-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm font-medium text-green-800">{success}</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {(!Array.isArray(leaveTypes)) ? (
         <div className="text-red-500">Leave types data is invalid.</div>

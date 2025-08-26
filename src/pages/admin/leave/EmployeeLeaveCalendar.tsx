@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
 import { format, startOfWeek, addDays, isSameDay, isToday, parseISO, isWithinInterval } from 'date-fns';
 import { Calendar as CalendarIcon, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -10,6 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
+import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { BACKEND_URL } from '@/lib/config';
 
@@ -69,11 +69,9 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-
-
-export default function ViewSchedule() {
-  const { id } = useParams<{ id: string }>();
+export default function EmployeeLeaveCalendar() {
   const navigate = useNavigate();
+  const { employeeId } = useParams<{ employeeId: string }>();
   const [date, setDate] = useState<Date>(new Date());
   const [leaveEvents, setLeaveEvents] = useState<LeaveEvent[]>([]);
   const [upcomingLeaves, setUpcomingLeaves] = useState<LeaveRequest[]>([]);
@@ -85,7 +83,7 @@ export default function ViewSchedule() {
   useEffect(() => {
     const fetchEmployeeDetails = async () => {
       try {
-        const response = await api.get(`/company-admin/users/${id}`);
+        const response = await api.get(`/company-admin/users/${employeeId}`);
         const userData = response.data;
         setEmployee({
           id: userData.id.toString(),
@@ -100,23 +98,23 @@ export default function ViewSchedule() {
       }
     };
 
-    if (id) {
+    if (employeeId) {
       fetchEmployeeDetails();
     }
-  }, [id]);
+  }, [employeeId]);
 
   // Fetch leave events data
   useEffect(() => {
     const fetchLeaveData = async () => {
-      if (!id) return;
+      if (!employeeId) return;
       
       try {
         setLoading(true);
         setError(null);
         
         const [eventsResponse, upcomingResponse] = await Promise.all([
-          api.get(`/company-admin/leave-calendar/employee/${id}/leave-events`),
-          api.get(`/company-admin/leave-calendar/employee/${id}/upcoming-leaves`)
+          api.get(`/company-admin/leave-calendar/employee/${employeeId}/leave-events`),
+          api.get(`/company-admin/leave-calendar/employee/${employeeId}/upcoming-leaves`)
         ]);
 
         setLeaveEvents(eventsResponse.data.leaveEvents || []);
@@ -130,7 +128,7 @@ export default function ViewSchedule() {
     };
 
     fetchLeaveData();
-  }, [id]);
+  }, [employeeId]);
 
   // Get events for a specific day
   const getDayEvents = (day: Date) => {
@@ -161,7 +159,7 @@ export default function ViewSchedule() {
         <div className="flex justify-center items-center h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-500">Loading employee schedule data...</p>
+            <p className="text-gray-500">Loading employee leave calendar data...</p>
           </div>
         </div>
       </div>
@@ -183,10 +181,6 @@ export default function ViewSchedule() {
     );
   }
 
-  if (!employee) {
-    return <div>Loading...</div>;
-  }
-
   return (
     <div className="container mx-auto py-8">
       <Button 
@@ -195,12 +189,14 @@ export default function ViewSchedule() {
         onClick={() => navigate(-1)}
       >
         <ArrowLeft className="mr-2 h-4 w-4" />
-        Back to Team
+        Back to Team Management
       </Button>
 
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">{employee?.name}'s Leave Schedule</h1>
+          <h1 className="text-2xl font-bold tracking-tight">
+            {employee?.name}'s Leave Calendar
+          </h1>
           <p className="text-muted-foreground">
             Overview of {employee?.name}'s leave schedules and requests
           </p>
@@ -316,7 +312,7 @@ export default function ViewSchedule() {
           <Card>
             <CardHeader>
               <CardTitle>Weekly View</CardTitle>
-              <CardDescription>Detailed schedule for the week of {format(startOfWeek(date), 'MMM d')} - {format(addDays(startOfWeek(date), 6), 'MMM d, yyyy')}</CardDescription>
+              <CardDescription>Detailed leave schedule for the week of {format(startOfWeek(date), 'MMM d')} - {format(addDays(startOfWeek(date), 6), 'MMM d, yyyy')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -376,7 +372,7 @@ export default function ViewSchedule() {
                         </div>
                       ) : (
                         <div className="text-sm text-muted-foreground py-2">
-                          No scheduled events
+                          No leave scheduled for this day
                         </div>
                       )}
                     </div>
@@ -391,7 +387,7 @@ export default function ViewSchedule() {
           <Card>
             <CardHeader>
               <CardTitle>Upcoming Leave Requests</CardTitle>
-              <CardDescription>View and manage {employee.name}'s upcoming time off</CardDescription>
+              <CardDescription>View {employee?.name}'s upcoming approved time off</CardDescription>
             </CardHeader>
             <CardContent>
               {upcomingLeaves.length > 0 ? (
@@ -432,7 +428,7 @@ export default function ViewSchedule() {
                 </div>
               ) : (
                 <div className="text-center py-8">
-                  <p className="text-muted-foreground">No upcoming leave requests</p>
+                  <p className="text-muted-foreground">No upcoming approved leave requests</p>
                 </div>
               )}
             </CardContent>

@@ -19,10 +19,18 @@ import {
   Globe,
   Sun,
   Moon,
-  Palette
+  Palette,
+  CreditCard,
+  Settings as SettingsIcon,
+  Users,
+  FileText,
+  Zap
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { Link } from 'react-router-dom';
+import { AdvanceSettings as AdvanceSettingsComponent } from '@/components/settings/AdvanceSettings';
+import { toast } from 'sonner';
 
 interface SettingsProps {
   onLogout: () => void;
@@ -61,6 +69,10 @@ export function Settings({ onLogout }: SettingsProps) {
   const [subscriptionLoading, setSubscriptionLoading] = useState(true);
   const [subscriptionError, setSubscriptionError] = useState('');
   const [userCount, setUserCount] = useState<number | null>(null);
+
+  // Active sessions state
+  const [activeSessions, setActiveSessions] = useState<any[]>([]);
+  const [sessionsLoading, setSessionsLoading] = useState(true);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -145,6 +157,40 @@ export function Settings({ onLogout }: SettingsProps) {
     };
     fetchIpLocation();
   }, []);
+
+  // Fetch active sessions
+  useEffect(() => {
+    const fetchActiveSessions = async () => {
+      try {
+        setSessionsLoading(true);
+        const token = localStorage.getItem('token');
+        if (!token) throw new Error('No authentication token found');
+        
+        const res = await fetch(`${BACKEND_URL}/company-admin/auth/login-logs`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (!res.ok) throw new Error('Failed to fetch active sessions');
+        
+        const data = await res.json();
+        
+        if (data.success) {
+          setActiveSessions(data.data);
+        } else {
+          throw new Error(data.message || 'Failed to fetch active sessions');
+        }
+      } catch (err: any) {
+        // Fallback to empty array if API fails
+        setActiveSessions([]);
+      } finally {
+        setSessionsLoading(false);
+      }
+    };
+
+    fetchActiveSessions();
+  }, []);
+
+
 
   const handleSave = async () => {
     setSaving(true);
@@ -332,7 +378,8 @@ export function Settings({ onLogout }: SettingsProps) {
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
-          <TabsTrigger value="subscription">Subscription</TabsTrigger>
+          <TabsTrigger value="subscription">Subscription & Payroll</TabsTrigger>
+          <TabsTrigger value="advanced">Advanced Settings</TabsTrigger>
         </TabsList>
 
         <TabsContent value="profile">
@@ -497,32 +544,35 @@ export function Settings({ onLogout }: SettingsProps) {
 
                   <div className="space-y-2">
                     <h4 className="font-medium">Active Sessions</h4>
-                    {securitySettings.loginDevices.map((device, index) => (
-                      <div 
-                        key={index}
-                        className="p-4 bg-gray-50 rounded-lg"
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
-                              <Smartphone className="h-4 w-4 text-blue-600" />
-                            </div>
-                            <div>
-                              <p className="font-medium">{device.device}</p>
-                              <div className="flex items-center gap-2 text-sm text-gray-500">
-                                <MapPin className="h-4 w-4" />
-                                <span>{device.location}</span>
-                                <span>•</span>
-                                <span>Last active: {device.lastActive}</span>
+                    {sessionsLoading ? (
+                      <div className="p-4 text-center text-gray-500">Loading sessions...</div>
+                    ) : activeSessions.length === 0 ? (
+                      <p>No active sessions found.</p>
+                    ) : (
+                      <div className="space-y-4">
+                        {activeSessions.map((session) => (
+                          <div 
+                            key={session.id}
+                            className="p-4 bg-gray-50 rounded-lg"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+                                <Smartphone className="h-4 w-4 text-blue-600" />
+                              </div>
+                              <div>
+                                <p className="font-medium">{session.device}</p>
+                                <div className="flex items-center gap-2 text-sm text-gray-500">
+                                  <MapPin className="h-4 w-4" />
+                                  <span>{session.location}</span>
+                                  <span>•</span>
+                                  <span>Last active: {session.lastActive}</span>
+                                </div>
                               </div>
                             </div>
                           </div>
-                          <Button variant="outline" size="sm" className="text-red-600 hover:bg-red-50">
-                            Revoke
-                          </Button>
-                        </div>
+                        ))}
                       </div>
-                    ))}
+                    )}
                   </div>
                 </div>
                 {/* Change Password Dialog */}
@@ -555,85 +605,206 @@ export function Settings({ onLogout }: SettingsProps) {
         
         <TabsContent value="subscription">
           <div className="grid gap-6">
+            {/* Subscription Plan Card */}
             <Card>
               <CardHeader>
-                <CardTitle>Your Subscription</CardTitle>
-                <p className="text-sm text-muted-foreground">Manage your subscription plan and billing information</p>
+                <CardTitle className="flex items-center gap-2">
+                  <span>Free Forever Plan</span>
+                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                    Active
+                  </Badge>
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">Your BlueHR subscription is completely free with no hidden costs</p>
               </CardHeader>
               <CardContent>
-                {subscriptionLoading ? (
-                  <div className="p-8 text-center text-gray-500">Loading subscription...</div>
-                ) : subscriptionError ? (
-                  <div className="p-8 text-center text-red-500">{subscriptionError}</div>
-                ) : subscription ? (
                 <div className="space-y-6">
-                  <div className="border rounded-lg p-6">
-                    <div className="flex justify-between items-start">
-                      <div>
-                          <h3 className="text-lg font-semibold">{subscription.plan || 'N/A'} Plan</h3>
-                          <p className="text-muted-foreground">Active 2 Next billing date: {/* TODO: Add real billing date if available */}N/A</p>
-                      </div>
-                      <Badge variant="outline" className="bg-green-50 text-green-700">
-                        Active
-                      </Badge>
-                    </div>
-                    <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <div>
-                        <p className="text-sm text-muted-foreground">Price per user</p>
-                          <p className="text-2xl font-semibold">
-                            {subscription.price_per_user ? `$${subscription.price_per_user}` : '$30'}
-                            <small className="text-sm font-normal text-muted-foreground">/user/month</small>
-                          </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Users</p>
-                          <p className="text-2xl font-semibold">{userCount !== null ? userCount : '-'}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Total per month</p>
-                          <p className="text-2xl font-semibold">
-                            {userCount !== null && (subscription.price_per_user || 30)
-                              ? `$${userCount * (subscription.price_per_user || 30)}`
-                              : '-'}
-                            <small className="text-sm font-normal text-muted-foreground">/month</small>
-                          </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center">
+                          <span className="text-green-600 font-bold text-lg">$0</span>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-green-800">Monthly Cost</h4>
+                          <p className="text-sm text-green-600">Free forever</p>
                         </div>
                       </div>
                     </div>
-                  <div className="border rounded-lg p-6">
-                    <h4 className="font-medium mb-4">Plan Features</h4>
+                    
+                    <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center">
+                          <Users className="h-5 w-5 text-blue-600" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-blue-800">Active Users</h4>
+                          <p className="text-2xl font-bold text-blue-600">{userCount !== null ? userCount : '-'}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
+                    <div className="flex items-start gap-3">
+                      <div className="h-6 w-6 bg-amber-100 rounded-full flex items-center justify-center mt-0.5">
+                        <span className="text-amber-600 text-sm font-bold">!</span>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-amber-800 mb-1">Payroll Processing Fees</h4>
+                        <p className="text-sm text-amber-700">
+                          While your subscription is free, payroll processing fees are deducted from your employees' salaries when payments are processed. These fees are transparent and based on salary ranges.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <h4 className="font-medium">Plan Features</h4>
                     <ul className="space-y-3">
                       <li className="flex items-center">
-                        <svg className="h-5 w-5 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg className="h-5 w-5 text-green-500 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>Unlimited employee management</span>
+                      </li>
+                      <li className="flex items-center">
+                        <svg className="h-5 w-5 text-green-500 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>Complete HR management suite</span>
+                      </li>
+                      <li className="flex items-center">
+                        <svg className="h-5 w-5 text-green-500 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                         </svg>
                         <span>24/7 customer support</span>
                       </li>
                       <li className="flex items-center">
-                        <svg className="h-5 w-5 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg className="h-5 w-5 text-green-500 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                         </svg>
-                        <span>Basic analytics and reporting</span>
-                      </li>
-                      <li className="flex items-center">
-                        <svg className="h-5 w-5 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                        <span>Email support</span>
+                        <span>Advanced analytics and reporting</span>
                       </li>
                     </ul>
-                    <div className="mt-4 p-4 bg-blue-50 rounded-md">
-                      <p className="text-sm text-blue-700">
-                        <strong>Note:</strong> Charges are calculated based on your active employee count. If you add or remove employees, your total will be adjusted accordingly, and you'll receive an amended invoice reflecting these changes at your next billing cycle.
-                      </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Payroll Charges Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CreditCard className="h-5 w-5" />
+                  Payroll Processing Charges
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">Transparent fees deducted from employee salaries during payroll processing</p>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <p className="text-sm text-gray-600 mb-4">
+                      These charges are automatically deducted from your employees' salaries when payroll transactions are processed. The fees are based on salary ranges and are charged per transaction.
+                    </p>
+                  </div>
+
+                  <div className="overflow-hidden rounded-lg border">
+                    <div className="bg-gray-50 px-6 py-3 border-b">
+                      <h4 className="font-medium text-gray-900">Payroll Fee Structure</h4>
                     </div>
-                      {/* Removed Change Plan and Update Payment Method buttons */}
+                    <div className="divide-y">
+                      <div className="flex justify-between items-center px-6 py-4 hover:bg-gray-50">
+                        <div>
+                          <span className="font-medium text-gray-900">KSh 101 - 3,000</span>
+                          <p className="text-sm text-gray-500">Basic salary range</p>
+                        </div>
+                                                 <div className="text-right">
+                           <span className="text-lg font-bold text-gray-900">KSh 30</span>
+                           <p className="text-sm text-gray-500">per transaction</p>
+                         </div>
+                      </div>
+                      
+                      <div className="flex justify-between items-center px-6 py-4 hover:bg-gray-50">
+                        <div>
+                          <span className="font-medium text-gray-900">KSh 3,001 - 10,000</span>
+                          <p className="text-sm text-gray-500">Lower middle range</p>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-lg font-bold text-gray-900">KSh 50</span>
+                          <p className="text-sm text-gray-500">per transaction</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex justify-between items-center px-6 py-4 hover:bg-gray-50">
+                        <div>
+                          <span className="font-medium text-gray-900">KSh 10,001 - 20,000</span>
+                          <p className="text-sm text-gray-500">Middle range</p>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-lg font-bold text-gray-900">KSh 70</span>
+                          <p className="text-sm text-gray-500">per transaction</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex justify-between items-center px-6 py-4 hover:bg-gray-50">
+                        <div>
+                          <span className="font-medium text-gray-900">KSh 20,001 - 40,000</span>
+                          <p className="text-sm text-gray-500">Upper middle range</p>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-lg font-bold text-gray-900">KSh 100</span>
+                          <p className="text-sm text-gray-500">per transaction</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex justify-between items-center px-6 py-4 hover:bg-gray-50">
+                        <div>
+                          <span className="font-medium text-gray-900">KSh 40,001 - 50,000</span>
+                          <p className="text-sm text-gray-500">High range</p>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-lg font-bold text-gray-900">KSh 150</span>
+                          <p className="text-sm text-gray-500">per transaction</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex justify-between items-center px-6 py-4 hover:bg-gray-50 bg-blue-50">
+                        <div>
+                          <span className="font-medium text-gray-900">KSh 50,001 - Above</span>
+                          <p className="text-sm text-gray-500">Premium range</p>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-lg font-bold text-blue-600">KSh 200</span>
+                          <p className="text-sm text-gray-500">per transaction</p>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                ) : null}
+
+                  <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <div className="flex items-start gap-3">
+                      <div className="h-6 w-6 bg-blue-100 rounded-full flex items-center justify-center mt-0.5">
+                        <span className="text-blue-600 text-sm font-bold">i</span>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-blue-800 mb-1">Important Information</h4>
+                        <ul className="text-sm text-blue-700 space-y-1">
+                          <li>• Fees are automatically deducted during payroll processing</li>
+                          <li>• Charges are based on individual employee salary ranges</li>
+                          <li>• No additional subscription or hidden costs</li>
+                          <li>• Transparent fee structure with no surprises</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+        
+        <TabsContent value="advanced">
+          <AdvanceSettingsComponent />
         </TabsContent>
       </Tabs>
     </div>
