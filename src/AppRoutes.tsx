@@ -88,6 +88,7 @@ import LeaveTypes from './pages/admin/leave';
 import LeaveCalendar from './pages/admin/leave/LeaveCalendar';
 import PrepareReviewPage from './pages/admin/performance/prepare-review';
 import ThreeSixtyFeedbackPage from './pages/admin/performance/360-feedback';
+import GoogleCallback from './pages/GoogleCallback';
 
 // Components
 
@@ -106,9 +107,9 @@ const AppRoutes = () => {
 
   const navigate = useNavigate();
 
-  const handleLogin = (role: UserRole = 'employee') => {
+  const handleLogin = (role: string) => {
     setIsAuthenticated(true);
-    setUserRole(role);
+    setUserRole(role as UserRole);
     localStorage.setItem('userRole', role);
   };
 
@@ -481,6 +482,9 @@ const AppRoutes = () => {
             </PermissionGuard>
           } />
         </Route>
+
+        {/* Google OAuth callback route */}
+        <Route path="/auth/callback" element={<GoogleCallback onLogin={handleLogin} />} />
 
         {/* Fallback route */}
         <Route path="*" element={
