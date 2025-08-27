@@ -14,7 +14,7 @@ export default defineConfig({
   },
   server: {
     host: true,
-    port: Number(import.meta.env.VITE_PORT ?? 3012),
+    port: Number(process.env.VITE_PORT) || 3012,
     proxy: {
       '/ai-oversight': 'http://localhost:4000', // Change 5000 to your backend port if different
     },
@@ -25,6 +25,6 @@ export default defineConfig({
   },
   preview: {
     host: true,
-    port: Number(import.meta.env.VITE_PORT ?? 3012),
+    port: Number(process.env.VITE_PORT) || 3012,
   },
 });
