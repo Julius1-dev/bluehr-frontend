@@ -10,7 +10,6 @@ import {
   Filter, 
   MoreHorizontal, 
   Mail, 
-  Phone, 
   Building, 
   Calendar, 
   UserPlus,
@@ -31,11 +30,10 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Table as PreviewTable, TableBody as PreviewTableBody, TableCell as PreviewTableCell, TableHead as PreviewTableHead, TableHeader as PreviewTableHeader, TableRow as PreviewTableRow } from '@/components/ui/table';
+// ...existing code...
 import Papa from 'papaparse';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -45,7 +43,7 @@ const API_URL = `${BACKEND_URL}/company-admin/users`;
 const DEPARTMENTS_API = `${BACKEND_URL}/company-admin/departments`;
 
 // Replace hardcoded backend URL with BACKEND_URL
-const TEAM_API = `${BACKEND_URL}/company-admin/team`;
+// const TEAM_API = `${BACKEND_URL}/company-admin/team`;
 
 // Department filter options
 const departments = ['All Departments', 'Design', 'Engineering', 'HR', 'Finance', 'Product', 'Marketing'];
@@ -71,8 +69,8 @@ function mapHeadersToCamelCase(row: Record<string, any>) {
 export function TeamManagement(): JSX.Element {
   const navigate = useNavigate();
   const [teamMembers, setTeamMembers] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  // const [loading, setLoading] = useState(true);
+  // const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('All Departments');
   const [selectedStatus, setSelectedStatus] = useState('All Status');
@@ -82,8 +80,6 @@ export function TeamManagement(): JSX.Element {
   
   useEffect(() => {
     const fetchTeamMembers = async () => {
-      setLoading(true);
-      setError('');
       try {
         const token = localStorage.getItem('token');
         const res = await fetch(API_URL, {
@@ -97,10 +93,9 @@ export function TeamManagement(): JSX.Element {
           name: [member.first_name, member.middle_name, member.last_name].filter(Boolean).join(' ')
         }));
         setTeamMembers(mapped);
+  // Notification creation is now handled by the backend when a team member is added.
       } catch (err: any) {
-        setError(err.message || 'Error fetching team members');
-      } finally {
-        setLoading(false);
+        // Error handling (optional): log or show toast
       }
     };
     fetchTeamMembers();

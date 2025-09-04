@@ -31,17 +31,17 @@ export function Header({ onLogout, isAdmin = false, isSuperAdmin = false }: Head
           </span>
         </div>
       </div>
-      {/* <div className="flex items-center ml-auto gap-3 md:gap-4">
+      <div className="flex items-center ml-auto gap-3 md:gap-4">
         <NotificationDropdown />
-        <Button 
+        {/* <Button 
           variant="ghost" 
           size="sm"
           onClick={onLogout}
           className="text-red-600 hover:text-red-700 hover:bg-red-50"
         >
           Logout
-        </Button>
-      </div> */}
+        </Button> */}
+      </div>
     </header>
   );
 }

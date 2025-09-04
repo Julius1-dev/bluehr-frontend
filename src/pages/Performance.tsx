@@ -760,6 +760,16 @@ export function Performance() {
                               <span className={`text-sm ${milestone.status === 'approved' ? 'line-through text-muted-foreground' : ''}`}>{milestone.title}</span>
                               {milestone.status === 'pending' && <span className="text-xs text-yellow-600 ml-2">Pending Approval</span>}
                               {milestone.status === 'rejected' && <span className="text-xs text-red-600 ml-2">Rejected: {milestone.rejectionReason}</span>}
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={async () => {
+                                  await PerformanceApi.updateMilestone(goal.id, milestone.id, 'pending');
+                                  // Optionally refetch performance data here
+                                }}
+                              >
+                                Mark Pending
+                              </Button>
                             </div>
                           ))}
                         </div>

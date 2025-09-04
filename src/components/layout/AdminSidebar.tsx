@@ -81,6 +81,7 @@ export const AdminSidebar: React.FC<{ onLogout: () => void }> = ({ onLogout }) =
 
   const [userPermissions, setUserPermissions] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [pendingLeaveCount, setPendingLeaveCount] = useState<number>(0);
 
   useEffect(() => {
     const fetchUserPermissions = async () => {
@@ -98,7 +99,6 @@ export const AdminSidebar: React.FC<{ onLogout: () => void }> = ({ onLogout }) =
 
         if (response.ok) {
           const data = await response.json();
-          console.log('User permissions:', data.data?.permissions);
           // Always grant full access to the original admin
           if (data.data && data.data.role === 'admin') {
             setUserPermissions(['*']); // Admin has all permissions
@@ -116,7 +116,29 @@ export const AdminSidebar: React.FC<{ onLogout: () => void }> = ({ onLogout }) =
       }
     };
 
+    const fetchPendingLeaveCount = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        // Fetch all leave requests
+        const response = await fetch(`${BACKEND_URL}/company-admin/leave-requests`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          // Count pending requests
+          const leaveRequests = data.leaveRequests || [];
+          const pendingCount = leaveRequests.filter((req: any) => req.status === 'pending').length;
+          setPendingLeaveCount(pendingCount);
+        }
+      } catch (error) {
+        console.error('Error fetching pending leave requests:', error);
+        setPendingLeaveCount(0);
+      }
+    };
+
     fetchUserPermissions();
+    fetchPendingLeaveCount();
   }, []);
 
   if (loading) {
@@ -184,7 +206,7 @@ export const AdminSidebar: React.FC<{ onLogout: () => void }> = ({ onLogout }) =
           icon={<Calendar className="w-full h-full" />} 
           label="Leave Requests" 
           to="/admin/leave-requests" 
-          badge={3} 
+          badge={pendingLeaveCount > 0 ? pendingLeaveCount : undefined} 
           requiredPermissions={['manage_leave']}
           userPermissions={userPermissions}
         />

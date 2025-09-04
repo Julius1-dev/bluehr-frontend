@@ -1,22 +1,51 @@
 import { useEffect, useState } from 'react';
-import { Bell, Clock, AlertCircle, Calendar } from 'lucide-react';
+import { 
+  Bell, 
+  Clock, 
+  Calendar, 
+  Users, 
+  Building2, 
+  UserX, 
+  CreditCard, 
+  BarChart2, 
+  FileText, 
+  Megaphone 
+} from 'lucide-react';
+
 import type { Notification } from '@/types/notification';
-import { notificationService } from '@/services/notificationService';
+import { BACKEND_URL } from '@/lib/config';
 import { Button } from '../ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu';
 import { Badge } from '../ui/badge';
 import { formatDistanceToNow } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
 
 const getNotificationIcon = (type: string) => {
+  const iconClass = "w-full h-full text-black";
+
   switch (type) {
     case 'holiday':
-      return <Calendar className="h-4 w-4 text-blue-500" />;
+      return <Calendar className={iconClass} />;
     case 'leave_request':
-      return <Clock className="h-4 w-4 text-amber-500" />;
+      return <Calendar className={iconClass} />;
     case 'announcement':
-      return <AlertCircle className="h-4 w-4 text-green-500" />;
+      return <Megaphone className={iconClass} />;
+    case 'TEAM_MEMBER_ADDED':
+      return <Users className={iconClass} />;
+    case 'workshift':
+      return <Clock className={iconClass} />;
+    case 'office_location':
+      return <Building2 className={iconClass} />;
+    case 'offboarding':
+      return <UserX className={iconClass} />;
+    case 'payroll':
+      return <CreditCard className={iconClass} />;
+    case 'performance':
+      return <BarChart2 className={iconClass} />;
+    case 'document':
+      return <FileText className={iconClass} />;
     default:
-      return <Bell className="h-4 w-4 text-gray-500" />;
+      return <Bell className={iconClass} />;
   }
 };
 
@@ -24,148 +53,151 @@ export function NotificationDropdown() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const unreadCount = notifications.filter(n => !n.read).length;
+  const navigate = useNavigate();
 
   useEffect(() => {
-    console.log('NotificationDropdown: Subscribing to notifications');
-    
-    // Initial fetch
-    const initialNotifications = notificationService.getNotifications();
-    console.log('Initial notifications:', initialNotifications);
-    setNotifications(initialNotifications);
-    
-    // Subscribe to updates
-    const unsubscribe = notificationService.subscribe((updatedNotifications) => {
-      console.log('Received updated notifications:', updatedNotifications);
-      setNotifications(updatedNotifications);
-    });
-
-    return () => {
-      console.log('NotificationDropdown: Unsubscribing from notifications');
-      unsubscribe();
-    };
+    refreshNotifications();
   }, []);
 
-  const handleMarkAsRead = (id: string) => {
-    console.log('Marking notification as read:', id);
-    try {
-      notificationService.markAsRead(id);
-    } catch (error) {
-      console.error('Error marking notification as read:', error);
-    }
+  const refreshNotifications = async () => {
+    const token = localStorage.getItem('token');
+    const res = await fetch(`${BACKEND_URL}/api/notifications`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    setNotifications(res.ok ? await res.json() : []);
   };
 
-  const handleMarkAllAsRead = () => {
-    console.log('Marking all notifications as read');
-    try {
-      notificationService.markAllAsRead();
-    } catch (error) {
-      console.error('Error marking all notifications as read:', error);
-    }
+  const handleMarkAsRead = async (id: string | number) => {
+    const token = localStorage.getItem('token');
+    await fetch(`${BACKEND_URL}/api/notifications/${id}/read`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    refreshNotifications();
+  };
+
+  const handleMarkAllAsRead = async () => {
+    const token = localStorage.getItem('token');
+    await fetch(`${BACKEND_URL}/api/notifications/read-all`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    refreshNotifications();
+  };
+
+  // 🚀 Clear all
+  const handleClearAll = async () => {
+    const token = localStorage.getItem('token');
+    await fetch(`${BACKEND_URL}/api/notifications/clear-all`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    setNotifications([]); // Clear UI instantly
   };
 
   const handleNotificationClick = (notification: Notification) => {
-    console.log('Notification clicked:', notification.id);
-    if (!notification.read) {
-      handleMarkAsRead(notification.id);
-    }
+    if (!notification.read) handleMarkAsRead(notification.id);
+    if (notification.link?.startsWith('/')) navigate(notification.link);
+    else if (notification.link) window.location.href = notification.link;
   };
-
-  console.log('Rendering NotificationDropdown with notifications:', notifications);
 
   return (
     <>
       <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon" className="relative">
-            <Bell className="h-5 w-5 text-gray-500" />
+            <Bell className="h-6 w-6 text-gray-600" />
             {unreadCount > 0 && (
-              <Badge 
-                variant="destructive" 
-                className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center rounded-full"
+              <Badge
+                variant="destructive"
+                className="absolute -top-1 -right-1 h-5 w-5 p-0 text-xs flex items-center justify-center rounded-full"
               >
                 {unreadCount > 9 ? '9+' : unreadCount}
               </Badge>
             )}
-            <span className="sr-only">Notifications</span>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent 
-          className="w-80 p-0 bg-white text-black border-0 shadow-xl" 
-          align="end" 
+
+        <DropdownMenuContent
+          className="w-96 p-0 bg-white shadow-2xl rounded-xl overflow-hidden animate-in slide-in-from-top-2"
+          align="end"
           forceMount
-          onInteractOutside={(e) => {
-            // Prevent closing when clicking on the blur overlay
-            if ((e.target as HTMLElement).classList.contains('blur-overlay')) {
-              e.preventDefault();
-            }
-          }}
         >
-          <div className="flex items-center justify-between border-b px-4 py-3">
-            <h3 className="font-semibold">Notifications</h3>
+          {/* Header */}
+          <div className="flex items-center justify-between border-b px-4 py-3 bg-gray-50">
+            <h3 className="font-semibold text-gray-800">Notifications</h3>
             {unreadCount > 0 && (
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="h-8 text-xs text-white bg-blue-600 hover:bg-blue-700"
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 text-xs text-blue-600 hover:bg-blue-50"
                 onClick={handleMarkAllAsRead}
               >
                 Mark all as read
               </Button>
             )}
           </div>
-          
-          <div className="max-h-96 overflow-y-auto">
+
+          {/* Notifications */}
+          <div className="max-h-96 overflow-y-auto divide-y">
             {notifications.length === 0 ? (
-              <div className="p-4 text-center text-sm text-gray-500">
-                No notifications yet
+              <div className="p-6 text-center text-sm text-gray-500">
+                🎉 You're all caught up!
               </div>
             ) : (
               notifications.map((notification) => (
-                <DropdownMenuItem 
-                  key={notification.id} 
-                  className={`flex items-start gap-3 p-3 cursor-pointer ${!notification.read ? 'bg-white' : ''}`}
+                <DropdownMenuItem
+                  key={notification.id}
+                  className={`flex items-start gap-3 px-4 py-3 cursor-pointer transition ${
+                    notification.read
+                      ? 'bg-white hover:bg-gray-50'
+                      : 'bg-blue-50 hover:bg-blue-100'
+                  }`}
                   onClick={() => handleNotificationClick(notification)}
                 >
-                  <div className="mt-0.5">
-                    {getNotificationIcon(notification.type)}
-                  </div>
+                  <div className="flex-shrink-0">{getNotificationIcon(notification.type)}</div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-start">
-                      <p className="font-medium text-sm text-gray-900 truncate">
-                        {notification.title}
-                      </p>
-                      <span className="text-xs text-gray-400 whitespace-nowrap ml-2">
-                        {formatDistanceToNow(new Date(notification.timestamp), { addSuffix: true })}
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-600 mt-1">
+                    <p
+                      className="text-sm font-medium text-gray-900 line-clamp-2 cursor-pointer"
+                      title={notification.message}
+                    >
                       {notification.message}
                     </p>
+                    <span className="text-xs text-gray-500">
+                      {notification.createdAt && !isNaN(new Date(notification.createdAt).getTime())
+                        ? formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })
+                        : 'Unknown'}
+                    </span>
                   </div>
                   {!notification.read && (
-                    <div className="h-2 w-2 rounded-full bg-blue-500 flex-shrink-0 mt-1.5" />
+                    <span className="h-2 w-2 rounded-full bg-blue-600 mt-2 flex-shrink-0" />
                   )}
                 </DropdownMenuItem>
               ))
             )}
           </div>
-          
+
+          {/* Footer with Clear all */}
           {notifications.length > 0 && (
-            <div className="border-t p-2 text-center">
-              <Button variant="ghost" size="sm" className="text-white bg-blue-600 hover:bg-blue-700 w-full">
-                View all notifications
+            <div className="border-t p-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full text-red-600 hover:bg-red-50"
+                onClick={handleClearAll}
+              >
+                Clear all notifications
               </Button>
             </div>
           )}
         </DropdownMenuContent>
       </DropdownMenu>
-      
+
       {/* Blur overlay */}
       {isOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm z-40"
           onClick={() => setIsOpen(false)}
-          style={{ pointerEvents: 'auto' }}
         />
       )}
     </>

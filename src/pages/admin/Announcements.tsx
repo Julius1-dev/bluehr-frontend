@@ -272,9 +272,9 @@ export function Announcements() {
           <TabsTrigger value="policies" className="flex items-center gap-2">
             <FileText className="h-4 w-4" /> Company Policies
           </TabsTrigger>
-          <TabsTrigger value="templates" className="flex items-center gap-2">
+          {/* <TabsTrigger value="templates" className="flex items-center gap-2">
             <Bell className="h-4 w-4" /> Templates
-          </TabsTrigger>
+          </TabsTrigger> */}
         </TabsList>
 
         <TabsContent value="announcements" className="space-y-4">

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   Home, 
   Clock, 
@@ -15,6 +15,7 @@ import {
   Fingerprint
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { employeeLeaveApi } from '@/services/employeeLeaveApi';
 import { Link, useLocation } from 'react-router-dom';
 
 interface NavItemProps {
@@ -52,6 +53,20 @@ function NavItem({ icon, label, to, badge }: NavItemProps) {
 }
 
 export function Sidebar({ onLogout }: { onLogout: () => void }) {
+  const [upcomingLeave, setUpcomingLeave] = useState<any>(null);
+
+  useEffect(() => {
+    async function fetchUpcomingLeave() {
+      try {
+        const response = await employeeLeaveApi.getUpcomingLeave();
+        setUpcomingLeave(response.upcomingLeave || null);
+      } catch {
+        setUpcomingLeave(null);
+      }
+    }
+    fetchUpcomingLeave();
+  }, []);
+
   return (
     <aside className="hidden md:flex flex-col w-64 bg-white border-r border-gray-200">
       <div className="p-4 flex items-center gap-2 border-b border-gray-200">
@@ -70,7 +85,7 @@ export function Sidebar({ onLogout }: { onLogout: () => void }) {
           label="Check-In/Out" 
           to="/employee-checkin" 
         /> */}
-        <NavItem icon={<Calendar className="w-full h-full" />} label="Leave" to="/leave" badge={1} />
+  <NavItem icon={<Calendar className="w-full h-full" />} label="Leave" to="/leave" badge={upcomingLeave ? 1 : undefined} />
         <NavItem icon={<CreditCard className="w-full h-full" />} label="Payroll" to="/payroll" />
         <NavItem icon={<Wallet className="w-full h-full" />} label="Advances" to="/wallet" />
         <NavItem icon={<BarChart2 className="w-full h-full" />} label="Performance" to="/performance" />
