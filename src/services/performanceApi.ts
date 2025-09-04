@@ -19,7 +19,7 @@ export const PerformanceApi = {
     return response.data;
   },
   // Admin: get any employee's performance
-  async getPerformance(employeeId) {
+  async getPerformance(employeeId: number | string) {
     const headers = getAuthHeaders();
     const response = await axios.get(`${API_BASE}/company-admin/performance/${employeeId}`, {
       headers,
@@ -28,7 +28,7 @@ export const PerformanceApi = {
     return response.data;
   },
   // Admin: upsert any employee's performance
-  async upsertPerformance(employeeId, data) {
+  async upsertPerformance(employeeId: number | string, data: any) {
     const headers = getAuthHeaders();
     const response = await axios.post(`${API_BASE}/company-admin/performance/${employeeId}`, data, {
       headers,
@@ -37,7 +37,7 @@ export const PerformanceApi = {
     return response.data;
   },
   // Employee: add a new goal with milestones
-  async addGoal(goal) {
+  async addGoal(goal: any) {
     const headers = getAuthHeaders();
     const response = await axios.post(`${API_BASE}/employee/performance/goals`, { goal }, {
       headers,
@@ -49,15 +49,6 @@ export const PerformanceApi = {
   async getAllEmployeeGoals() {
     const headers = getAuthHeaders();
     const response = await axios.get(`${API_BASE}/company-admin/performance/goals`, {
-      headers,
-      withCredentials: true,
-    });
-    return response.data;
-  },
-  // Employee: submit milestone progress for approval
-  async submitMilestoneForApproval(goalIndex: number, milestoneIndex: number) {
-    const headers = getAuthHeaders();
-    const response = await axios.post(`${API_BASE}/employee/performance/milestone/progress`, { goalIndex, milestoneIndex }, {
       headers,
       withCredentials: true,
     });
@@ -179,5 +170,22 @@ export const PerformanceApi = {
       withCredentials: true,
     });
     return response.data;
+  },
+  // Employee: update milestone status by goalId and milestoneId
+  async updateMilestone(goalId: any, milestoneId: any, newStatus: string) {
+    const headers = getAuthHeaders();
+    if (!goalId || !milestoneId) {
+      console.error('updateMilestone called with missing goalId or milestoneId:', { goalId, milestoneId });
+      throw new Error('Missing goalId or milestoneId');
+    }
+    console.log('updateMilestone sending:', { goalId, milestoneId, status: newStatus });
+    await axios.post(`${API_BASE}/employee/performance/milestone/progress`, {
+      goalId,
+      milestoneId,
+      status: newStatus,
+    }, {
+      headers,
+      withCredentials: true,
+    });
   }
-}; 
+};

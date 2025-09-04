@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   Home, 
   Clock, 
@@ -12,10 +12,10 @@ import {
   Wallet,
   LifeBuoy,
   UserX,
-  Fingerprint,
   X
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { employeeLeaveApi } from '@/services/employeeLeaveApi';
 import { Link, useLocation } from 'react-router-dom';
 
 interface NavItemProps {
@@ -23,17 +23,15 @@ interface NavItemProps {
   label: string;
   to: string;
   badge?: number;
-  onMobileClose?: () => void;
 }
 
-function NavItem({ icon, label, to, badge, onMobileClose }: NavItemProps) {
+function NavItem({ icon, label, to, badge }: NavItemProps) {
   const location = useLocation();
   const isActive = location.pathname === to;
 
   return (
     <Link 
       to={to}
-      onClick={onMobileClose}
       className={cn(
         "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium cursor-pointer transition-colors",
         isActive 
@@ -54,7 +52,21 @@ function NavItem({ icon, label, to, badge, onMobileClose }: NavItemProps) {
   );
 }
 
-export function Sidebar({ onLogout, onMobileClose }: { onLogout: () => void; onMobileClose?: () => void }) {
+export function Sidebar({ onLogout }: { onLogout: () => void }) {
+  const [upcomingLeave, setUpcomingLeave] = useState<any>(null);
+
+  useEffect(() => {
+    async function fetchUpcomingLeave() {
+      try {
+        const response = await employeeLeaveApi.getUpcomingLeave();
+        setUpcomingLeave(response.upcomingLeave || null);
+      } catch {
+        setUpcomingLeave(null);
+      }
+    }
+    fetchUpcomingLeave();
+  }, []);
+
   return (
     <aside className="flex flex-col w-64 bg-white border-r border-gray-200 h-full">
       <div className="p-4 flex items-center justify-between border-b border-gray-200">
@@ -65,35 +77,29 @@ export function Sidebar({ onLogout, onMobileClose }: { onLogout: () => void; onM
           <span className="font-semibold text-blue-600">BlueHR</span>
         </div>
         {/* Close button for mobile */}
-        <button
-          onClick={onMobileClose}
-          className="md:hidden p-1 rounded-md hover:bg-gray-100"
-        >
-          <X className="h-5 w-5 text-gray-500" />
-        </button>
+  {/* Mobile close button removed: onMobileClose is not defined here */}
       </div>
       
       <div className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
-        <NavItem icon={<Home className="w-full h-full" />} label="Dashboard" to="/" onMobileClose={onMobileClose} />
-        <NavItem icon={<Clock className="w-full h-full" />} label="Time & Attendance" to="/time-attendance" onMobileClose={onMobileClose} />
+  <NavItem icon={<Home className="w-full h-full" />} label="Dashboard" to="/" />
+  <NavItem icon={<Clock className="w-full h-full" />} label="Time & Attendance" to="/time-attendance" />
         {/* Add the Employee Check-In/Out NavItem here */}
         {/* <NavItem 
           icon={<Fingerprint className="w-full h-full" />} 
           label="Check-In/Out" 
           to="/employee-checkin" 
-          onMobileClose={onMobileClose}
         /> */}
-        <NavItem icon={<Calendar className="w-full h-full" />} label="Leave" to="/leave" badge={1} onMobileClose={onMobileClose} />
-        <NavItem icon={<CreditCard className="w-full h-full" />} label="Payroll" to="/payroll" onMobileClose={onMobileClose} />
-        <NavItem icon={<Wallet className="w-full h-full" />} label="Advances" to="/wallet" onMobileClose={onMobileClose} />
-        <NavItem icon={<BarChart2 className="w-full h-full" />} label="Performance" to="/performance" onMobileClose={onMobileClose} />
-        <NavItem icon={<FileText className="w-full h-full" />} label="Documents" to="/documents" onMobileClose={onMobileClose} />
-        <NavItem icon={<Users className="w-full h-full" />} label="Team" to="/team" onMobileClose={onMobileClose} />
-        <NavItem icon={<UserX className="w-full h-full" />} label="Offboarding Request" to="/offboarding-request" onMobileClose={onMobileClose} />
+  <NavItem icon={<Calendar className="w-full h-full" />} label="Leave" to="/leave" badge={upcomingLeave ? 1 : undefined} />
+        <NavItem icon={<CreditCard className="w-full h-full" />} label="Payroll" to="/payroll" />
+        <NavItem icon={<Wallet className="w-full h-full" />} label="Advances" to="/wallet" />
+        <NavItem icon={<BarChart2 className="w-full h-full" />} label="Performance" to="/performance" />
+        <NavItem icon={<FileText className="w-full h-full" />} label="Documents" to="/documents" />
+        <NavItem icon={<Users className="w-full h-full" />} label="Team" to="/team" />
+        <NavItem icon={<UserX className="w-full h-full" />} label="Offboarding Request" to="/offboarding-request" />
         
         <div className="pt-4 mt-4 border-t border-gray-200">
-          <NavItem icon={<LifeBuoy className="w-full h-full" />} label="Help & Support" to="/support" onMobileClose={onMobileClose} />
-          <NavItem icon={<Settings className="w-full h-full" />} label="Settings" to="/settings" onMobileClose={onMobileClose} />
+          <NavItem icon={<LifeBuoy className="w-full h-full" />} label="Help & Support" to="/support" />
+          <NavItem icon={<Settings className="w-full h-full" />} label="Settings" to="/settings" />
           <button
             onClick={onLogout}
             className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"

@@ -235,9 +235,9 @@ const RolesAndPermissions = () => {
         <div className="flex gap-2">
           <Dialog open={isAddRoleOpen} onOpenChange={setIsAddRoleOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline" size="sm">
+              {/* <Button variant="outline" size="sm">
                 <Plus className="mr-2 h-4 w-4" /> New Role
-              </Button>
+              </Button> */}
             </DialogTrigger>
             <DialogContent className="max-w-2xl">
               <DialogHeader>

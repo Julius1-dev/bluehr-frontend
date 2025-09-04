@@ -74,8 +74,25 @@ export function DepartmentsPage() {
         })
       });
       if (!res.ok) throw new Error('Failed to add department');
+      const addedDept = await res.json();
       setNewDepartment({ name: '', description: '' });
       await fetchDepartments();
+      // Notification logic
+      import('@/services/notificationService').then(({ notificationService }) => {
+        const notifications = notificationService.getNotifications();
+        const alreadyNotified = notifications.some(
+          n => n.metadata?.departmentId === addedDept.id
+        );
+        if (!alreadyNotified) {
+          notificationService.addNotification({
+            type: 'announcement',
+            title: 'Department Added',
+            message: `${addedDept.name} department has been created.`,
+            priority: 'medium',
+            metadata: { departmentId: addedDept.id }
+          });
+        }
+      });
     } catch (err: any) {
       setError(err.message || 'Error adding department');
     }

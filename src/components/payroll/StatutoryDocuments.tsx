@@ -606,7 +606,7 @@ export function StatutoryDocuments({ statutoryData }: StatutoryDocumentsProps) {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Monthly Statutory Documents</CardTitle>
-          <Button onClick={handleInitiateStatutoryPayment} disabled={initiating || !paymentStatus.canInitiate || checkingStatus} variant={paymentStatus.canInitiate ? 'default' : 'outline'}>
+          {/* <Button onClick={handleInitiateStatutoryPayment} disabled={initiating || !paymentStatus.canInitiate || checkingStatus} variant={paymentStatus.canInitiate ? 'default' : 'outline'}>
             {initiating ? (
               <>
                 <Clock className="mr-2 h-4 w-4 animate-spin" />
@@ -623,7 +623,7 @@ export function StatutoryDocuments({ statutoryData }: StatutoryDocumentsProps) {
                 Initiate Payments
               </>
             )}
-          </Button>
+          </Button> */}
         </CardHeader>
         <CardContent>
           <Table>

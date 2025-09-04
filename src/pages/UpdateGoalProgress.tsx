@@ -46,7 +46,7 @@ export function UpdateGoalProgress() {
   };
 
   // Ensure each milestone has a unique id (fallback to index+1 if missing)
-  const initialMilestones = (goalData.milestones || []).map((m: any, idx: number) => ({
+  const initialMilestones = (goalData.milestones || []).map((m: { id?: number; title: string; completed: boolean; dueDate?: string }, idx: number) => ({
     ...m,
     id: m.id ?? idx + 1,
   }));
@@ -61,7 +61,7 @@ export function UpdateGoalProgress() {
 
   // Calculate overall progress based on completed milestones
   const calculateProgress = () => {
-    const completedCount = milestones.filter(m => m.completed).length;
+  const completedCount = milestones.filter((m: { completed: boolean }) => m.completed).length;
     return Math.round((completedCount / milestones.length) * 100);
   };
 
@@ -75,10 +75,10 @@ export function UpdateGoalProgress() {
       )
     );
     // If marking as completed, submit for approval
-    const idx = milestones.findIndex((m: any) => m.id === milestoneId);
-    if (idx !== -1 && !milestones[idx].completed) {
+    const milestone = milestones.find((m: any) => m.id === milestoneId);
+    if (milestone && !milestone.completed) {
       try {
-        await PerformanceApi.submitMilestoneForApproval(goalData.goalIndex ?? 0, idx);
+        await PerformanceApi.updateMilestone(goalData.id, milestoneId, 'pending');
       } catch (err) {
         setSubmitError('Failed to submit milestone for approval.');
       }
@@ -111,7 +111,7 @@ export function UpdateGoalProgress() {
       for (let i = 0; i < milestones.length; i++) {
         const m = milestones[i];
         if (m.completed && m.status !== 'approved') {
-          await PerformanceApi.submitMilestoneForApproval(goalData.goalIndex ?? 0, i);
+          await PerformanceApi.updateMilestone(goalData.id, m.id, 'pending');
         }
       }
       setIsSubmitting(false);

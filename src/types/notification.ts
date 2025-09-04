@@ -6,6 +6,8 @@ export interface Notification {
   title: string;
   message: string;
   timestamp: Date;
+  createdAt?: string;
+  link?: string;
   read: boolean;
   priority: 'low' | 'medium' | 'high';
   metadata?: Record<string, any>;
