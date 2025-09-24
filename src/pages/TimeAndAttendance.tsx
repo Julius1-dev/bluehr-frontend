@@ -11,6 +11,26 @@ import { format } from 'date-fns';
 
 
 export function TimeAndAttendance() {
+  // Export team attendance as CSV
+  const handleExportTeamAttendance = () => {
+    if (!teamAttendance || teamAttendance.length === 0) return;
+    const headers = ['Name', 'Clock In', 'Status'];
+    const rows = teamAttendance.map(member => [
+      member.name,
+      member.clockIn,
+      member.status.charAt(0).toUpperCase() + member.status.slice(1)
+    ]);
+    const csvContent = [headers, ...rows].map(e => e.join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'team_attendance_report.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
   const [currentTime, setCurrentTime] = useState(formatTime(new Date()));
   const [attendance, setAttendance] = useState<any>(null);
   const [shift, setShift] = useState<any>(null);
@@ -502,18 +522,30 @@ export function TimeAndAttendance() {
     { date: '2025-04-26', clockIn: '08:30', clockOut: '--:--', status: 'current', hours: 0 }
   ];
   
-  const teamAttendance = [
-    { name: 'Sarah Johnson', status: 'present', clockIn: '08:30' },
-    { name: 'Michael Chen', status: 'late', clockIn: '09:15' },
-    { name: 'Emily Brown', status: 'absent', clockIn: '—' },
-    { name: 'David Wilson', status: 'present', clockIn: '08:45' }
-  ];
+  // Team attendance state
+  const [teamAttendance, setTeamAttendance] = useState<any[]>([]);
+
+  // Fetch team attendance for today
+  useEffect(() => {
+    const fetchTeamAttendance = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${BACKEND_URL}/employee/attendance/team-today`, {
+          headers: { 'Authorization': `Bearer ${token}` },
+        });
+        const data = await res.json();
+        setTeamAttendance(data.teamAttendance || []);
+      } catch (err) {
+      }
+    };
+    fetchTeamAttendance();
+  }, []);
 
   return (
     <div className="space-y-6 p-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Time & Attendance</h1>
-        <Button>
+        <Button onClick={handleExportTeamAttendance} disabled={teamAttendance.length === 0}>
           <Download className="mr-2 h-4 w-4" />
           Export Report
         </Button>
@@ -618,83 +650,103 @@ export function TimeAndAttendance() {
         </TabsList>
         <TabsContent value="attendance">
           <Card>
-            <CardHeader>
-              <CardTitle>Attendance History</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {attendanceHistoryReal.map((rec, index) => (
-                  <div 
-                    key={index}
-                    className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
-                        rec.clock_out ? 'bg-green-100 text-green-600' : rec.late ? 'bg-amber-100 text-amber-600' : 'bg-blue-100 text-blue-600'
-                      }`}>
-                        <Clock className="h-5 w-5" />
-                      </div>
-                      <div>
-                        <p className="font-medium">{formatDate(new Date(rec.date))}</p>
-                        <div className="flex items-center gap-2 text-sm text-gray-500">
-                          <span>{rec.clock_in ? format(new Date(rec.clock_in), 'hh:mm a') : '--:--'}</span>
-                          <ChevronRight className="h-4 w-4" />
-                          <span>{rec.clock_out ? format(new Date(rec.clock_out), 'hh:mm a') : '--:--'}</span>
+            {attendanceHistoryReal.length === 0 ? (
+              <CardContent>
+                <div className="text-center text-gray-400 py-8">
+                  No attendance history available.
+                </div>
+              </CardContent>
+            ) : (
+              <>
+                <CardHeader>
+                  <CardTitle>Attendance History</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {attendanceHistoryReal.map((rec, index) => (
+                      <div 
+                        key={index}
+                        className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
+                            rec.clock_out ? 'bg-green-100 text-green-600' : rec.late ? 'bg-amber-100 text-amber-600' : 'bg-blue-100 text-blue-600'
+                          }`}>
+                            <Clock className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <p className="font-medium">{formatDate(new Date(rec.date))}</p>
+                            <div className="flex items-center gap-2 text-sm text-gray-500">
+                              <span>{rec.clock_in ? format(new Date(rec.clock_in), 'hh:mm a') : '--:--'}</span>
+                              <ChevronRight className="h-4 w-4" />
+                              <span>{rec.clock_out ? format(new Date(rec.clock_out), 'hh:mm a') : '--:--'}</span>
 
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <Badge variant={rec.clock_out ? 'success' : rec.late ? 'warning' : 'default'}>
+                            {rec.clock_out ? (rec.late ? 'Present, Late' : 'Present') : rec.late ? 'Late' : 'Current'}
+                            {rec.incomplete ? ', Incomplete' : ''}
+                          </Badge>
+                         <span className="font-medium">
+                            {rec.clock_in && rec.clock_out 
+                              ? `${format(new Date(rec.clock_in), 'hh:mm a')} - ${format(new Date(rec.clock_out), 'hh:mm a')}` 
+                              : '--'}
+                          </span>
                         </div>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <Badge variant={rec.clock_out ? 'success' : rec.late ? 'warning' : 'default'}>
-                        {rec.clock_out ? (rec.late ? 'Present, Late' : 'Present') : rec.late ? 'Late' : 'Current'}
-                        {rec.incomplete ? ', Incomplete' : ''}
-                      </Badge>
-                     <span className="font-medium">
-                        {rec.clock_in && rec.clock_out 
-                          ? `${format(new Date(rec.clock_in), 'hh:mm a')} - ${format(new Date(rec.clock_out), 'hh:mm a')}` 
-                          : '--'}
-                      </span>
-                    </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </CardContent>
+                </CardContent>
+              </>
+            )}
           </Card>
         </TabsContent>
         <TabsContent value="team">
           <Card>
-            <CardHeader>
-              <CardTitle>Team Attendance</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {teamAttendance.map((member, index) => (
-                  <div 
-                    key={index}
-                    className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
-                        <Users className="h-5 w-5 text-gray-600" />
+            {teamAttendance.length === 0 ? (
+              <CardContent>
+                <div className="text-center text-gray-400 py-8">
+                  No team members available or no attendance records for today.
+                </div>
+              </CardContent>
+            ) : (
+              <>
+                <CardHeader>
+                  <CardTitle>Team Attendance</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {teamAttendance.map((member, index) => (
+                      <div 
+                        key={index}
+                        className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+                            <Users className="h-5 w-5 text-gray-600" />
+                          </div>
+                          <div>
+                            <p className="font-medium">{member.name}</p>
+                            <p className="text-sm text-gray-500">Clock in: {member.clockIn}</p>
+                          </div>
+                        </div>
+                        <Badge variant={
+                          member.status === 'present' 
+                            ? 'success' 
+                            : member.status === 'late'
+                              ? 'warning'
+                              : 'danger'
+                        }>
+                          {member.status.charAt(0).toUpperCase() + member.status.slice(1)}
+                        </Badge>
                       </div>
-                      <div>
-                        <p className="font-medium">{member.name}</p>
-                        <p className="text-sm text-gray-500">Clock in: {member.clockIn}</p>
-                      </div>
-                    </div>
-                    <Badge variant={
-                      member.status === 'present' 
-                        ? 'success' 
-                        : member.status === 'late'
-                          ? 'warning'
-                          : 'danger'
-                    }>
-                      {member.status.charAt(0).toUpperCase() + member.status.slice(1)}
-                    </Badge>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </CardContent>
+                </CardContent>
+              </>
+            )}
           </Card>
         </TabsContent>
       </Tabs>
