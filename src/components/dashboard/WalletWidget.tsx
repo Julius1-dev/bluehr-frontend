@@ -1,4 +1,12 @@
 import React, { useEffect, useState } from 'react';
+// Transaction type for advance statement
+type Transaction = {
+  id: string | number;
+  type: 'deposit' | 'withdrawal';
+  description: string;
+  amount: number;
+  date: string;
+};
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '../ui/card';
 import { Button } from '../ui/button';
 import { Wallet as WalletIcon, ArrowRight, CreditCard, BarChart } from 'lucide-react';
@@ -29,10 +37,30 @@ export function WalletWidget() {
     fetchAdvanceData();
   }, []);
 
-  const recentTransactions = [
-    { id: 1, type: 'deposit', description: 'Salary Advance', amount: 500.00, date: '2 days ago' },
-    { id: 2, type: 'withdrawal', description: 'Transfer to Bank', amount: -200.00, date: '5 days ago' }
-  ];
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+
+    useEffect(() => {
+      async function fetchTransactions() {
+        try {
+          const res = await fetch("/employee/advances/statement", {
+            credentials: "include",
+          });
+          if (!res.ok) throw new Error("Failed to fetch transactions");
+          const data = await res.json();
+          const mapped = (data.transactions || []).map((t: any) => ({
+            id: t.id,
+            type: t.type === 'Advance' ? 'deposit' : 'withdrawal',
+            description: t.type === 'Advance' ? 'Salary Advance' : 'Repayment',
+            amount: t.amount,
+            date: t.date || t.createdAt || '',
+          }));
+          setTransactions(mapped);
+        } catch (err) {
+          setTransactions([]);
+        }
+      }
+      fetchTransactions();
+    }, []);
 
   // Calculate 33.33% of salary
   const advancePercent = 33.33;
@@ -79,36 +107,38 @@ export function WalletWidget() {
             </Button>
           </div>
         </div>
-        <div className="mt-4">
-          <h4 className="text-sm font-medium mb-2">Recent Transactions</h4>
-          <div className="space-y-2">
-            {recentTransactions.map((transaction) => (
-              <div 
-                key={transaction.id}
-                className="flex items-center justify-between p-2 rounded-md hover:bg-gray-50"
-              >
-                <div className="flex items-center gap-3">
-                  <div className={`h-8 w-8 rounded-full flex items-center justify-center ${
-                    transaction.type === 'deposit' 
-                      ? 'bg-green-100 text-green-600' 
-                      : 'bg-amber-100 text-amber-600'
+        {transactions.length > 0 && (
+          <div className="mt-4">
+            <h4 className="text-sm font-medium mb-2">Recent Transactions</h4>
+            <div className="space-y-2">
+              {transactions.map((transaction) => (
+                <div 
+                  key={transaction.id}
+                  className="flex items-center justify-between p-2 rounded-md hover:bg-gray-50"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`h-8 w-8 rounded-full flex items-center justify-center ${
+                      transaction.type === 'deposit' 
+                        ? 'bg-green-100 text-green-600' 
+                        : 'bg-amber-100 text-amber-600'
+                    }`}>
+                      {transaction.type === 'deposit' ? '+' : '-'}
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium">{transaction.description}</div>
+                      <div className="text-xs text-gray-500">{transaction.date}</div>
+                    </div>
+                  </div>
+                  <div className={`font-medium ${
+                    transaction.type === 'deposit' ? 'text-green-600' : 'text-amber-600'
                   }`}>
-                    {transaction.type === 'deposit' ? '+' : '-'}
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium">{transaction.description}</div>
-                    <div className="text-xs text-gray-500">{transaction.date}</div>
+                    {formatCurrency(Math.abs(transaction.amount))}
                   </div>
                 </div>
-                <div className={`font-medium ${
-                  transaction.type === 'deposit' ? 'text-green-600' : 'text-amber-600'
-                }`}>
-                  {formatCurrency(Math.abs(transaction.amount))}
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </CardContent>
       <CardFooter className="border-t pt-4">
         <div className="w-full">

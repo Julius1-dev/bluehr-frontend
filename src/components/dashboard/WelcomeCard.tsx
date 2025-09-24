@@ -49,34 +49,31 @@ export function WelcomeCard() {
       })
       .catch(() => setEmployeeName('Employee'));
 
-    // Fetch next pay date
+    // Fetch next pay date (actual payroll date if available, fallback if not)
     fetch(`${BACKEND_URL}/employee/payroll/data`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
       .then(res => res.json())
       .then(data => {
         if (data.success && data.data && data.data.currentPay && data.data.currentPay.payDate) {
-          setNextPayDate(new Date(data.data.currentPay.payDate).toLocaleDateString());
+          const payDate = new Date(data.data.currentPay.payDate);
+          setNextPayDate(payDate.toLocaleDateString());
         } else {
-          setNextPayDate('Not Set');
+          setNextPayDate('No payroll processed yet');
         }
       })
-      .catch(() => setNextPayDate('Not Set'));
+      .catch(() => setNextPayDate('No payroll processed yet'));
 
-    // Fetch leave balance (annual leave)
+    // Fetch leave balance (prefer annual, fallback to first available)
     fetch(`${BACKEND_URL}/employee/leave/balances`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
       .then(res => res.json())
       .then(data => {
-        if (data.leaveBalances && Array.isArray(data.leaveBalances)) {
-          // Try to find annual leave type (case-insensitive)
+        if (data.leaveBalances && Array.isArray(data.leaveBalances) && data.leaveBalances.length > 0) {
           const annual = data.leaveBalances.find((b: any) => b.type.toLowerCase().includes('annual'));
-          if (annual) {
-            setLeaveBalance(`${annual.remaining} days`);
-          } else {
-            setLeaveBalance('N/A');
-          }
+          const selected = annual || data.leaveBalances[0];
+          setLeaveBalance(`${selected.remaining} days (${selected.type})`);
         } else {
           setLeaveBalance('N/A');
         }
