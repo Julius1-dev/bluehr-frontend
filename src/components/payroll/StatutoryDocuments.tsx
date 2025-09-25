@@ -365,13 +365,21 @@ export function StatutoryDocuments({ statutoryData }: StatutoryDocumentsProps) {
     doc.save(`statutory_${activeTab}_deductions.pdf`);
   };
 
+  // Calculate dynamic due dates based on selected month/year
+  // Statutory deductions are typically due in the following month
+  const getDueDate = (dayOfMonth: number) => {
+    const year = parseInt(selectedYear);
+    const month = parseInt(selectedMonth); // Next month (no -1 since we want following month)
+    return new Date(year, month, dayOfMonth);
+  };
+
   // Mock statutory documents
   const statutoryDocuments = [
     {
       id: 1,
       name: 'PAYE Returns',
       description: 'Monthly PAYE tax returns for KRA',
-      dueDate: new Date('2025-06-09'),
+      dueDate: getDueDate(9), // Due in following month
       status: 'pending',
       amount: statutoryData.paye
     },
@@ -379,7 +387,7 @@ export function StatutoryDocuments({ statutoryData }: StatutoryDocumentsProps) {
       id: 2,
       name: 'NHIF Contributions',
       description: 'Monthly National Hospital Insurance Fund contributions',
-      dueDate: new Date('2025-06-09'),
+      dueDate: getDueDate(9), // Due in following month
       status: 'pending',
       amount: statutoryData.nhif
     },
@@ -387,7 +395,7 @@ export function StatutoryDocuments({ statutoryData }: StatutoryDocumentsProps) {
       id: 3,
       name: 'NSSF Contributions',
       description: 'Monthly National Social Security Fund contributions',
-      dueDate: new Date('2025-06-15'),
+      dueDate: getDueDate(15), // Due in following month
       status: 'pending',
       amount: statutoryData.nssf
     },
@@ -395,28 +403,28 @@ export function StatutoryDocuments({ statutoryData }: StatutoryDocumentsProps) {
       id: 4,
       name: 'PAYE Returns',
       description: 'Monthly PAYE tax returns for KRA',
-      dueDate: new Date('2025-05-09'),
+      dueDate: new Date(parseInt(selectedYear), parseInt(selectedMonth) - 1, 9), // Current month (previously due)
       status: 'completed',
       amount: 125000,
-      filingDate: new Date('2025-05-07')
+      filingDate: new Date(parseInt(selectedYear), parseInt(selectedMonth) - 1, 7)
     },
     {
       id: 5,
       name: 'NHIF Contributions',
       description: 'Monthly National Hospital Insurance Fund contributions',
-      dueDate: new Date('2025-05-09'),
+      dueDate: new Date(parseInt(selectedYear), parseInt(selectedMonth) - 1, 9), // Current month (previously due)
       status: 'completed',
       amount: 23500,
-      filingDate: new Date('2025-05-07')
+      filingDate: new Date(parseInt(selectedYear), parseInt(selectedMonth) - 1, 7)
     },
     {
       id: 6,
       name: 'NSSF Contributions',
       description: 'Monthly National Social Security Fund contributions',
-      dueDate: new Date('2025-05-15'),
+      dueDate: new Date(parseInt(selectedYear), parseInt(selectedMonth) - 1, 15), // Current month (previously due)
       status: 'completed',
       amount: 42000,
-      filingDate: new Date('2025-05-07')
+      filingDate: new Date(parseInt(selectedYear), parseInt(selectedMonth) - 1, 7)
     }
   ];
   
@@ -503,7 +511,7 @@ export function StatutoryDocuments({ statutoryData }: StatutoryDocumentsProps) {
             </div>
             <div className="mt-4 pt-2 border-t border-gray-100">
               <p className="text-sm text-gray-500">
-                Due by {formatDate(new Date('2025-06-09'))}
+                Due by {formatDate(getDueDate(9))}
               </p>
             </div>
           </CardContent>
@@ -521,7 +529,7 @@ export function StatutoryDocuments({ statutoryData }: StatutoryDocumentsProps) {
             </div>
             <div className="mt-4 pt-2 border-t border-gray-100">
               <p className="text-sm text-gray-500">
-                Due by {formatDate(new Date('2025-06-09'))}
+                Due by {formatDate(getDueDate(9))}
               </p>
             </div>
           </CardContent>
@@ -539,7 +547,7 @@ export function StatutoryDocuments({ statutoryData }: StatutoryDocumentsProps) {
             </div>
             <div className="mt-4 pt-2 border-t border-gray-100">
               <p className="text-sm text-gray-500">
-                Due by {formatDate(new Date('2025-06-15'))}
+                Due by {formatDate(getDueDate(15))}
               </p>
             </div>
           </CardContent>
@@ -557,7 +565,7 @@ export function StatutoryDocuments({ statutoryData }: StatutoryDocumentsProps) {
             </div>
             <div className="mt-4 pt-2 border-t border-gray-100">
               <p className="text-sm text-gray-500">
-                Due by {formatDate(new Date('2025-06-09'))}
+                Due by {formatDate(getDueDate(9))}
               </p>
             </div>
           </CardContent>
