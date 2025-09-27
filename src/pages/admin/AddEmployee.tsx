@@ -409,48 +409,31 @@ export function AddEmployeePage({ isEditMode = false }: AddEmployeePageProps) {
                 </PopoverContent>
               </Popover>
             </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="departmentId">Department *</Label>
-              <Select 
-                value={formData.departmentId}
-                onValueChange={handleDepartmentChange}
-                required
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select department" />
-                </SelectTrigger>
-                <SelectContent className='bg-gray-200'>
-                  {departments.map(dept => (
-                    <SelectItem key={dept.id} value={dept.id}>
-                      {dept.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="role">Role/Position *</Label>
-              <Select 
-                value={formData.role}
-                onValueChange={(value) => setFormData({...formData, role: value})}
-                disabled={!formData.departmentId}
-                required
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder={formData.departmentId ? "Select role" : "Select department first"} />
-                </SelectTrigger>
-                <SelectContent className='bg-white'>
-                  {formData.departmentId && roles.map((role: string, index: number) => (
-                    <SelectItem key={index} value={role}>
-                      {role}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
+          <div className="space-y-2">
+  <Label htmlFor="departmentId">Department *</Label>
+  <Select 
+    value={formData.departmentId} 
+    onValueChange={handleDepartmentChange} 
+    required
+  >
+    <SelectTrigger>
+      <SelectValue placeholder="Select department">
+        {formData.departmentId
+          ? departments.find((dept) => dept.id.toString() === formData.departmentId)?.name
+          : ''}
+      </SelectValue>
+    </SelectTrigger>
+    <SelectContent className="bg-gray-200">
+      {departments.map((dept) => (
+        <SelectItem key={dept.id} value={dept.id.toString()}>
+          {dept.name}
+        </SelectItem>
+      ))}
+    </SelectContent>
+  </Select>
+</div>
+
+
             <div className="space-y-2">
               <Label htmlFor="employmentType">Employment Type *</Label>
               <Select 

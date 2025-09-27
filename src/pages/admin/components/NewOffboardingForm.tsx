@@ -25,9 +25,6 @@ export default function NewOffboardingForm({ onSuccess }: NewOffboardingFormProp
   const [reason, setReason] = useState('');
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  // TODO: Uncomment when toast is available
-  // const { toast } = useToast();
 
   // Fetch employees from backend
   useEffect(() => {
@@ -44,21 +41,21 @@ export default function NewOffboardingForm({ onSuccess }: NewOffboardingFormProp
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!selectedEmployee || !lastWorkingDay || !reason) {
       alert('Please fill in all required fields.');
       return;
     }
 
     setIsSubmitting(true);
-    
+
     try {
       await OffboardingApi.createRequest({
         employeeId: selectedEmployee,
         type: offboardingType,
         lastWorkingDay,
         reason,
-        notes
+        notes,
       });
       alert('Offboarding initiated successfully!');
       setSelectedEmployee('');
@@ -73,28 +70,29 @@ export default function NewOffboardingForm({ onSuccess }: NewOffboardingFormProp
     setIsSubmitting(false);
   };
 
-  // Commented out unused variable
-  // const selectedEmployeeData = mockEmployees.find(emp => emp.id === selectedEmployee);
-
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Employee Dropdown */}
         <div className="space-y-2">
           <Label htmlFor="employee">Select Employee *</Label>
-          <Select 
-            value={selectedEmployee} 
+          <Select
+            value={selectedEmployee}
             onValueChange={setSelectedEmployee}
             disabled={isSubmitting}
           >
             <SelectTrigger>
               <SelectValue placeholder="Select an employee" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-white border border-gray-200 shadow-md">
               {employees.map((employee) => (
                 <SelectItem key={employee.id} value={employee.id}>
                   <div className="flex items-center gap-2">
                     <User className="h-4 w-4" />
-                    <span>{employee.first_name} {employee.last_name}{employee.role ? ` - ${employee.role}` : ''}</span>
+                    <span>
+                      {employee.first_name} {employee.last_name}
+                      {employee.role ? ` - ${employee.role}` : ''}
+                    </span>
                   </div>
                 </SelectItem>
               ))}
@@ -107,17 +105,18 @@ export default function NewOffboardingForm({ onSuccess }: NewOffboardingFormProp
           </Select>
         </div>
 
+        {/* Type Dropdown */}
         <div className="space-y-2">
           <Label htmlFor="type">Offboarding Type *</Label>
-          <Select 
-            value={offboardingType} 
+          <Select
+            value={offboardingType}
             onValueChange={(value: OffboardingType) => setOffboardingType(value)}
             disabled={isSubmitting}
           >
             <SelectTrigger>
               <SelectValue placeholder="Select type" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-white border border-gray-200 shadow-md">
               <SelectItem value="resignation">Resignation</SelectItem>
               <SelectItem value="retirement">Retirement</SelectItem>
               <SelectItem value="termination">Termination</SelectItem>
@@ -126,6 +125,7 @@ export default function NewOffboardingForm({ onSuccess }: NewOffboardingFormProp
           </Select>
         </div>
 
+        {/* Last Working Day */}
         <div className="space-y-2">
           <Label>Last Working Day *</Label>
           <Popover>
@@ -146,14 +146,13 @@ export default function NewOffboardingForm({ onSuccess }: NewOffboardingFormProp
                 )}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
+            <PopoverContent className="w-auto p-0 bg-white" align="start">
               <Calendar
                 mode="single"
                 selected={lastWorkingDay}
                 onSelect={setLastWorkingDay}
                 initialFocus
                 disabled={(date) => {
-                  // Disable past dates
                   const today = new Date();
                   today.setHours(0, 0, 0, 0);
                   return date < today;
@@ -164,6 +163,7 @@ export default function NewOffboardingForm({ onSuccess }: NewOffboardingFormProp
         </div>
       </div>
 
+      {/* Reason */}
       <div className="space-y-2">
         <Label htmlFor="reason">Reason for Offboarding *</Label>
         <Textarea
@@ -177,6 +177,7 @@ export default function NewOffboardingForm({ onSuccess }: NewOffboardingFormProp
         />
       </div>
 
+      {/* Notes */}
       <div className="space-y-2">
         <Label htmlFor="notes">Additional Notes</Label>
         <Textarea
@@ -189,6 +190,7 @@ export default function NewOffboardingForm({ onSuccess }: NewOffboardingFormProp
         />
       </div>
 
+      {/* Actions */}
       <div className="flex justify-end gap-4 pt-4">
         <Button
           type="button"
@@ -198,7 +200,10 @@ export default function NewOffboardingForm({ onSuccess }: NewOffboardingFormProp
         >
           Cancel
         </Button>
-        <Button type="submit" disabled={isSubmitting || !selectedEmployee || !lastWorkingDay || !reason}>
+        <Button
+          type="submit"
+          disabled={isSubmitting || !selectedEmployee || !lastWorkingDay || !reason}
+        >
           {isSubmitting ? 'Processing...' : 'Initiate Offboarding'}
         </Button>
       </div>

@@ -1172,7 +1172,7 @@ export function Documents() {
                     <SelectTrigger>
                       <SelectValue placeholder="Select a category" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="!bg-white">
                       <SelectItem value="Contracts">Contracts</SelectItem>
                       <SelectItem value="Policies">Policies</SelectItem>
                       <SelectItem value="Reports">Reports</SelectItem>
