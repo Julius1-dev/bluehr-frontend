@@ -33,7 +33,7 @@ interface EmployeeFormData {
   lastName: string;
   email: string;
   phone: string;
-  dateOfBirth?: Date; // allow Date or undefined
+  dateOfBirth?: Date;
   gender: string;
   nationalId: string;
   kraPin: string;
@@ -55,7 +55,6 @@ interface EmployeeFormData {
   status: string;
 }
 
-// Using browser alert instead of toast for now
 const DEPARTMENTS_API = `${BACKEND_URL}/company-admin/departments`;
 
 const employmentTypes = [
@@ -75,8 +74,6 @@ interface AddEmployeePageProps {
 export function AddEmployeePage({ isEditMode = false }: AddEmployeePageProps) {
   const navigate = useNavigate();
   const { id } = useParams<{ id?: string }>();
-
-  // If isEditMode prop is not provided, check the URL params
   const editMode = isEditMode || !!id;
 
   const [formData, setFormData] = useState<EmployeeFormData>({
@@ -171,7 +168,6 @@ export function AddEmployeePage({ isEditMode = false }: AddEmployeePageProps) {
               data.emergency_contact_relationship || "",
             status: data.status || "active",
           });
-          // Set roles for department
           const dept = departments.find(
             (d: any) =>
               d.id.toString() === (data.department_id || "").toString()
@@ -183,9 +179,7 @@ export function AddEmployeePage({ isEditMode = false }: AddEmployeePageProps) {
               ? JSON.parse(dept.roles)
               : []
           );
-        } catch {
-          // Intentionally ignore errors when fetching employee data
-        }
+        } catch {}
       };
       fetchEmployee();
     }
@@ -253,37 +247,31 @@ export function AddEmployeePage({ isEditMode = false }: AddEmployeePageProps) {
       if (!res.ok) throw new Error("Failed to save employee");
 
       const result = await res.json();
-
       if (editMode) {
         alert("Employee updated successfully!");
       } else {
         if (result.emailSent) {
           alert(
-            `Employee added successfully! A welcome email with login credentials has been sent to ${formData.email}.`
+            `Employee added successfully! A welcome email has been sent to ${formData.email}.`
           );
         } else {
           alert(
-            `Employee added successfully! However, there was an issue sending the welcome email: ${
+            `Employee added successfully! However, email sending failed: ${
               result.emailError || "Unknown error"
             }`
           );
         }
       }
-
       navigate("/admin/team");
     } catch (err: any) {
       alert("Error saving employee: " + (err.message || "Unknown error"));
     }
   };
 
-  const handleBack = () => {
-    navigate(-1);
-  };
-
   return (
     <div className="container mx-auto py-8 px-4 max-w-6xl">
       <div className="flex items-center gap-4 mb-6">
-        <Button variant="ghost" size="icon" onClick={handleBack}>
+        <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <h1 className="text-3xl font-bold">
@@ -292,12 +280,14 @@ export function AddEmployeePage({ isEditMode = false }: AddEmployeePageProps) {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Personal Info */}
         <Card>
           <CardHeader>
             <CardTitle>Personal Information</CardTitle>
             <CardDescription>Employee's personal details</CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Firstname */}
             <div className="space-y-2">
               <Label htmlFor="firstName">First Name *</Label>
               <Input
@@ -354,7 +344,7 @@ export function AddEmployeePage({ isEditMode = false }: AddEmployeePageProps) {
               />
             </div>
 
-            {/* Date of Birth Field */}
+            {/* Date of Birth */}
             <div className="space-y-2">
               <Label>Date of Birth</Label>
               <Popover>
@@ -364,34 +354,22 @@ export function AddEmployeePage({ isEditMode = false }: AddEmployeePageProps) {
                     className="w-full justify-start text-left font-normal"
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {formData.dateOfBirth ? (
-                      format(formData.dateOfBirth, "PPP") // Properly formatted date
-                    ) : (
-                      <span>Pick a date</span>
-                    )}
+                    {formData.dateOfBirth
+                      ? format(formData.dateOfBirth, "PPP")
+                      : "Pick a date"}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent
-                  className="w-auto p-0 bg-gray-200"
-                  align="start"
-                >
+                <PopoverContent className="w-auto p-0 bg-gray-200" align="start">
                   <Calendar
                     mode="single"
                     selected={formData.dateOfBirth}
                     onSelect={(date) => handleDateSelect(date, "dateOfBirth")}
-                    initialFocus
-                    weekStartsOn={1}
-                    fixedWeeks
-                    ISOWeek
-                    fromYear={1900}
-                    toYear={new Date().getFullYear() - 18} // Typically employees should be at least 18
-                    captionLayout="dropdown"
                   />
                 </PopoverContent>
               </Popover>
             </div>
 
-            {/* Gender Field */}
+            {/* Gender */}
             <div className="space-y-2">
               <Label htmlFor="gender">Gender</Label>
               <Select
@@ -401,17 +379,7 @@ export function AddEmployeePage({ isEditMode = false }: AddEmployeePageProps) {
                 }
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select gender">
-                    {formData.gender === "male"
-                      ? "Male"
-                      : formData.gender === "female"
-                      ? "Female"
-                      : formData.gender === "other"
-                      ? "Other"
-                      : formData.gender === "prefer-not-to-say"
-                      ? "Prefer not to say"
-                      : "Select gender"}
-                  </SelectValue>
+                  <SelectValue placeholder="Select gender" />
                 </SelectTrigger>
                 <SelectContent className="bg-gray-200">
                   <SelectItem value="male">Male</SelectItem>
@@ -436,14 +404,13 @@ export function AddEmployeePage({ isEditMode = false }: AddEmployeePageProps) {
           </CardContent>
         </Card>
 
+        {/* Employment Info */}
         <Card>
           <CardHeader>
             <CardTitle>Employment Details</CardTitle>
-            <CardDescription>
-              Employee's work-related information
-            </CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Joining Date */}
             <div className="space-y-2">
               <Label>Joining Date *</Label>
               <Popover>
@@ -453,26 +420,22 @@ export function AddEmployeePage({ isEditMode = false }: AddEmployeePageProps) {
                     className="w-full justify-start text-left font-normal"
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {formData.joiningDate &&
-                    !isNaN(new Date(formData.joiningDate).getTime())
+                    {formData.joiningDate
                       ? format(new Date(formData.joiningDate), "PPP")
                       : "Select date"}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent
-                  className="w-auto p-0 bg-gray-200"
-                  align="start"
-                >
+                <PopoverContent className="w-auto p-0 bg-gray-200" align="start">
                   <Calendar
                     mode="single"
                     selected={formData.joiningDate}
                     onSelect={(date) => handleDateSelect(date, "joiningDate")}
-                    initialFocus
                   />
                 </PopoverContent>
               </Popover>
             </div>
 
+            {/* Department */}
             <div className="space-y-2">
               <Label htmlFor="departmentId">Department *</Label>
               <Select
@@ -481,11 +444,18 @@ export function AddEmployeePage({ isEditMode = false }: AddEmployeePageProps) {
                 required
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select department" />
+                  <SelectValue placeholder="Select department">
+                    {formData.departmentId
+                      ? departments.find(
+                          (dept) =>
+                            dept.id.toString() === formData.departmentId
+                        )?.name
+                      : ""}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent className="bg-gray-200">
                   {departments.map((dept) => (
-                    <SelectItem key={dept.id} value={dept.id}>
+                    <SelectItem key={dept.id} value={dept.id.toString()}>
                       {dept.name}
                     </SelectItem>
                   ))}
@@ -493,6 +463,7 @@ export function AddEmployeePage({ isEditMode = false }: AddEmployeePageProps) {
               </Select>
             </div>
 
+            {/* Role */}
             <div className="space-y-2">
               <Label htmlFor="role">Role/Position *</Label>
               <Select
@@ -512,17 +483,17 @@ export function AddEmployeePage({ isEditMode = false }: AddEmployeePageProps) {
                     }
                   />
                 </SelectTrigger>
-                <SelectContent className="bg-white">
-                  {formData.departmentId &&
-                    roles.map((role: string, index: number) => (
-                      <SelectItem key={index} value={role}>
-                        {role}
-                      </SelectItem>
-                    ))}
+                <SelectContent className="bg-gray-200">
+                  {roles.map((role, idx) => (
+                    <SelectItem key={idx} value={role}>
+                      {role}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
 
+            {/* Employment Type */}
             <div className="space-y-2">
               <Label htmlFor="employmentType">Employment Type *</Label>
               <Select
@@ -533,12 +504,7 @@ export function AddEmployeePage({ isEditMode = false }: AddEmployeePageProps) {
                 required
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select employment type">
-                    {formData.employmentType
-                      ? formData.employmentType.charAt(0).toUpperCase() +
-                        formData.employmentType.slice(1)
-                      : ""}
-                  </SelectValue>
+                  <SelectValue placeholder="Select employment type" />
                 </SelectTrigger>
                 <SelectContent className="bg-gray-200">
                   {employmentTypes.map((type) => (
@@ -550,6 +516,7 @@ export function AddEmployeePage({ isEditMode = false }: AddEmployeePageProps) {
               </Select>
             </div>
 
+            {/* Payment Frequency */}
             <div className="space-y-2">
               <Label htmlFor="paymentFrequency">Payment Frequency *</Label>
               <Select
@@ -560,23 +527,19 @@ export function AddEmployeePage({ isEditMode = false }: AddEmployeePageProps) {
                 required
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select payment frequency">
-                    {formData.paymentFrequency
-                      ? formData.paymentFrequency.charAt(0).toUpperCase() +
-                        formData.paymentFrequency.slice(1)
-                      : ""}
-                  </SelectValue>
+                  <SelectValue placeholder="Select payment frequency" />
                 </SelectTrigger>
                 <SelectContent className="bg-gray-200">
-                  {paymentFrequencies.map((frequency) => (
-                    <SelectItem key={frequency} value={frequency.toLowerCase()}>
-                      {frequency}
+                  {paymentFrequencies.map((f) => (
+                    <SelectItem key={f} value={f.toLowerCase()}>
+                      {f}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
+            {/* Salary */}
             <div className="space-y-2">
               <Label htmlFor="basicSalary">Basic Salary (KES) *</Label>
               <Input
@@ -589,6 +552,7 @@ export function AddEmployeePage({ isEditMode = false }: AddEmployeePageProps) {
               />
             </div>
 
+            {/* Status */}
             <div className="space-y-2">
               <Label htmlFor="status">Status</Label>
               <Select
@@ -611,160 +575,104 @@ export function AddEmployeePage({ isEditMode = false }: AddEmployeePageProps) {
           </CardContent>
         </Card>
 
+        {/* Banking Info */}
         <Card>
           <CardHeader>
             <CardTitle>Banking Information</CardTitle>
-            <CardDescription>
-              Employee's bank account details for payroll
-            </CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <Label htmlFor="bankName">Bank Name *</Label>
+                        <div className="space-y-2">
+              <Label htmlFor="bankName">Bank Name</Label>
               <Input
                 id="bankName"
                 name="bankName"
                 value={formData.bankName}
                 onChange={handleInputChange}
-                required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="bankBranch">Branch Name *</Label>
+              <Label htmlFor="bankBranch">Bank Branch</Label>
               <Input
                 id="bankBranch"
                 name="bankBranch"
                 value={formData.bankBranch}
                 onChange={handleInputChange}
-                required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="accountNumber">Account Number *</Label>
+              <Label htmlFor="accountNumber">Account Number</Label>
               <Input
                 id="accountNumber"
                 name="accountNumber"
                 value={formData.accountNumber}
                 onChange={handleInputChange}
-                required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="accountName">Account Name *</Label>
+              <Label htmlFor="accountName">Account Name</Label>
               <Input
                 id="accountName"
                 name="accountName"
                 value={formData.accountName}
                 onChange={handleInputChange}
-                required
               />
             </div>
           </CardContent>
         </Card>
 
+        {/* Emergency Contact */}
         <Card>
           <CardHeader>
             <CardTitle>Emergency Contact</CardTitle>
-            <CardDescription>
-              Person to contact in case of emergency
-            </CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="emergencyContactName">Full Name *</Label>
+              <Label htmlFor="emergencyContactName">Contact Name</Label>
               <Input
                 id="emergencyContactName"
                 name="emergencyContactName"
                 value={formData.emergencyContactName}
                 onChange={handleInputChange}
-                required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="emergencyContactPhone">Phone Number *</Label>
+              <Label htmlFor="emergencyContactPhone">Contact Phone</Label>
               <Input
                 id="emergencyContactPhone"
                 name="emergencyContactPhone"
-                type="tel"
                 value={formData.emergencyContactPhone}
                 onChange={handleInputChange}
-                required
               />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="emergencyContactRelationship">
-                Relationship *
+                Relationship
               </Label>
               <Input
                 id="emergencyContactRelationship"
                 name="emergencyContactRelationship"
-                placeholder="e.g., Spouse, Parent, Sibling"
                 value={formData.emergencyContactRelationship}
                 onChange={handleInputChange}
-                required
               />
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Tax & Statutory Information</CardTitle>
-            <CardDescription>
-              Employee's tax and government registration details
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="space-y-2">
-              <Label htmlFor="kraPin">KRA PIN</Label>
-              <Input
-                id="kraPin"
-                name="kraPin"
-                placeholder="e.g., A123456789B"
-                value={formData.kraPin}
-                onChange={handleInputChange}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="nssfNumber">NSSF Number</Label>
-              <Input
-                id="nssfNumber"
-                name="nssfNumber"
-                placeholder="e.g., 1234567"
-                value={formData.nssfNumber}
-                onChange={handleInputChange}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="nhifNumber">NHIF Number</Label>
-              <Input
-                id="nhifNumber"
-                name="nhifNumber"
-                placeholder="e.g., 12345678"
-                value={formData.nhifNumber}
-                onChange={handleInputChange}
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        <div className="flex justify-end gap-4 pt-4">
-          <Button type="button" variant="outline" onClick={() => navigate(-1)}>
-            Cancel
-          </Button>
-          <Button type="submit" className="gap-2">
+        {/* Submit Button */}
+        <div className="flex justify-end">
+          <Button type="submit" className="flex items-center gap-2">
             <UserPlus className="h-4 w-4" />
-            {editMode ? "Edit Employee" : "Add Employee"}
+            {editMode ? "Update Employee" : "Add Employee"}
           </Button>
         </div>
       </form>
     </div>
   );
 }
+
+export default AddEmployeePage;
