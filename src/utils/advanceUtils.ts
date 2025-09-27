@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { Advance, Company, AdvanceStatus } from '@/types/advances';
+import { Company } from '@/types/advances';
 
 export const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat('en-KE', {

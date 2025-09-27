@@ -24,7 +24,7 @@ export function AddUserPage() {
   const [companies, setCompanies] = useState<any[]>([]);
   const [isSendingInvite, setIsSendingInvite] = useState(false);
   const [inviteSent, setInviteSent] = useState(false);
-  const [error, setError] = useState('');
+  const [_error, setError] = useState('');
 
   useEffect(() => {
     const fetchCompanies = async () => {

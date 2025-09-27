@@ -32,7 +32,7 @@ interface OffboardingRequest {
 }
 
 // Mock data
-const mockRequests: OffboardingRequest[] = [
+  const _mockRequests: OffboardingRequest[] = [
   {
     id: 'REQ-001',
     employee: {
@@ -89,7 +89,7 @@ interface OffboardingRequestsTableProps {
 
 export default function OffboardingRequestsTable({ searchQuery, onRequestsChange }: OffboardingRequestsTableProps) {
   const [requests, setRequests] = React.useState<OffboardingRequest[]>([]);
-  const [loading, setLoading] = React.useState(true);
+  const [_loading, setLoading] = React.useState(true);
   const [reactivatingId, setReactivatingId] = useState<string | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
   const [pendingReactivate, setPendingReactivate] = useState<OffboardingRequest | null>(null);
@@ -126,7 +126,7 @@ export default function OffboardingRequestsTable({ searchQuery, onRequestsChange
           setRequests(mapped);
           if (onRequestsChange) onRequestsChange(mapped);
         }
-      } catch (err) {
+      } catch (_err) {
         // Optionally handle error
       } finally {
         setLoading(false);

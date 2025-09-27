@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Search, Filter, Download, MoreHorizontal, ArrowUpDown, CheckCircle2, XCircle, Clock, AlertCircle, Eye, FileText } from 'lucide-react';
+import { Search, Filter, Download, CheckCircle2, XCircle, Clock, AlertCircle, Eye, FileText } from 'lucide-react';
 import { BACKEND_URL } from '@/lib/config';
 import {
   DropdownMenu,
@@ -42,7 +42,7 @@ const PAYMENTS_API = `${BACKEND_URL}/super-admin/payments`;
 const PaymentsPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<PaymentStatus | 'all'>('all');
-  const [dateRange, setDateRange] = useState<{ from: Date | null; to: Date | null }>({ from: null, to: null });
+  const [dateRange, _setDateRange] = useState<{ from: Date | null; to: Date | null }>({ from: null, to: null });
   const [payments, setPayments] = useState<Payment[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);

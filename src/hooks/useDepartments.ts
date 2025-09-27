@@ -42,7 +42,7 @@ export function useDepartments() {
 
   useEffect(() => {
     fetchDepartments();
-    // eslint-disable-next-line
+     
   }, []);
 
   return { departments, loading, error, refetch: fetchDepartments };

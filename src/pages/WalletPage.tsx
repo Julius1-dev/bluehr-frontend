@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Wallet, CreditCard, ArrowUpRight, ArrowDownRight, Clock, Ban as Bank, Receipt, Download, PiggyBank, Banknote, ArrowRight, Phone } from 'lucide-react';
+import { Wallet, CreditCard, ArrowUpRight, ArrowDownRight, Ban as Bank, Receipt, PiggyBank, ArrowRight, Phone } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 

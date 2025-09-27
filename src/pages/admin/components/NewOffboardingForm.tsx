@@ -32,7 +32,7 @@ export default function NewOffboardingForm({ onSuccess }: NewOffboardingFormProp
       try {
         const data = await LeaveTypeApi.listEmployees();
         setEmployees(Array.isArray(data) ? data : []);
-      } catch (err) {
+      } catch (_err) {
         setEmployees([]);
       }
     };

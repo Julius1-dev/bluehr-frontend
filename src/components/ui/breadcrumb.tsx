@@ -1,8 +1,8 @@
-import * as React from "react"
-import { ChevronRight } from "lucide-react"
-import { Link as RouterLink } from "react-router-dom"
+import * as React from "react";
+import { ChevronRight } from "lucide-react";
+import { Link as RouterLink } from "react-router-dom";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 const Breadcrumb = React.forwardRef<
   HTMLElement,
@@ -14,8 +14,8 @@ const Breadcrumb = React.forwardRef<
     className={cn("flex items-center text-sm", className)}
     {...props}
   />
-))
-Breadcrumb.displayName = "Breadcrumb"
+));
+Breadcrumb.displayName = "Breadcrumb";
 
 const BreadcrumbList = React.forwardRef<
   HTMLOListElement,
@@ -26,8 +26,8 @@ const BreadcrumbList = React.forwardRef<
     className={cn("flex flex-wrap items-center gap-1.5 sm:gap-2.5", className)}
     {...props}
   />
-))
-BreadcrumbList.displayName = "BreadcrumbList"
+));
+BreadcrumbList.displayName = "BreadcrumbList";
 
 const BreadcrumbItem = React.forwardRef<
   HTMLLIElement,
@@ -38,8 +38,8 @@ const BreadcrumbItem = React.forwardRef<
     className={cn("inline-flex items-center gap-1.5", className)}
     {...props}
   />
-))
-BreadcrumbItem.displayName = "BreadcrumbItem"
+));
+BreadcrumbItem.displayName = "BreadcrumbItem";
 
 const BreadcrumbSeparator = React.forwardRef<
   HTMLSpanElement,
@@ -54,32 +54,31 @@ const BreadcrumbSeparator = React.forwardRef<
   >
     <ChevronRight className="h-3.5 w-3.5" />
   </span>
-))
-BreadcrumbSeparator.displayName = "BreadcrumbSeparator"
+));
+BreadcrumbSeparator.displayName = "BreadcrumbSeparator";
 
 const BreadcrumbLink = React.forwardRef<
   HTMLAnchorElement,
   React.AnchorHTMLAttributes<HTMLAnchorElement> & {
-    asChild?: boolean;
     to?: string;
   }
->(({ className, asChild = false, to, href, ...props }, ref) => {
-  const linkProps = { className: cn("hover:underline transition-colors flex items-center", className), ...props };
-  
+>(({ className, to, href, ...props }, ref) => {
+  const linkProps = {
+    className: cn(
+      "hover:underline transition-colors flex items-center",
+      className
+    ),
+    ...props,
+  };
+
   // If 'to' prop is provided, use RouterLink, otherwise use regular anchor
   if (to) {
     return <RouterLink to={to} ref={ref} {...linkProps} />;
   }
-  
-  return (
-    <a
-      ref={ref}
-      href={href}
-      {...linkProps}
-    />
-  )
-})
-BreadcrumbLink.displayName = "BreadcrumbLink"
+
+  return <a ref={ref} href={href} {...linkProps} />;
+});
+BreadcrumbLink.displayName = "BreadcrumbLink";
 
 const BreadcrumbPage = React.forwardRef<
   HTMLSpanElement,
@@ -93,8 +92,8 @@ const BreadcrumbPage = React.forwardRef<
     className={cn("font-normal opacity-70", className)}
     {...props}
   />
-))
-BreadcrumbPage.displayName = "BreadcrumbPage"
+));
+BreadcrumbPage.displayName = "BreadcrumbPage";
 
 export {
   Breadcrumb,
@@ -103,4 +102,4 @@ export {
   BreadcrumbSeparator,
   BreadcrumbLink,
   BreadcrumbPage,
-}
+};

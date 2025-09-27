@@ -13,7 +13,7 @@ interface SignUpProps {
   onSignUp: (role: UserRole) => void;
 }
 
-export function SignUp({ onSignUp }: SignUpProps) {
+export function SignUp({ onSignUp: _onSignUp }: SignUpProps) {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [companyName, setCompanyName] = useState('');

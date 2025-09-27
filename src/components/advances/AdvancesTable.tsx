@@ -1,11 +1,27 @@
-import { useState } from 'react';
-import { Advance } from '@/types/advances';
-import { formatCurrency, formatDate, getStatusBadge } from '@/utils/advanceUtils';
-import { Button } from '@/components/ui/button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { MoreHorizontal, ArrowUpDown, CheckCircle2, XCircle, Clock } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { useState } from "react";
+import { Advance } from "@/types/advances";
+import {
+  formatCurrency,
+  formatDate,
+  getStatusBadge,
+} from "@/utils/advanceUtils";
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { MoreHorizontal, CheckCircle2, XCircle, Clock } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface AdvancesTableProps {
   advances: Advance[];
@@ -20,23 +36,30 @@ export function AdvancesTable({
   searchTerm,
   onSearchChange,
 }: AdvancesTableProps) {
-  const [sortConfig, setSortConfig] = useState<{ key: keyof Advance; direction: 'asc' | 'desc' } | null>(null);
+  const [sortConfig, setSortConfig] = useState<{
+    key: keyof Advance;
+    direction: "asc" | "desc";
+  } | null>(null);
 
-  const requestSort = (key: keyof Advance) => {
-    let direction: 'asc' | 'desc' = 'asc';
-    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
-      direction = 'desc';
+  const _requestSort = (key: keyof Advance) => {
+    let direction: "asc" | "desc" = "asc";
+    if (
+      sortConfig &&
+      sortConfig.key === key &&
+      sortConfig.direction === "asc"
+    ) {
+      direction = "desc";
     }
     setSortConfig({ key, direction });
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'approved':
+      case "approved":
         return <CheckCircle2 className="h-4 w-4 text-green-500" />;
-      case 'rejected':
+      case "rejected":
         return <XCircle className="h-4 w-4 text-red-500" />;
-      case 'forgiven':
+      case "forgiven":
         return <CheckCircle2 className="h-4 w-4 text-purple-500" />;
       default:
         return <Clock className="h-4 w-4 text-yellow-500" />;
@@ -45,20 +68,20 @@ export function AdvancesTable({
 
   const sortedAdvances = [...advances].sort((a, b) => {
     if (!sortConfig) return 0;
-    
+
     const aValue = a[sortConfig.key];
     const bValue = b[sortConfig.key];
-    
+
     if (aValue === bValue) return 0;
-    
+
     if (aValue === undefined) return 1;
     if (bValue === undefined) return -1;
-    
+
     if (aValue < bValue) {
-      return sortConfig.direction === 'asc' ? -1 : 1;
+      return sortConfig.direction === "asc" ? -1 : 1;
     }
     if (aValue > bValue) {
-      return sortConfig.direction === 'asc' ? 1 : -1;
+      return sortConfig.direction === "asc" ? 1 : -1;
     }
     return 0;
   });
@@ -77,7 +100,7 @@ export function AdvancesTable({
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
         </div>
       </div>
-      
+
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -97,12 +120,14 @@ export function AdvancesTable({
               sortedAdvances.map((advance) => {
                 const status = getStatusBadge(advance.status);
                 const statusIcon = getStatusIcon(advance.status);
-                
+
                 return (
                   <TableRow key={advance.id}>
                     <TableCell className="font-medium">
                       <div>{advance.employeeName}</div>
-                      <div className="text-xs text-muted-foreground">{advance.employeeId}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {advance.employeeId}
+                      </div>
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
                       {advance.id}
@@ -133,14 +158,15 @@ export function AdvancesTable({
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem>View Details</DropdownMenuItem>
-                          {advance.status === 'approved' && advance.source === 'bluehr' && (
-                            <DropdownMenuItem 
-                              onClick={() => onForgiveAdvance(advance)}
-                              className="text-purple-600"
-                            >
-                              Forgive Advance
-                            </DropdownMenuItem>
-                          )}
+                          {advance.status === "approved" &&
+                            advance.source === "bluehr" && (
+                              <DropdownMenuItem
+                                onClick={() => onForgiveAdvance(advance)}
+                                className="text-purple-600"
+                              >
+                                Forgive Advance
+                              </DropdownMenuItem>
+                            )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>

@@ -21,8 +21,8 @@ export function UsersManagement() {
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
   const [isLoading, setIsLoading] = useState<Record<number, boolean>>({});
   const [usersData, setUsersData] = useState<any[]>([]); // State to hold the users data
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [_loading, setLoading] = useState(true);
+  const [_error, setError] = useState('');
 
   useEffect(() => {
     const fetchUsers = async () => {

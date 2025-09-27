@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Upload, Download, Plus, ChevronRight } from 'lucide-react';
+import { Search, Upload, Download, ChevronRight } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -42,15 +42,15 @@ export default function AdjustmentsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedEmployees, setSelectedEmployees] = useState<number[]>([]);
   const [editingEmployee, setEditingEmployee] = useState<number | null>(null);
-  const [employeeData, setEmployeeData] = useState<Record<string, any>>({});
+  const [_employeeData, setEmployeeData] = useState<Record<string, any>>({});
   const [showImportModal, setShowImportModal] = useState(false);
   const [importPreview, setImportPreview] = useState<any[]>([]);
-  const [importFile, setImportFile] = useState<File | null>(null);
+  const [_importFile, setImportFile] = useState<File | null>(null);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loadingEmployees, setLoadingEmployees] = useState(false);
   // State for leave types
   const [leaveTypes, setLeaveTypes] = useState<any[]>([]);
-  const [loadingLeaveTypes, setLoadingLeaveTypes] = useState(false);
+  const [_loadingLeaveTypes, setLoadingLeaveTypes] = useState(false);
   // Add state for editing leave days per leave type
   const [editingLeaveDays, setEditingLeaveDays] = useState<Record<string, number>>({});
 
@@ -72,7 +72,7 @@ export default function AdjustmentsPage() {
             lastUpdated: c.last_updated,
           }))
         );
-      } catch (err) {
+      } catch (_err) {
         setCompanies([]);
       } finally {
         setLoadingCompanies(false);
@@ -185,7 +185,7 @@ export default function AdjustmentsPage() {
             leaveTypes: emp.leaveTypes || [] // Use backend-provided leaveTypes
           }))
         );
-      } catch (err) {
+      } catch (_err) {
         setEmployees([]);
       } finally {
         setLoadingEmployees(false);
@@ -208,7 +208,7 @@ export default function AdjustmentsPage() {
         if (!res.ok) throw new Error('Failed to fetch leave types');
         const leaveTypesData = await res.json();
         setLeaveTypes(leaveTypesData);
-      } catch (err) {
+      } catch (_err) {
         setLeaveTypes([]);
       } finally {
         setLoadingLeaveTypes(false);

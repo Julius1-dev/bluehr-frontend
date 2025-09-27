@@ -137,7 +137,7 @@ export default function EmployeeLeaveCalendar() {
         const start = parseISO(event.startDate);
         const end = parseISO(event.endDate);
         return isWithinInterval(day, { start, end });
-      } catch (error) {
+      } catch (_error) {
         return false;
       }
     });

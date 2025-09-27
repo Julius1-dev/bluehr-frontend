@@ -30,7 +30,7 @@ export default function ViewEmployee() {
         const deptData = await deptRes.json();
         setEmployee(userData);
         setDepartments(deptData);
-      } catch (err) {
+      } catch (_err) {
         setEmployee(null);
       } finally {
         setLoading(false);

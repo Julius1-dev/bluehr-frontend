@@ -101,7 +101,7 @@ const PerformanceModel: React.FC = () => {
   };
 
   // Helper function to get performance color
-  const getPerformanceColor = (score: number) => {
+  const _getPerformanceColor = (score: number) => {
     if (score >= 85) return 'bg-green-500';
     if (score >= 70) return 'bg-blue-500';
     if (score >= 60) return 'bg-yellow-500';

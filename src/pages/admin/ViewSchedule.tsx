@@ -139,7 +139,7 @@ export default function ViewSchedule() {
         const start = parseISO(event.startDate);
         const end = parseISO(event.endDate);
         return isWithinInterval(day, { start, end });
-      } catch (error) {
+      } catch (_error) {
         return false;
       }
     });

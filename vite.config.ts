@@ -19,6 +19,7 @@ export default defineConfig({
       '/ai-oversight': 'http://localhost:4000', // Change 5000 to your backend port if different
     },
     allowedHosts: [
+      'localhost:3012',
       'bluehr.joinbluehr.com',
       'dev-bluehr.joinbluehr.com',
     ],

@@ -8,10 +8,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { 
   Users, 
   User, 
-  Calendar, 
   MessageSquare, 
   Send, 
-  Plus, 
   X,
   Search,
   Filter

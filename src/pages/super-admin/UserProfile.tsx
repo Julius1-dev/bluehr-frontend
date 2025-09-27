@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Mail, Phone, Building, Clock, User, Shield, Calendar, MapPin, Hash, FileText } from 'lucide-react';
+import { ArrowLeft, Mail, Phone, Building, User, Shield, Calendar, MapPin, Hash } from 'lucide-react';
 import { BACKEND_URL } from '@/lib/config';
 
 const API_URL = `${BACKEND_URL}/super-admin/users`;

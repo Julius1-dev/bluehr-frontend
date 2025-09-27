@@ -1,37 +1,49 @@
-import { useState, useEffect } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { 
-  FileText, 
+import { useState, useEffect } from "react";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import {
+  FileText,
   Download,
   FileSpreadsheet,
   CheckCircle,
   AlertCircle,
   Clock,
-  Lock
-} from 'lucide-react';
-import { calculatePAYE, calculateSHIF, calculateNSSF, calculateHousingLevy } from './payrollCalculations';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { toast } from 'sonner';
-import { BACKEND_URL } from '@/lib/config';
+  Lock,
+} from "lucide-react";
+import {
+  calculatePAYE,
+  calculateSHIF,
+  calculateNSSF,
+  calculateHousingLevy,
+} from "./payrollCalculations";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { toast } from "sonner";
+import { BACKEND_URL } from "@/lib/config";
 
 // Mock utility function for formatting currency
 const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat('en-KE', {
-    style: 'currency',
-    currency: 'KES',
-    minimumFractionDigits: 2
+  return new Intl.NumberFormat("en-KE", {
+    style: "currency",
+    currency: "KES",
+    minimumFractionDigits: 2,
   }).format(amount);
 };
 
 // Mock utility function for formatting dates
 const formatDate = (date: Date): string => {
-  return new Intl.DateTimeFormat('en-KE', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
+  return new Intl.DateTimeFormat("en-KE", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
   }).format(date);
 };
 
@@ -52,33 +64,46 @@ interface StatutoryPaymentStatus {
 }
 
 export function StatutoryDocuments({ statutoryData }: StatutoryDocumentsProps) {
-  const [selectedYear, setSelectedYear] = useState('2025');
-  const [selectedMonth, setSelectedMonth] = useState('5'); // May
-  const [selectedEmployee, setSelectedEmployee] = useState('all');
-  
+  const [selectedYear, setSelectedYear] = useState("2025");
+  const [selectedMonth, setSelectedMonth] = useState("5"); // May
+  const [selectedEmployee, setSelectedEmployee] = useState("all");
+
   // Real-time statutory totals
-  const [totals, setTotals] = useState({ paye: 0, shif: 0, nssf: 0, housingLevy: 0, total: 0 });
+  const [totals, setTotals] = useState({
+    paye: 0,
+    shif: 0,
+    nssf: 0,
+    housingLevy: 0,
+    total: 0,
+  });
   const [loading, setLoading] = useState(true);
   const [employees, setEmployees] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<'paye' | 'shif' | 'nssf' | 'housingLevy'>('paye');
-  const [departmentsMap, setDepartmentsMap] = useState<{ [key: string]: string }>({});
+  const [activeTab, setActiveTab] = useState<
+    "paye" | "shif" | "nssf" | "housingLevy"
+  >("paye");
+  const [_departmentsMap, setDepartmentsMap] = useState<{
+    [key: string]: string;
+  }>({});
   const [statutoryPayments, setStatutoryPayments] = useState<any[]>([]);
   const [loadingPayments, setLoadingPayments] = useState(false);
   const [initiating, setInitiating] = useState(false);
-  const [paymentStatus, setPaymentStatus] = useState<StatutoryPaymentStatus>({ canInitiate: true, message: '' });
+  const [paymentStatus, setPaymentStatus] = useState<StatutoryPaymentStatus>({
+    canInitiate: true,
+    message: "",
+  });
   const [checkingStatus, setCheckingStatus] = useState(false);
 
   // Check statutory payment status for current month/year
   const checkStatutoryPaymentStatus = async () => {
     try {
       setCheckingStatus(true);
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       if (!token) return;
 
       const response = await fetch(
         `${BACKEND_URL}/company-admin/payroll/statutory/status?month=${selectedMonth}&year=${selectedYear}`,
         {
-          headers: { 'Authorization': `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
@@ -87,47 +112,52 @@ export function StatutoryDocuments({ statutoryData }: StatutoryDocumentsProps) {
         setPaymentStatus(data);
       }
     } catch (error) {
-      console.error('Error checking statutory payment status:', error);
+      console.error("Error checking statutory payment status:", error);
     } finally {
       setCheckingStatus(false);
     }
   };
 
   // Fetch and calculate statutory data based on selected month/year
-    const fetchAndCalculateStatutory = async () => {
+  const fetchAndCalculateStatutory = async () => {
     try {
       setLoading(true);
-        const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       if (!token) return;
 
       // Fetch departments for mapping
       const deptRes = await fetch(`${BACKEND_URL}/company-admin/departments`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
+        headers: { Authorization: `Bearer ${token}` },
+      });
       const deptData = await deptRes.json();
-        const deptMap: { [key: string]: string } = {};
-        if (Array.isArray(deptData)) {
-          deptData.forEach((dept: any) => {
-            deptMap[dept.id] = dept.name;
-          });
-        }
-        setDepartmentsMap(deptMap);
-
-        // Fetch employees
-      const empRes = await fetch(`${BACKEND_URL}/company-admin/users`, {
-          headers: { 'Authorization': `Bearer ${token}` }
+      const deptMap: { [key: string]: string } = {};
+      if (Array.isArray(deptData)) {
+        deptData.forEach((dept: any) => {
+          deptMap[dept.id] = dept.name;
         });
+      }
+      setDepartmentsMap(deptMap);
+
+      // Fetch employees
+      const empRes = await fetch(`${BACKEND_URL}/company-admin/users`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       const empData = await empRes.json();
 
-        let paye = 0, shif = 0, nssf = 0, housingLevy = 0;
-        const realEmployees: any[] = [];
+      let paye = 0,
+        shif = 0,
+        nssf = 0,
+        housingLevy = 0;
+      const realEmployees: any[] = [];
 
-        if (Array.isArray(empData)) {
-          empData.filter((emp: any) => emp.status === 'active' && emp.role !== 'admin').forEach((emp: any) => {
+      if (Array.isArray(empData)) {
+        empData
+          .filter((emp: any) => emp.status === "active" && emp.role !== "admin")
+          .forEach((emp: any) => {
             let basicSalary = parseFloat(emp.basic_salary) || 0;
             let allowances = 0;
-            let paymentFrequency = emp.payment_frequency || 'monthly';
-            if (paymentFrequency === 'yearly') {
+            let paymentFrequency = emp.payment_frequency || "monthly";
+            if (paymentFrequency === "yearly") {
               basicSalary = basicSalary / 12;
             }
             const adjustedGrossSalary = basicSalary + allowances;
@@ -142,24 +172,30 @@ export function StatutoryDocuments({ statutoryData }: StatutoryDocumentsProps) {
             realEmployees.push({
               id: emp.id,
               name: `${emp.first_name} ${emp.last_name}`,
-              department: deptMap[emp.department_id] || 'Unknown',
-              position: emp.role || 'Staff',
+              department: deptMap[emp.department_id] || "Unknown",
+              position: emp.role || "Staff",
               paye: payeVal,
               shif: shifVal,
               nssf: nssfVal,
               housingLevy: housingLevyVal,
             });
           });
-        }
-        setTotals({ paye, shif, nssf, housingLevy, total: paye + shif + nssf + housingLevy });
-        setEmployees(realEmployees);
-      } catch (err) {
-        setTotals({ paye: 0, shif: 0, nssf: 0, housingLevy: 0, total: 0 });
-        setEmployees([]);
-      } finally {
-        setLoading(false);
       }
-    };
+      setTotals({
+        paye,
+        shif,
+        nssf,
+        housingLevy,
+        total: paye + shif + nssf + housingLevy,
+      });
+      setEmployees(realEmployees);
+    } catch (_err) {
+      setTotals({ paye: 0, shif: 0, nssf: 0, housingLevy: 0, total: 0 });
+      setEmployees([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchAndCalculateStatutory();
@@ -170,15 +206,18 @@ export function StatutoryDocuments({ statutoryData }: StatutoryDocumentsProps) {
   const fetchStatutoryPayments = async () => {
     setLoadingPayments(true);
     try {
-      const token = localStorage.getItem('token');
-      if (!token) throw new Error('No authentication token found');
-      const res = await fetch(`${BACKEND_URL}/company-admin/payroll/statutory/payments?month=${selectedMonth}&year=${selectedYear}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (!res.ok) throw new Error('Failed to fetch statutory payments');
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No authentication token found");
+      const res = await fetch(
+        `${BACKEND_URL}/company-admin/payroll/statutory/payments?month=${selectedMonth}&year=${selectedYear}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      if (!res.ok) throw new Error("Failed to fetch statutory payments");
       const data = await res.json();
       setStatutoryPayments(data.payments || []);
-    } catch (err) {
+    } catch (_err) {
       setStatutoryPayments([]);
     } finally {
       setLoadingPayments(false);
@@ -194,69 +233,77 @@ export function StatutoryDocuments({ statutoryData }: StatutoryDocumentsProps) {
   const handleInitiateStatutoryPayment = async () => {
     // Check if payments can be initiated
     if (!paymentStatus.canInitiate) {
-      toast.error('Cannot Initiate Payments', {
+      toast.error("Cannot Initiate Payments", {
         description: paymentStatus.message,
-        duration: 5000
+        duration: 5000,
       });
       return;
     }
 
     setInitiating(true);
     try {
-      const token = localStorage.getItem('token');
-      if (!token) throw new Error('No authentication token found');
-      
-      const res = await fetch(`${BACKEND_URL}/company-admin/payroll/statutory/initiate`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}` 
-        },
-        body: JSON.stringify({
-          month: parseInt(selectedMonth),
-          year: parseInt(selectedYear)
-        })
-      });
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No authentication token found");
+
+      const res = await fetch(
+        `${BACKEND_URL}/company-admin/payroll/statutory/initiate`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            month: parseInt(selectedMonth),
+            year: parseInt(selectedYear),
+          }),
+        }
+      );
 
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.error || 'Failed to initiate statutory payments');
+        throw new Error(
+          errorData.error || "Failed to initiate statutory payments"
+        );
       }
 
       const data = await res.json();
       if (data.success) {
         setStatutoryPayments(data.payments);
-        toast.success('Statutory Payments Initiated', {
+        toast.success("Statutory Payments Initiated", {
           description: `PAYE, NSSF, SHIF, and Housing Levy payments for ${selectedMonth}/${selectedYear} have been initiated`,
-          duration: 5000
+          duration: 5000,
         });
-        
+
         // Update payment status
         setPaymentStatus({
           canInitiate: false,
-          message: `Statutory payments for ${selectedMonth}/${selectedYear} have already been initiated`
+          message: `Statutory payments for ${selectedMonth}/${selectedYear} have already been initiated`,
         });
       }
     } catch (error) {
-      console.error('Error initiating statutory payments:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      
-      if (errorMessage.includes('already been initiated')) {
-        toast.error('Payments Already Initiated', {
-          description: 'Statutory payments for this period have already been initiated or paid',
-          duration: 5000
+      console.error("Error initiating statutory payments:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+
+      if (errorMessage.includes("already been initiated")) {
+        toast.error("Payments Already Initiated", {
+          description:
+            "Statutory payments for this period have already been initiated or paid",
+          duration: 5000,
         });
         // Refresh status
         checkStatutoryPaymentStatus();
-      } else if (errorMessage.includes('Insufficient wallet balance')) {
-        toast.error('Insufficient Balance', {
-          description: 'Your company wallet does not have enough funds to initiate statutory payments',
-          duration: 5000
+      } else if (errorMessage.includes("Insufficient wallet balance")) {
+        toast.error("Insufficient Balance", {
+          description:
+            "Your company wallet does not have enough funds to initiate statutory payments",
+          duration: 5000,
         });
       } else {
-        toast.error('Failed to Initiate Payments', {
+        toast.error("Failed to Initiate Payments", {
           description: errorMessage,
-          duration: 5000
+          duration: 5000,
         });
       }
     } finally {
@@ -266,59 +313,87 @@ export function StatutoryDocuments({ statutoryData }: StatutoryDocumentsProps) {
 
   // Download PDF statement for a statutory payment
   const handleDownloadPaymentStatement = async (paymentId: number) => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (!token) return;
-    const res = await fetch(`${BACKEND_URL}/company-admin/payroll/statutory/payment/${paymentId}`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
+    const res = await fetch(
+      `${BACKEND_URL}/company-admin/payroll/statutory/payment/${paymentId}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
     if (!res.ok) return;
     const payment = await res.json();
-    const { jsPDF } = await import('jspdf');
-    const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+    const { jsPDF } = await import("jspdf");
+    const doc = new jsPDF({ unit: "pt", format: "a4" });
     let y = 40;
     doc.setFontSize(20);
     doc.setTextColor(41, 98, 255);
-    doc.text('BlueHR Statutory Payment Statement', 40, y);
+    doc.text("BlueHR Statutory Payment Statement", 40, y);
     doc.setFontSize(13);
     doc.setTextColor(60, 60, 60);
-    doc.text(payment.deduction_type + ' Payment', 40, y + 22);
+    doc.text(payment.deduction_type + " Payment", 40, y + 22);
     y += 50;
     doc.setFontSize(12);
     doc.setTextColor(0, 0, 0);
-    doc.text('Deduction:', 50, y); doc.text(payment.deduction_type, 150, y);
+    doc.text("Deduction:", 50, y);
+    doc.text(payment.deduction_type, 150, y);
     y += 20;
-    doc.text('Description:', 50, y); doc.text(payment.description || '', 150, y);
+    doc.text("Description:", 50, y);
+    doc.text(payment.description || "", 150, y);
     y += 20;
-    doc.text('Amount:', 50, y); doc.text(formatCurrency(payment.amount), 150, y);
+    doc.text("Amount:", 50, y);
+    doc.text(formatCurrency(payment.amount), 150, y);
     y += 20;
-    doc.text('Due Date:', 50, y); doc.text(payment.due_date ? String(payment.due_date).slice(0, 10) : '', 150, y);
+    doc.text("Due Date:", 50, y);
+    doc.text(
+      payment.due_date ? String(payment.due_date).slice(0, 10) : "",
+      150,
+      y
+    );
     y += 20;
-    doc.text('Paid At:', 50, y); doc.text(payment.paid_at ? String(payment.paid_at).slice(0, 19).replace('T', ' ') : '', 150, y);
+    doc.text("Paid At:", 50, y);
+    doc.text(
+      payment.paid_at
+        ? String(payment.paid_at).slice(0, 19).replace("T", " ")
+        : "",
+      150,
+      y
+    );
     y += 20;
-    doc.text('Status:', 50, y); doc.text(payment.status, 150, y);
+    doc.text("Status:", 50, y);
+    doc.text(payment.status, 150, y);
     y += 40;
     doc.setFontSize(10);
     doc.setTextColor(128, 128, 128);
-    doc.text('This is a computer-generated document. No signature is required.', 300, 820, { align: 'center' });
+    doc.text(
+      "This is a computer-generated document. No signature is required.",
+      300,
+      820,
+      { align: "center" }
+    );
     doc.save(`statutory_payment_${payment.deduction_type}_${payment.id}.pdf`);
   };
 
   // PDF export function for the current tab
   const handleDownloadPDF = async () => {
-    const { jsPDF } = await import('jspdf');
-    const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+    const { jsPDF } = await import("jspdf");
+    const doc = new jsPDF({ unit: "pt", format: "a4" });
     let y = 40;
     doc.setFontSize(20);
     doc.setTextColor(41, 98, 255);
-    doc.text('BlueHR Statutory Deductions', 40, y);
+    doc.text("BlueHR Statutory Deductions", 40, y);
     doc.setFontSize(13);
     doc.setTextColor(60, 60, 60);
     doc.text(
-      activeTab === 'paye' ? 'PAYE (KRA) Deductions' :
-      activeTab === 'shif' ? 'SHIF Deductions' :
-      activeTab === 'nssf' ? 'NSSF Deductions' :
-      'Housing Levy Deductions',
-      40, y + 22
+      activeTab === "paye"
+        ? "PAYE (KRA) Deductions"
+        : activeTab === "shif"
+        ? "SHIF Deductions"
+        : activeTab === "nssf"
+        ? "NSSF Deductions"
+        : "Housing Levy Deductions",
+      40,
+      y + 22
     );
     y += 50;
     doc.setFontSize(12);
@@ -326,33 +401,37 @@ export function StatutoryDocuments({ statutoryData }: StatutoryDocumentsProps) {
     // Table header with more spacing
     const colX = [50, 220, 370, 520]; // Employee, Department, Role, Deduction
     doc.setFillColor(240, 240, 240);
-    doc.rect(40, y, 500, 24, 'F');
-    doc.text('Employee', colX[0], y + 16);
-    doc.text('Department', colX[1], y + 16);
-    doc.text('Role', colX[2], y + 16);
+    doc.rect(40, y, 500, 24, "F");
+    doc.text("Employee", colX[0], y + 16);
+    doc.text("Department", colX[1], y + 16);
+    doc.text("Role", colX[2], y + 16);
     doc.text(
-      activeTab === 'paye' ? 'PAYE' :
-      activeTab === 'shif' ? 'SHIF' :
-      activeTab === 'nssf' ? 'NSSF' :
-      'Housing Levy',
-      colX[3], y + 16
+      activeTab === "paye"
+        ? "PAYE"
+        : activeTab === "shif"
+        ? "SHIF"
+        : activeTab === "nssf"
+        ? "NSSF"
+        : "Housing Levy",
+      colX[3],
+      y + 16
     );
     y += 32;
     employees.forEach((emp, idx) => {
       // Alternating row background
       if (idx % 2 === 1) {
         doc.setFillColor(250, 250, 250);
-        doc.rect(40, y - 12, 500, 22, 'F');
+        doc.rect(40, y - 12, 500, 22, "F");
       }
       doc.setTextColor(0, 0, 0);
       doc.text(emp.name, colX[0], y);
       doc.text(String(emp.department), colX[1], y);
       doc.text(String(emp.position), colX[2], y);
       let value = 0;
-      if (activeTab === 'paye') value = emp.paye;
-      if (activeTab === 'shif') value = emp.shif;
-      if (activeTab === 'nssf') value = emp.nssf;
-      if (activeTab === 'housingLevy') value = emp.housingLevy;
+      if (activeTab === "paye") value = emp.paye;
+      if (activeTab === "shif") value = emp.shif;
+      if (activeTab === "nssf") value = emp.nssf;
+      if (activeTab === "housingLevy") value = emp.housingLevy;
       doc.setTextColor(41, 98, 255);
       doc.text(formatCurrency(value), colX[3], y);
       doc.setTextColor(0, 0, 0);
@@ -365,135 +444,130 @@ export function StatutoryDocuments({ statutoryData }: StatutoryDocumentsProps) {
     doc.save(`statutory_${activeTab}_deductions.pdf`);
   };
 
-  // Calculate dynamic due dates based on selected month/year
-  // Statutory deductions are typically due in the following month
-  const getDueDate = (dayOfMonth: number) => {
-    const year = parseInt(selectedYear);
-    const month = parseInt(selectedMonth); // Next month (no -1 since we want following month)
-    return new Date(year, month, dayOfMonth);
-  };
-
   // Mock statutory documents
   const statutoryDocuments = [
     {
       id: 1,
-      name: 'PAYE Returns',
-      description: 'Monthly PAYE tax returns for KRA',
-      dueDate: getDueDate(9), // Due in following month
-      status: 'pending',
-      amount: statutoryData.paye
+      name: "PAYE Returns",
+      description: "Monthly PAYE tax returns for KRA",
+      dueDate: new Date("2025-06-09"),
+      status: "pending",
+      amount: statutoryData.paye,
     },
     {
       id: 2,
-      name: 'NHIF Contributions',
-      description: 'Monthly National Hospital Insurance Fund contributions',
-      dueDate: getDueDate(9), // Due in following month
-      status: 'pending',
-      amount: statutoryData.nhif
+      name: "NHIF Contributions",
+      description: "Monthly National Hospital Insurance Fund contributions",
+      dueDate: new Date("2025-06-09"),
+      status: "pending",
+      amount: statutoryData.nhif,
     },
     {
       id: 3,
-      name: 'NSSF Contributions',
-      description: 'Monthly National Social Security Fund contributions',
-      dueDate: getDueDate(15), // Due in following month
-      status: 'pending',
-      amount: statutoryData.nssf
+      name: "NSSF Contributions",
+      description: "Monthly National Social Security Fund contributions",
+      dueDate: new Date("2025-06-15"),
+      status: "pending",
+      amount: statutoryData.nssf,
     },
     {
       id: 4,
-      name: 'PAYE Returns',
-      description: 'Monthly PAYE tax returns for KRA',
-      dueDate: new Date(parseInt(selectedYear), parseInt(selectedMonth) - 1, 9), // Current month (previously due)
-      status: 'completed',
+      name: "PAYE Returns",
+      description: "Monthly PAYE tax returns for KRA",
+      dueDate: new Date("2025-05-09"),
+      status: "completed",
       amount: 125000,
-      filingDate: new Date(parseInt(selectedYear), parseInt(selectedMonth) - 1, 7)
+      filingDate: new Date("2025-05-07"),
     },
     {
       id: 5,
-      name: 'NHIF Contributions',
-      description: 'Monthly National Hospital Insurance Fund contributions',
-      dueDate: new Date(parseInt(selectedYear), parseInt(selectedMonth) - 1, 9), // Current month (previously due)
-      status: 'completed',
+      name: "NHIF Contributions",
+      description: "Monthly National Hospital Insurance Fund contributions",
+      dueDate: new Date("2025-05-09"),
+      status: "completed",
       amount: 23500,
-      filingDate: new Date(parseInt(selectedYear), parseInt(selectedMonth) - 1, 7)
+      filingDate: new Date("2025-05-07"),
     },
     {
       id: 6,
-      name: 'NSSF Contributions',
-      description: 'Monthly National Social Security Fund contributions',
-      dueDate: new Date(parseInt(selectedYear), parseInt(selectedMonth) - 1, 15), // Current month (previously due)
-      status: 'completed',
+      name: "NSSF Contributions",
+      description: "Monthly National Social Security Fund contributions",
+      dueDate: new Date("2025-05-15"),
+      status: "completed",
       amount: 42000,
-      filingDate: new Date(parseInt(selectedYear), parseInt(selectedMonth) - 1, 7)
-    }
+      filingDate: new Date("2025-05-07"),
+    },
   ];
-  
+
   // Mock P9 forms data
   const p9FormsData = [
     {
       id: 1,
-      employeeId: 'EMP001',
-      employeeName: 'John Kamau',
-      taxYear: '2024',
-      status: 'available',
-      generatedDate: new Date('2025-01-15')
+      employeeId: "EMP001",
+      employeeName: "John Kamau",
+      taxYear: "2024",
+      status: "available",
+      generatedDate: new Date("2025-01-15"),
     },
     {
       id: 2,
-      employeeId: 'EMP002',
-      employeeName: 'Mary Wanjiku',
-      taxYear: '2024',
-      status: 'available',
-      generatedDate: new Date('2025-01-15')
+      employeeId: "EMP002",
+      employeeName: "Mary Wanjiku",
+      taxYear: "2024",
+      status: "available",
+      generatedDate: new Date("2025-01-15"),
     },
     {
       id: 3,
-      employeeId: 'EMP003',
-      employeeName: 'James Omondi',
-      taxYear: '2024',
-      status: 'available',
-      generatedDate: new Date('2025-01-15')
-    }
+      employeeId: "EMP003",
+      employeeName: "James Omondi",
+      taxYear: "2024",
+      status: "available",
+      generatedDate: new Date("2025-01-15"),
+    },
   ];
-  
+
   // Filter documents based on selected month and year
-  const filteredDocuments = statutoryDocuments.filter(doc => {
+  const _filteredDocuments = statutoryDocuments.filter((doc) => {
     const docMonth = doc.dueDate.getMonth() + 1; // JavaScript months are 0-indexed
     const docYear = doc.dueDate.getFullYear();
-    
-    return docMonth.toString() === selectedMonth && docYear.toString() === selectedYear;
+
+    return (
+      docMonth.toString() === selectedMonth &&
+      docYear.toString() === selectedYear
+    );
   });
-  
+
   // Get status badge variant and icon
-  const getStatusBadge = (status: string) => {
+  const _getStatusBadge = (status: string) => {
     switch (status) {
-      case 'completed':
-        return { 
-          variant: 'success' as const, 
+      case "completed":
+        return {
+          variant: "success" as const,
           icon: <CheckCircle className="h-4 w-4 mr-1" />,
-          text: 'Completed'
+          text: "Completed",
         };
-      case 'pending':
-        return { 
-          variant: 'outline' as const, 
+      case "pending":
+        return {
+          variant: "outline" as const,
           icon: <Clock className="h-4 w-4 mr-1" />,
-          text: 'Pending'
+          text: "Pending",
         };
-      case 'overdue':
-        return { 
-          variant: 'danger' as const, 
+      case "overdue":
+        return {
+          variant: "danger" as const,
           icon: <AlertCircle className="h-4 w-4 mr-1" />,
-          text: 'Overdue'
+          text: "Overdue",
         };
       default:
-        return { 
-          variant: 'outline' as const, 
+        return {
+          variant: "outline" as const,
           icon: null,
-          text: status
+          text: status,
         };
     }
   };
-  
+
   return (
     <div className="space-y-6">
       {/* Statutory Summary */}
@@ -506,12 +580,14 @@ export function StatutoryDocuments({ statutoryData }: StatutoryDocumentsProps) {
               </div>
               <div>
                 <p className="text-sm text-gray-500">PAYE (KRA)</p>
-                <p className="text-2xl font-bold">{loading ? 'Loading...' : formatCurrency(totals.paye)}</p>
+                <p className="text-2xl font-bold">
+                  {loading ? "Loading..." : formatCurrency(totals.paye)}
+                </p>
               </div>
             </div>
             <div className="mt-4 pt-2 border-t border-gray-100">
               <p className="text-sm text-gray-500">
-                Due by {formatDate(getDueDate(9))}
+                Due by {formatDate(new Date("2025-06-09"))}
               </p>
             </div>
           </CardContent>
@@ -524,12 +600,14 @@ export function StatutoryDocuments({ statutoryData }: StatutoryDocumentsProps) {
               </div>
               <div>
                 <p className="text-sm text-gray-500">SHIF</p>
-                <p className="text-2xl font-bold">{loading ? 'Loading...' : formatCurrency(totals.shif)}</p>
+                <p className="text-2xl font-bold">
+                  {loading ? "Loading..." : formatCurrency(totals.shif)}
+                </p>
               </div>
             </div>
             <div className="mt-4 pt-2 border-t border-gray-100">
               <p className="text-sm text-gray-500">
-                Due by {formatDate(getDueDate(9))}
+                Due by {formatDate(new Date("2025-06-09"))}
               </p>
             </div>
           </CardContent>
@@ -542,12 +620,14 @@ export function StatutoryDocuments({ statutoryData }: StatutoryDocumentsProps) {
               </div>
               <div>
                 <p className="text-sm text-gray-500">NSSF</p>
-                <p className="text-2xl font-bold">{loading ? 'Loading...' : formatCurrency(totals.nssf)}</p>
+                <p className="text-2xl font-bold">
+                  {loading ? "Loading..." : formatCurrency(totals.nssf)}
+                </p>
               </div>
             </div>
             <div className="mt-4 pt-2 border-t border-gray-100">
               <p className="text-sm text-gray-500">
-                Due by {formatDate(getDueDate(15))}
+                Due by {formatDate(new Date("2025-06-15"))}
               </p>
             </div>
           </CardContent>
@@ -560,23 +640,27 @@ export function StatutoryDocuments({ statutoryData }: StatutoryDocumentsProps) {
               </div>
               <div>
                 <p className="text-sm text-gray-500">Housing Levy</p>
-                <p className="text-2xl font-bold">{loading ? 'Loading...' : formatCurrency(totals.housingLevy)}</p>
+                <p className="text-2xl font-bold">
+                  {loading ? "Loading..." : formatCurrency(totals.housingLevy)}
+                </p>
               </div>
             </div>
             <div className="mt-4 pt-2 border-t border-gray-100">
               <p className="text-sm text-gray-500">
-                Due by {formatDate(getDueDate(9))}
+                Due by {formatDate(new Date("2025-06-09"))}
               </p>
             </div>
           </CardContent>
         </Card>
       </div>
-      
+
       {/* Filter Controls */}
       <div className="flex flex-wrap gap-4 items-center">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Year</label>
-          <select 
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Year
+          </label>
+          <select
             className="border border-gray-300 rounded-md px-3 py-1.5"
             value={selectedYear}
             onChange={(e) => setSelectedYear(e.target.value)}
@@ -586,10 +670,12 @@ export function StatutoryDocuments({ statutoryData }: StatutoryDocumentsProps) {
             <option value="2023">2023</option>
           </select>
         </div>
-        
+
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Month</label>
-          <select 
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Month
+          </label>
+          <select
             className="border border-gray-300 rounded-md px-3 py-1.5"
             value={selectedMonth}
             onChange={(e) => setSelectedMonth(e.target.value)}
@@ -609,12 +695,18 @@ export function StatutoryDocuments({ statutoryData }: StatutoryDocumentsProps) {
           </select>
         </div>
       </div>
-      
+
       {/* Monthly Statutory Documents */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Monthly Statutory Documents</CardTitle>
-          {/* <Button onClick={handleInitiateStatutoryPayment} disabled={initiating || !paymentStatus.canInitiate || checkingStatus} variant={paymentStatus.canInitiate ? 'default' : 'outline'}>
+          <Button
+            onClick={handleInitiateStatutoryPayment}
+            disabled={
+              initiating || !paymentStatus.canInitiate || checkingStatus
+            }
+            variant={paymentStatus.canInitiate ? "default" : "outline"}
+          >
             {initiating ? (
               <>
                 <Clock className="mr-2 h-4 w-4 animate-spin" />
@@ -631,7 +723,7 @@ export function StatutoryDocuments({ statutoryData }: StatutoryDocumentsProps) {
                 Initiate Payments
               </>
             )}
-          </Button> */}
+          </Button>
         </CardHeader>
         <CardContent>
           <Table>
@@ -648,20 +740,40 @@ export function StatutoryDocuments({ statutoryData }: StatutoryDocumentsProps) {
             <TableBody>
               {loadingPayments ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-4">Loading...</TableCell>
+                  <TableCell colSpan={6} className="text-center py-4">
+                    Loading...
+                  </TableCell>
                 </TableRow>
               ) : statutoryPayments.length > 0 ? (
                 statutoryPayments.map((payment) => (
                   <TableRow key={payment.id}>
-                    <TableCell className="font-medium">{payment.deduction_type}</TableCell>
+                    <TableCell className="font-medium">
+                      {payment.deduction_type}
+                    </TableCell>
                     <TableCell>{payment.description}</TableCell>
-                    <TableCell>{payment.due_date ? String(payment.due_date).slice(0, 10) : ''}</TableCell>
-                    <TableCell>{formatCurrency(payment.amount)}</TableCell>
-                    <TableCell><Badge variant={payment.status === 'paid' ? 'success' : 'outline'}>
-                      {payment.status}
-                    </Badge></TableCell>
                     <TableCell>
-                      <Button variant="outline" size="sm" onClick={() => handleDownloadPaymentStatement(payment.id)}>
+                      {payment.due_date
+                        ? String(payment.due_date).slice(0, 10)
+                        : ""}
+                    </TableCell>
+                    <TableCell>{formatCurrency(payment.amount)}</TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={
+                          payment.status === "paid" ? "success" : "outline"
+                        }
+                      >
+                        {payment.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          handleDownloadPaymentStatement(payment.id)
+                        }
+                      >
                         <Download className="h-4 w-4 mr-1" /> Download
                       </Button>
                     </TableCell>
@@ -669,7 +781,10 @@ export function StatutoryDocuments({ statutoryData }: StatutoryDocumentsProps) {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-4 text-gray-500">
+                  <TableCell
+                    colSpan={6}
+                    className="text-center py-4 text-gray-500"
+                  >
                     No statutory payments found
                   </TableCell>
                 </TableRow>
@@ -678,7 +793,7 @@ export function StatutoryDocuments({ statutoryData }: StatutoryDocumentsProps) {
           </Table>
         </CardContent>
       </Card>
-      
+
       {/* P9 Forms Section */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
@@ -690,8 +805,10 @@ export function StatutoryDocuments({ statutoryData }: StatutoryDocumentsProps) {
         </CardHeader>
         <CardContent>
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Employee</label>
-            <select 
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Employee
+            </label>
+            <select
               className="border border-gray-300 rounded-md px-3 py-1.5 w-full md:w-64"
               value={selectedEmployee}
               onChange={(e) => setSelectedEmployee(e.target.value)}
@@ -702,7 +819,7 @@ export function StatutoryDocuments({ statutoryData }: StatutoryDocumentsProps) {
               <option value="EMP003">James Omondi</option>
             </select>
           </div>
-          
+
           <Table>
             <TableHeader>
               <TableRow>
@@ -715,14 +832,23 @@ export function StatutoryDocuments({ statutoryData }: StatutoryDocumentsProps) {
             </TableHeader>
             <TableBody>
               {p9FormsData
-                .filter(form => selectedEmployee === 'all' || form.employeeId === selectedEmployee)
+                .filter(
+                  (form) =>
+                    selectedEmployee === "all" ||
+                    form.employeeId === selectedEmployee
+                )
                 .map((form) => (
                   <TableRow key={form.id}>
-                    <TableCell className="font-medium">{form.employeeName}</TableCell>
+                    <TableCell className="font-medium">
+                      {form.employeeName}
+                    </TableCell>
                     <TableCell>{form.taxYear}</TableCell>
                     <TableCell>{formatDate(form.generatedDate)}</TableCell>
                     <TableCell>
-                      <Badge variant="success" className="flex items-center w-fit">
+                      <Badge
+                        variant="success"
+                        className="flex items-center w-fit"
+                      >
                         <CheckCircle className="h-4 w-4 mr-1" />
                         Available
                       </Badge>
@@ -738,7 +864,7 @@ export function StatutoryDocuments({ statutoryData }: StatutoryDocumentsProps) {
           </Table>
         </CardContent>
       </Card>
-      
+
       {/* Payment Status Alert */}
       {!paymentStatus.canInitiate && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
@@ -748,9 +874,13 @@ export function StatutoryDocuments({ statutoryData }: StatutoryDocumentsProps) {
           </div>
         </div>
       )}
-      
+
       {/* Statutory Tabs */}
-      <Tabs value={activeTab} onValueChange={v => setActiveTab(v as any)} className="mt-6">
+      <Tabs
+        value={activeTab}
+        onValueChange={(v) => setActiveTab(v as any)}
+        className="mt-6"
+      >
         <TabsList className="mb-4">
           <TabsTrigger value="paye">PAYE</TabsTrigger>
           <TabsTrigger value="shif">SHIF</TabsTrigger>
@@ -761,7 +891,9 @@ export function StatutoryDocuments({ statutoryData }: StatutoryDocumentsProps) {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>PAYE Deductions</CardTitle>
-              <Button onClick={handleDownloadPDF} variant="outline">Download PDF</Button>
+              <Button onClick={handleDownloadPDF} variant="outline">
+                Download PDF
+              </Button>
             </CardHeader>
             <CardContent>
               <Table>
@@ -774,12 +906,14 @@ export function StatutoryDocuments({ statutoryData }: StatutoryDocumentsProps) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {employees.map(emp => (
+                  {employees.map((emp) => (
                     <TableRow key={emp.id}>
                       <TableCell className="font-medium">{emp.name}</TableCell>
                       <TableCell>{emp.department}</TableCell>
                       <TableCell>{emp.position}</TableCell>
-                      <TableCell className="text-blue-600 font-semibold">{formatCurrency(emp.paye)}</TableCell>
+                      <TableCell className="text-blue-600 font-semibold">
+                        {formatCurrency(emp.paye)}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -791,7 +925,9 @@ export function StatutoryDocuments({ statutoryData }: StatutoryDocumentsProps) {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>SHIF Deductions</CardTitle>
-              <Button onClick={handleDownloadPDF} variant="outline">Download PDF</Button>
+              <Button onClick={handleDownloadPDF} variant="outline">
+                Download PDF
+              </Button>
             </CardHeader>
             <CardContent>
               <Table>
@@ -804,12 +940,14 @@ export function StatutoryDocuments({ statutoryData }: StatutoryDocumentsProps) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {employees.map(emp => (
+                  {employees.map((emp) => (
                     <TableRow key={emp.id}>
                       <TableCell className="font-medium">{emp.name}</TableCell>
                       <TableCell>{emp.department}</TableCell>
                       <TableCell>{emp.position}</TableCell>
-                      <TableCell className="text-green-600 font-semibold">{formatCurrency(emp.shif)}</TableCell>
+                      <TableCell className="text-green-600 font-semibold">
+                        {formatCurrency(emp.shif)}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -821,7 +959,9 @@ export function StatutoryDocuments({ statutoryData }: StatutoryDocumentsProps) {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>NSSF Deductions</CardTitle>
-              <Button onClick={handleDownloadPDF} variant="outline">Download PDF</Button>
+              <Button onClick={handleDownloadPDF} variant="outline">
+                Download PDF
+              </Button>
             </CardHeader>
             <CardContent>
               <Table>
@@ -834,12 +974,14 @@ export function StatutoryDocuments({ statutoryData }: StatutoryDocumentsProps) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {employees.map(emp => (
+                  {employees.map((emp) => (
                     <TableRow key={emp.id}>
                       <TableCell className="font-medium">{emp.name}</TableCell>
                       <TableCell>{emp.department}</TableCell>
                       <TableCell>{emp.position}</TableCell>
-                      <TableCell className="text-amber-600 font-semibold">{formatCurrency(emp.nssf)}</TableCell>
+                      <TableCell className="text-amber-600 font-semibold">
+                        {formatCurrency(emp.nssf)}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -851,7 +993,9 @@ export function StatutoryDocuments({ statutoryData }: StatutoryDocumentsProps) {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Housing Levy Deductions</CardTitle>
-              <Button onClick={handleDownloadPDF} variant="outline">Download PDF</Button>
+              <Button onClick={handleDownloadPDF} variant="outline">
+                Download PDF
+              </Button>
             </CardHeader>
             <CardContent>
               <Table>
@@ -864,12 +1008,14 @@ export function StatutoryDocuments({ statutoryData }: StatutoryDocumentsProps) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {employees.map(emp => (
+                  {employees.map((emp) => (
                     <TableRow key={emp.id}>
                       <TableCell className="font-medium">{emp.name}</TableCell>
                       <TableCell>{emp.department}</TableCell>
                       <TableCell>{emp.position}</TableCell>
-                      <TableCell className="text-pink-600 font-semibold">{formatCurrency(emp.housingLevy)}</TableCell>
+                      <TableCell className="text-pink-600 font-semibold">
+                        {formatCurrency(emp.housingLevy)}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '../ui/card';
 import { Button } from '../ui/button';
-import { Megaphone, ArrowRight, Plus } from 'lucide-react';
+import { ArrowRight, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Badge } from '../ui/badge';
 import { BACKEND_URL } from '@/lib/config';

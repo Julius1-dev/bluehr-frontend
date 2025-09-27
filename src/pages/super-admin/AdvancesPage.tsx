@@ -3,7 +3,7 @@ import { useNavigate, useParams, Outlet, useLocation } from 'react-router-dom';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
-import { mockCompanies, mockAdvances } from '@/types/advances';
+import { mockCompanies } from '@/types/advances';
 
 export default function AdvancesPage() {
   const navigate = useNavigate();

@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { LineChart, BarChart, PieChart, Users, CheckCircle2, Building2, DollarSign, Activity } from 'lucide-react';
+import { BarChart, Users, CheckCircle2, Building2, DollarSign, Activity } from 'lucide-react';
 import { OverviewChart } from '@/components/dashboard/OverviewChart';
 import { RecentActivity } from '@/components/dashboard/RecentActivity';
 import { QuickActions } from '@/components/dashboard/QuickActions';
@@ -113,7 +113,7 @@ export function SuperAdminDashboard() {
             setChartData(chartResult.data);
           }
         }
-      } catch (error) {
+      } catch (_error) {
         // Error handling
       }
     };

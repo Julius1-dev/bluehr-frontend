@@ -14,8 +14,7 @@ import {
   Shield,
   LifeBuoy,
   UserX,
-  Building2,
-  Fingerprint
+  Building2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Link, useLocation } from 'react-router-dom';

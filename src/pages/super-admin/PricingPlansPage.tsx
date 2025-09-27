@@ -26,10 +26,10 @@ const API_URL = `${BACKEND_URL}/super-admin/plans`;
 
 const PricingPlansPage = () => {
   const [plans, setPlans] = useState<PricingPlan[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [_loading, setLoading] = useState(true);
+  const [_error, setError] = useState('');
   const [isCreating, setIsCreating] = useState(false);
-  const [editingPlanId, setEditingPlanId] = useState<string | null>(null);
+  const [_editingPlanId, setEditingPlanId] = useState<string | null>(null);
   const [newPlan, setNewPlan] = useState<Partial<PricingPlan>>({
     name: '',
     description: '',
@@ -142,7 +142,7 @@ const PricingPlansPage = () => {
     }
   };
 
-  const handleUpdatePlan = async (id: string, updatedFields: Partial<PricingPlan>) => {
+  const _handleUpdatePlan = async (id: string, updatedFields: Partial<PricingPlan>) => {
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(`${API_URL}/${id}`, {

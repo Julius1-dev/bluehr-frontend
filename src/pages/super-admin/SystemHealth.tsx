@@ -1,22 +1,14 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
-  Server, 
   Database, 
   Cpu, 
   HardDrive, 
-  Clock, 
   AlertCircle, 
   CheckCircle2, 
-  XCircle, 
   RefreshCw,
   Download,
-  Activity,
-  Network,
-  ShieldCheck,
-  Cloud,
-  HardDriveDownload,
-  HardDriveUpload
+  Network
 } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';

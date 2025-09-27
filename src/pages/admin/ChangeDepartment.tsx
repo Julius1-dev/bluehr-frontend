@@ -1,12 +1,25 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 // Toast notifications are not available, using alerts instead
-import { ArrowLeft } from 'lucide-react';
-import { BACKEND_URL } from '@/lib/config';
+import { ArrowLeft } from "lucide-react";
+import { BACKEND_URL } from "@/lib/config";
 
 const API_URL = `${BACKEND_URL}/company-admin/users`;
 const DEPARTMENTS_API = `${BACKEND_URL}/company-admin/departments`;
@@ -14,9 +27,9 @@ const DEPARTMENTS_API = `${BACKEND_URL}/company-admin/departments`;
 export default function ChangeDepartment() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [selectedDepartment, setSelectedDepartment] = useState('');
-  const [selectedRole, setSelectedRole] = useState('');
-  const [changeType, setChangeType] = useState('transfer');
+  const [selectedDepartment, setSelectedDepartment] = useState("");
+  const [selectedRole, setSelectedRole] = useState("");
+  const [changeType, setChangeType] = useState("transfer");
   const [isLoading, setIsLoading] = useState(false);
   const [employee, setEmployee] = useState<any>(null);
   const [departments, setDepartments] = useState<any[]>([]);
@@ -25,16 +38,18 @@ export default function ChangeDepartment() {
   useEffect(() => {
     const fetchEmployee = async () => {
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem("token");
         const res = await fetch(`${API_URL}/${id}`, {
-          headers: { 'Authorization': `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
-        if (!res.ok) throw new Error('Failed to fetch employee');
+        if (!res.ok) throw new Error("Failed to fetch employee");
         const data = await res.json();
         setEmployee(data);
-        setSelectedDepartment(data.department_id ? data.department_id.toString() : '');
-        setSelectedRole(data.role || '');
-      } catch (err) {
+        setSelectedDepartment(
+          data.department_id ? data.department_id.toString() : ""
+        );
+        setSelectedRole(data.role || "");
+      } catch (_err) {
         setEmployee(null);
       }
     };
@@ -44,14 +59,14 @@ export default function ChangeDepartment() {
   useEffect(() => {
     const fetchDepartments = async () => {
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem("token");
         const res = await fetch(DEPARTMENTS_API, {
-          headers: { 'Authorization': `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
-        if (!res.ok) throw new Error('Failed to fetch departments');
+        if (!res.ok) throw new Error("Failed to fetch departments");
         const data = await res.json();
         setDepartments(data);
-      } catch (err) {
+      } catch (_err) {
         setDepartments([]);
       }
     };
@@ -60,9 +75,17 @@ export default function ChangeDepartment() {
 
   useEffect(() => {
     // Update roles when department changes
-    const dept = departments.find((d: any) => d.id?.toString() === selectedDepartment);
+    const dept = departments.find(
+      (d: any) => d.id?.toString() === selectedDepartment
+    );
     if (dept) {
-      setRoles(Array.isArray(dept.roles) ? dept.roles : (dept.roles ? JSON.parse(dept.roles) : []));
+      setRoles(
+        Array.isArray(dept.roles)
+          ? dept.roles
+          : dept.roles
+          ? JSON.parse(dept.roles)
+          : []
+      );
     } else {
       setRoles([]);
     }
@@ -73,24 +96,28 @@ export default function ChangeDepartment() {
     if (!selectedDepartment || !selectedRole) return;
     setIsLoading(true);
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       const res = await fetch(`${API_URL}/${id}`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           departmentId: selectedDepartment,
           role: selectedRole,
-          changeType
-        })
+          changeType,
+        }),
       });
-      if (!res.ok) throw new Error('Failed to update department/role');
-      alert(`${employee?.first_name || employee?.name}'s department/role has been updated successfully.`);
-      setTimeout(() => navigate('/admin/team'), 1500);
-    } catch (error: any) {
-      alert('Failed to update department/role. Please try again.');
+      if (!res.ok) throw new Error("Failed to update department/role");
+      alert(
+        `${
+          employee?.first_name || employee?.name
+        }'s department/role has been updated successfully.`
+      );
+      setTimeout(() => navigate("/admin/team"), 1500);
+    } catch (_error: any) {
+      alert("Failed to update department/role. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -102,23 +129,20 @@ export default function ChangeDepartment() {
 
   return (
     <div className="container mx-auto py-8">
-      <Button 
-        variant="ghost" 
-        className="mb-6" 
-        onClick={() => navigate(-1)}
-      >
+      <Button variant="ghost" className="mb-6" onClick={() => navigate(-1)}>
         <ArrowLeft className="mr-2 h-4 w-4" />
         Back to Team
       </Button>
-      
+
       <Card className="max-w-2xl mx-auto">
         <CardHeader>
           <CardTitle>Change Department / Role</CardTitle>
           <CardDescription>
-            Update {employee.first_name || employee.name}'s department and/or role information
+            Update {employee.first_name || employee.name}'s department and/or
+            role information
           </CardDescription>
         </CardHeader>
-        
+
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
@@ -135,18 +159,18 @@ export default function ChangeDepartment() {
                 </div>
               </div>
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="department">New Department *</Label>
-              <Select 
-                value={selectedDepartment} 
+              <Select
+                value={selectedDepartment}
                 onValueChange={setSelectedDepartment}
                 required
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select department" />
                 </SelectTrigger>
-                <SelectContent className='bg-gray-200'>
+                <SelectContent className="bg-gray-200">
                   {departments.map((dept) => (
                     <SelectItem key={dept.id} value={dept.id.toString()}>
                       {dept.name}
@@ -155,13 +179,16 @@ export default function ChangeDepartment() {
                 </SelectContent>
               </Select>
               <p className="text-sm text-muted-foreground mt-1">
-                Current: {departments.find(d => d.id?.toString() === employee.department_id?.toString())?.name || 'Not set'}
+                Current:{" "}
+                {departments.find(
+                  (d) => d.id?.toString() === employee.department_id?.toString()
+                )?.name || "Not set"}
               </p>
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="role">New Role *</Label>
-              <Select 
+              <Select
                 value={selectedRole}
                 onValueChange={setSelectedRole}
                 required
@@ -169,31 +196,33 @@ export default function ChangeDepartment() {
                 <SelectTrigger>
                   <SelectValue placeholder="Select role" />
                 </SelectTrigger>
-                <SelectContent className='bg-gray-200'>
+                <SelectContent className="bg-gray-200">
                   {roles.map((role: string, idx: number) => (
-                    <SelectItem key={idx} value={role}>{role}</SelectItem>
+                    <SelectItem key={idx} value={role}>
+                      {role}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
               <p className="text-sm text-muted-foreground mt-1">
-                Current: {employee.role || 'Not set'}
+                Current: {employee.role || "Not set"}
               </p>
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="changeType">Change Type *</Label>
               <Select value={changeType} onValueChange={setChangeType} required>
                 <SelectTrigger>
                   <SelectValue placeholder="Select change type" />
                 </SelectTrigger>
-                <SelectContent className='bg-gray-200'>
+                <SelectContent className="bg-gray-200">
                   <SelectItem value="promotion">Promotion</SelectItem>
                   <SelectItem value="demotion">Demotion</SelectItem>
                   <SelectItem value="transfer">Transfer</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="space-y-2">
               <Label>Effective Date</Label>
               <div className="text-sm text-gray-700 p-2 bg-gray-50 rounded-md">
@@ -204,18 +233,18 @@ export default function ChangeDepartment() {
               </p>
             </div>
           </CardContent>
-          
+
           <CardFooter className="flex justify-end gap-3 border-t px-6 py-4">
-            <Button 
-              type="button" 
-              variant="outline" 
+            <Button
+              type="button"
+              variant="outline"
               onClick={() => navigate(-1)}
               disabled={isLoading}
             >
               Cancel
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? 'Saving...' : 'Save Changes'}
+              {isLoading ? "Saving..." : "Save Changes"}
             </Button>
           </CardFooter>
         </form>

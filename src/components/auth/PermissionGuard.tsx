@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { Navigate } from 'react-router-dom';
 import { BACKEND_URL } from '@/lib/config';
 
 interface PermissionGuardProps {
