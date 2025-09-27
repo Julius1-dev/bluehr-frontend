@@ -40,9 +40,9 @@ const SubscriptionsPage = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [isLoading, setIsLoading] = useState(false);
+  const [_isLoading, setIsLoading] = useState(false);
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
-  const [plans, setPlans] = useState<any[]>([]);
+  const [_plans, setPlans] = useState<any[]>([]);
   const [isProcessing, setIsProcessing] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
@@ -100,7 +100,7 @@ const SubscriptionsPage = () => {
           };
         });
         setSubscriptions(mapped);
-      } catch (err) {
+      } catch (_err) {
         // handle error
       } finally {
         setIsLoading(false);
@@ -179,7 +179,7 @@ const SubscriptionsPage = () => {
   };
 
   // Event handlers
-  const handleRenewSubscription = (subscriptionId: string) => {
+  const _handleRenewSubscription = (subscriptionId: string) => {
     console.log('Renew subscription:', subscriptionId);
   };
 
@@ -275,7 +275,7 @@ const SubscriptionsPage = () => {
     }
   };
 
-  const handleChangePlan = async (companyId: string, newPlan: string) => {
+  const _handleChangePlan = async (companyId: string, newPlan: string) => {
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(`${COMPANIES_API}/${companyId}`, {
@@ -364,7 +364,7 @@ const SubscriptionsPage = () => {
       <div className="space-y-4">
         {filteredSubscriptions.map((subscription) => {
           const daysRemaining = getDaysRemaining(subscription.endDate);
-          const isExpiringSoon = daysRemaining <= 30 && subscription.status !== 'expired';
+          const _isExpiringSoon = daysRemaining <= 30 && subscription.status !== 'expired';
           const status = getStatusBadge(subscription.status, subscription.paymentStatus, subscription.endDate || new Date());
           
           return (

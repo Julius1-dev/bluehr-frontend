@@ -141,7 +141,7 @@ const AnalyticsPage = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [timeRange, setTimeRange] = useState<ChartTimeRange>('monthly');
   const [selectedCompany, setSelectedCompany] = useState('all');
-  const [dateRange, setDateRange] = useState<TimeRange>('last12months');
+  const [dateRange, _setDateRange] = useState<TimeRange>('last12months');
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [companies, setCompanies] = useState<Company[]>([]);
@@ -528,7 +528,7 @@ const AnalyticsPage = () => {
             </Card>
           </div>
         );
-      case 'revenue':
+      case 'revenue': {
         // Calculate revenue metrics
         const totalArr = companies.reduce((sum, company) => sum + (company.arr || 0), 0);
         const totalAdvanceFees = companies.reduce(

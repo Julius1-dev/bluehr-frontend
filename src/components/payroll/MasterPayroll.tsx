@@ -1,17 +1,23 @@
-import { useState, useEffect } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
-import { Checkbox } from '@/components/ui/checkbox';
-import { BACKEND_URL } from '@/lib/config';
-import PayrollExemptionsModal from '@/components/payroll/PayrollExemptionsModal';
+import { useState, useEffect } from "react";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "@/components/ui/table";
+import { BACKEND_URL } from "@/lib/config";
+import PayrollExemptionsModal from "@/components/payroll/PayrollExemptionsModal";
 
 export function MasterPayroll() {
   const [selectedEmployees, setSelectedEmployees] = useState<any[]>([]);
   const [processing, setProcessing] = useState(false);
   const [payrollMonth, setPayrollMonth] = useState<number>(7); // July
   const [payrollYear, setPayrollYear] = useState<number>(2025);
-  const [paymentFrequency, setPaymentFrequency] = useState<string>('monthly');
+  const [paymentFrequency, setPaymentFrequency] = useState<string>("monthly");
   const [result, setResult] = useState<any>(null);
   const [exemptionsModalOpen, setExemptionsModalOpen] = useState(false);
 
@@ -19,19 +25,19 @@ export function MasterPayroll() {
   useEffect(() => {
     const fetchMasterPayroll = async () => {
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem("token");
         if (!token) return;
         const response = await fetch(
           `${BACKEND_URL}/company-admin/master-payroll?payrollMonth=${payrollMonth}&payrollYear=${payrollYear}&paymentFrequency=${paymentFrequency}`,
           {
-            headers: { 'Authorization': `Bearer ${token}` }
+            headers: { Authorization: `Bearer ${token}` },
           }
         );
         if (response.ok) {
           const data = await response.json();
           setSelectedEmployees(data.processedEmployees || []);
         }
-      } catch (err) {
+      } catch {
         // Optionally handle error
       }
     };
@@ -42,22 +48,25 @@ export function MasterPayroll() {
   const handleProcessPayroll = async () => {
     setProcessing(true);
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       if (!token) return;
-      const response = await fetch(`${BACKEND_URL}/company-admin/master-payroll/process`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ payrollMonth, payrollYear, paymentFrequency })
-      });
+      const response = await fetch(
+        `${BACKEND_URL}/company-admin/master-payroll/process`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ payrollMonth, payrollYear, paymentFrequency }),
+        }
+      );
       if (response.ok) {
         const data = await response.json();
         setResult(data);
         setSelectedEmployees(data.processedEmployees || []);
       }
-    } catch (err) {
+    } catch {
       // Optionally handle error
     } finally {
       setProcessing(false);
@@ -74,26 +83,44 @@ export function MasterPayroll() {
           <div className="flex gap-4">
             <div>
               <label>Month:</label>
-              <input type="number" min={1} max={12} value={payrollMonth} onChange={e => setPayrollMonth(Number(e.target.value))} />
+              <input
+                type="number"
+                min={1}
+                max={12}
+                value={payrollMonth}
+                onChange={(e) => setPayrollMonth(Number(e.target.value))}
+              />
             </div>
             <div>
               <label>Year:</label>
-              <input type="number" min={2020} max={2100} value={payrollYear} onChange={e => setPayrollYear(Number(e.target.value))} />
+              <input
+                type="number"
+                min={2020}
+                max={2100}
+                value={payrollYear}
+                onChange={(e) => setPayrollYear(Number(e.target.value))}
+              />
             </div>
             <div>
               <label>Frequency:</label>
-              <select value={paymentFrequency} onChange={e => setPaymentFrequency(e.target.value)}>
+              <select
+                value={paymentFrequency}
+                onChange={(e) => setPaymentFrequency(e.target.value)}
+              >
                 <option value="monthly">Monthly</option>
                 <option value="weekly">Weekly</option>
               </select>
             </div>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setExemptionsModalOpen(true)}>
+            <Button
+              variant="outline"
+              onClick={() => setExemptionsModalOpen(true)}
+            >
               Manage Exemptions
             </Button>
             <Button onClick={handleProcessPayroll} disabled={processing}>
-              {processing ? 'Processing...' : 'Process Master Payroll'}
+              {processing ? "Processing..." : "Process Master Payroll"}
             </Button>
           </div>
         </div>
@@ -114,9 +141,11 @@ export function MasterPayroll() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {selectedEmployees.map(emp => (
+            {selectedEmployees.map((emp) => (
               <TableRow key={emp.id}>
-                <TableCell>{emp.first_name} {emp.last_name}</TableCell>
+                <TableCell>
+                  {emp.first_name} {emp.last_name}
+                </TableCell>
                 <TableCell>{emp.basic_salary}</TableCell>
                 <TableCell>{emp.allowances}</TableCell>
                 <TableCell>{emp.paye}</TableCell>
@@ -132,9 +161,14 @@ export function MasterPayroll() {
           </TableBody>
         </Table>
         {result && result.success && (
-          <div className="mt-4 text-green-600">Payroll processed successfully!</div>
+          <div className="mt-4 text-green-600">
+            Payroll processed successfully!
+          </div>
         )}
-        <PayrollExemptionsModal open={exemptionsModalOpen} onClose={() => setExemptionsModalOpen(false)} />
+        <PayrollExemptionsModal
+          open={exemptionsModalOpen}
+          onClose={() => setExemptionsModalOpen(false)}
+        />
       </CardContent>
     </Card>
   );

@@ -29,7 +29,7 @@ export default function AmendPlan() {
         setSelectedPlan(companyData.plan);
         const plansRes = await fetch(PLANS_API, { headers: { 'Authorization': `Bearer ${token}` } });
         setPlans(await plansRes.json());
-      } catch (err) {
+      } catch (_err) {
         toast.error('Failed to load data');
       } finally {
         setLoading(false);

@@ -1,23 +1,26 @@
-import { useState, useEffect } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { 
-  Filter,
-  Eye,
-  FileText
-} from 'lucide-react';
-import { PayslipModal } from './PayslipModal';
-import { BACKEND_URL } from '@/lib/config';
+import { useState, useEffect } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Filter, Eye, FileText } from "lucide-react";
+import { PayslipModal } from "./PayslipModal";
+import { BACKEND_URL } from "@/lib/config";
 
 // Utility function for formatting currency
 const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat('en-KE', {
-    style: 'currency',
-    currency: 'KES',
-    minimumFractionDigits: 2
+  return new Intl.NumberFormat("en-KE", {
+    style: "currency",
+    currency: "KES",
+    minimumFractionDigits: 2,
   }).format(amount);
 };
 
@@ -60,54 +63,65 @@ interface PayrollEmployeeListProps {
   totalEmployees: number;
 }
 
-export function PayrollEmployeeList({ payrollMonth, payrollYear, totalEmployees }: PayrollEmployeeListProps) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedDepartment, setSelectedDepartment] = useState('all');
-  const [selectedStatus, setSelectedStatus] = useState('all');
-  
+export function PayrollEmployeeList({
+  payrollMonth,
+  payrollYear,
+  totalEmployees,
+}: PayrollEmployeeListProps) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedDepartment, setSelectedDepartment] = useState("all");
+  const [selectedStatus, setSelectedStatus] = useState("all");
+
   // State for payroll data
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [payrollHistory, setPayrollHistory] = useState<PayrollHeader[]>([]);
-  const [selectedPayrollId, setSelectedPayrollId] = useState<number | null>(null);
+  const [_payrollHistory, setPayrollHistory] = useState<PayrollHeader[]>([]);
+  const [_selectedPayrollId, setSelectedPayrollId] = useState<number | null>(
+    null
+  );
   const [payrollDetails, setPayrollDetails] = useState<PayrollDetail[]>([]);
-  const [departmentsList, setDepartmentsList] = useState<string[]>(['all']);
+  const [departmentsList, setDepartmentsList] = useState<string[]>(["all"]);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [itemsPerPage] = useState<number>(10);
-  
+
   // State for payslip modal
   const [isPayslipModalOpen, setIsPayslipModalOpen] = useState<boolean>(false);
-  const [selectedPayslip, setSelectedPayslip] = useState<PayrollDetail | null>(null);
-  
+  const [selectedPayslip, setSelectedPayslip] = useState<PayrollDetail | null>(
+    null
+  );
+
   // Fetch payroll history when component mounts
   useEffect(() => {
     fetchPayrollHistory();
   }, []);
-  
+
   // Fetch payroll history from backend
   const fetchPayrollHistory = async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
-      const response = await fetch(`${BACKEND_URL}/company-admin/payroll/history`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+      const response = await fetch(
+        `${BACKEND_URL}/company-admin/payroll/history`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         }
-      });
-      
+      );
+
       if (!response.ok) {
-        throw new Error('Failed to fetch payroll history');
+        throw new Error("Failed to fetch payroll history");
       }
-      
+
       const data = await response.json();
-      
+
       // Handle the new response structure
       if (data.success && data.payrollHistory) {
         setPayrollHistory(data.payrollHistory);
-        
+
         // If there is payroll history, select the most recent one
         if (data.payrollHistory.length > 0) {
           setSelectedPayrollId(data.payrollHistory[0].id);
@@ -118,7 +132,7 @@ export function PayrollEmployeeList({ payrollMonth, payrollYear, totalEmployees 
       } else if (Array.isArray(data)) {
         // Handle old response structure for backward compatibility
         setPayrollHistory(data);
-        
+
         if (data.length > 0) {
           setSelectedPayrollId(data[0].id);
           fetchPayrollDetails(data[0].id);
@@ -129,39 +143,44 @@ export function PayrollEmployeeList({ payrollMonth, payrollYear, totalEmployees 
         setLoading(false);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setError(err instanceof Error ? err.message : "An error occurred");
       setLoading(false);
     }
   };
-  
+
   // Fetch payroll details for a specific payroll header
   const fetchPayrollDetails = async (payrollId: number) => {
     setLoading(true);
     setError(null);
-    
+
     try {
-      const response = await fetch(`${BACKEND_URL}/company-admin/payroll/details/${payrollId}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+      const response = await fetch(
+        `${BACKEND_URL}/company-admin/payroll/details/${payrollId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         }
-      });
-      
+      );
+
       if (!response.ok) {
-        throw new Error('Failed to fetch payroll details');
+        throw new Error("Failed to fetch payroll details");
       }
-      
+
       const data = await response.json();
-      
+
       // Handle the new response structure
       if (data.success && data.data && data.data.details) {
         const details = data.data.details.map((detail: any) => ({
           id: detail.id,
           employee_id: detail.employee_id,
           employee_name: `${detail.first_name} ${detail.last_name}`,
-          department_name: detail.department_name || (detail.department_name === null ? 'No Department' : ''),
-          position: detail.role || '',
+          department_name:
+            detail.department_name ||
+            (detail.department_name === null ? "No Department" : ""),
+          position: detail.role || "",
           basic_salary: parseFloat(detail.basic_salary) || 0,
           paye: parseFloat(detail.paye) || 0,
           shif: parseFloat(detail.shif) || 0,
@@ -170,67 +189,90 @@ export function PayrollEmployeeList({ payrollMonth, payrollYear, totalEmployees 
           allowances: parseFloat(detail.allowances) || 0,
           deductions: parseFloat(detail.deductions) || 0,
           net_pay: parseFloat(detail.net_pay) || 0,
-          allowance_reason: detail.allowance_reason || '',
-          deduction_reason: detail.deduction_reason || '',
-          payment_frequency: detail.payment_frequency || 'monthly',
+          allowance_reason: detail.allowance_reason || "",
+          deduction_reason: detail.deduction_reason || "",
+          payment_frequency: detail.payment_frequency || "monthly",
           payroll_header_id: detail.payroll_header_id,
           payroll_month: detail.payroll_month || payrollMonth,
-          payroll_year: detail.payroll_year || payrollYear
+          payroll_year: detail.payroll_year || payrollYear,
         }));
-        
+
         setPayrollDetails(details);
-        
+
         // Extract unique departments for filtering
-        const uniqueDepartments = ['all', ...new Set(details.map((item: PayrollDetail) => item.department_name || 'No Department'))];
+        const uniqueDepartments = [
+          "all",
+          ...new Set(
+            details.map(
+              (item: PayrollDetail) => item.department_name || "No Department"
+            )
+          ),
+        ];
         setDepartmentsList(uniqueDepartments as string[]);
       } else if (Array.isArray(data)) {
         // Handle old response structure for backward compatibility
         setPayrollDetails(data);
-        
+
         // Extract unique departments for filtering
-        const uniqueDepartments = ['all', ...new Set(data.map((item: PayrollDetail) => item.department_name || 'Unknown'))];
+        const uniqueDepartments = [
+          "all",
+          ...new Set(
+            data.map((item: PayrollDetail) => item.department_name || "Unknown")
+          ),
+        ];
         setDepartmentsList(uniqueDepartments as string[]);
       } else {
         setPayrollDetails([]);
       }
-      
+
       setLoading(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setError(err instanceof Error ? err.message : "An error occurred");
       setLoading(false);
     }
   };
-  
+
   // Filter payroll details based on search and filters
-  const filteredPayrollDetails = payrollDetails.filter(employee => {
+  const filteredPayrollDetails = payrollDetails.filter((employee) => {
     // Search filter
-    const matchesSearch = 
-      employee.employee_name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      (employee.department_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (employee.position || '').toLowerCase().includes(searchQuery.toLowerCase());
-    
+    const matchesSearch =
+      employee.employee_name
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+      (employee.department_name || "")
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+      (employee.position || "")
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
+
     // Department filter
-    const matchesDepartment = selectedDepartment === 'all' || employee.department_name === selectedDepartment;
-    
+    const matchesDepartment =
+      selectedDepartment === "all" ||
+      employee.department_name === selectedDepartment;
+
     // Status filter - all payroll entries are considered 'paid'
-    const matchesStatus = selectedStatus === 'all' || selectedStatus === 'paid';
-    
+    const matchesStatus = selectedStatus === "all" || selectedStatus === "paid";
+
     return matchesSearch && matchesDepartment && matchesStatus;
   });
-  
+
   // Calculate pagination
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredPayrollDetails.slice(indexOfFirstItem, indexOfLastItem);
-  
+  const currentItems = filteredPayrollDetails.slice(
+    indexOfFirstItem,
+    indexOfLastItem
+  );
+
   // Handle page navigation
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
-  
+
   // Get payment status badge - all processed payroll entries are 'paid'
   const getStatusBadge = () => {
     return <Badge variant="success">Paid</Badge>;
   };
-  
+
   // Open payslip modal with selected employee data
   const handleViewPayslip = (employee: PayrollDetail) => {
     setSelectedPayslip(employee);
@@ -242,10 +284,14 @@ export function PayrollEmployeeList({ payrollMonth, payrollYear, totalEmployees 
       <CardContent className="p-6">
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-medium">Payroll Employees - {payrollMonth} {payrollYear}</h3>
-            <div className="text-sm text-muted-foreground">Total: {totalEmployees} employees</div>
+            <h3 className="text-lg font-medium">
+              Payroll Employees - {payrollMonth} {payrollYear}
+            </h3>
+            <div className="text-sm text-muted-foreground">
+              Total: {totalEmployees} employees
+            </div>
           </div>
-          
+
           <div className="flex flex-col sm:flex-row justify-between gap-4">
             <div className="flex items-center gap-2">
               <Input
@@ -267,7 +313,7 @@ export function PayrollEmployeeList({ payrollMonth, payrollYear, totalEmployees 
               >
                 {departmentsList.map((dept) => (
                   <option key={dept} value={dept}>
-                    {dept === 'all' ? 'All Departments' : dept}
+                    {dept === "all" ? "All Departments" : dept}
                   </option>
                 ))}
               </select>
@@ -282,7 +328,7 @@ export function PayrollEmployeeList({ payrollMonth, payrollYear, totalEmployees 
               </select>
             </div>
           </div>
-          
+
           <div className="rounded-md border">
             <Table>
               <TableHeader>
@@ -311,7 +357,10 @@ export function PayrollEmployeeList({ payrollMonth, payrollYear, totalEmployees 
                   </TableRow>
                 ) : error ? (
                   <TableRow>
-                    <TableCell colSpan={13} className="text-center py-4 text-red-500">
+                    <TableCell
+                      colSpan={13}
+                      className="text-center py-4 text-red-500"
+                    >
                       Error: {error}
                     </TableCell>
                   </TableRow>
@@ -319,15 +368,23 @@ export function PayrollEmployeeList({ payrollMonth, payrollYear, totalEmployees 
                   currentItems.map((employee) => (
                     <TableRow key={employee.id}>
                       <TableCell>{employee.employee_name}</TableCell>
-                      <TableCell>{employee.department_name || 'N/A'}</TableCell>
-                      <TableCell>{employee.position || 'N/A'}</TableCell>
-                      <TableCell>{formatCurrency(employee.basic_salary)}</TableCell>
+                      <TableCell>{employee.department_name || "N/A"}</TableCell>
+                      <TableCell>{employee.position || "N/A"}</TableCell>
+                      <TableCell>
+                        {formatCurrency(employee.basic_salary)}
+                      </TableCell>
                       <TableCell>{formatCurrency(employee.paye)}</TableCell>
                       <TableCell>{formatCurrency(employee.shif)}</TableCell>
                       <TableCell>{formatCurrency(employee.nssf)}</TableCell>
-                      <TableCell>{formatCurrency(employee.housing_levy)}</TableCell>
-                      <TableCell>{formatCurrency(employee.allowances)}</TableCell>
-                      <TableCell>{formatCurrency(employee.deductions)}</TableCell>
+                      <TableCell>
+                        {formatCurrency(employee.housing_levy)}
+                      </TableCell>
+                      <TableCell>
+                        {formatCurrency(employee.allowances)}
+                      </TableCell>
+                      <TableCell>
+                        {formatCurrency(employee.deductions)}
+                      </TableCell>
                       <TableCell>{formatCurrency(employee.net_pay)}</TableCell>
                       <TableCell>{getStatusBadge()}</TableCell>
                       <TableCell>
@@ -358,7 +415,7 @@ export function PayrollEmployeeList({ payrollMonth, payrollYear, totalEmployees 
               </TableBody>
             </Table>
           </div>
-          
+
           {/* Pagination */}
           {filteredPayrollDetails.length > itemsPerPage && (
             <div className="flex justify-end space-x-2">
@@ -374,7 +431,9 @@ export function PayrollEmployeeList({ payrollMonth, payrollYear, totalEmployees 
                 variant="outline"
                 size="sm"
                 onClick={() => paginate(currentPage + 1)}
-                disabled={currentPage * itemsPerPage >= filteredPayrollDetails.length}
+                disabled={
+                  currentPage * itemsPerPage >= filteredPayrollDetails.length
+                }
               >
                 Next
               </Button>
@@ -382,10 +441,10 @@ export function PayrollEmployeeList({ payrollMonth, payrollYear, totalEmployees 
           )}
         </div>
       </CardContent>
-      
+
       {/* Payslip Modal */}
       {isPayslipModalOpen && selectedPayslip && (
-        <PayslipModal 
+        <PayslipModal
           isOpen={isPayslipModalOpen}
           onClose={() => setIsPayslipModalOpen(false)}
           payslipData={selectedPayslip}

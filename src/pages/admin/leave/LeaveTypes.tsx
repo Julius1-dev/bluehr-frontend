@@ -67,7 +67,7 @@ export default function LeaveTypes() {
       // Map each leave type to include appliesTo
       const mapped = leaveTypesRaw.map(lt => mapLeaveType(lt, departments, employees));
       setLeaveTypes(mapped);
-    } catch (err) {
+      } catch (_err) {
       setError('Failed to load leave types.');
     } finally {
       setLoading(false);

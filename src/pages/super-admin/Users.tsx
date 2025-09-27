@@ -1,25 +1,19 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
 import { 
   Search, 
   Filter, 
   MoreHorizontal, 
-  Plus, 
   User, 
-  Building2, 
-  Mail, 
-  Phone,
+  Building2,
   ArrowUpDown,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
-  Check,
-  X,
   UserPlus
 } from 'lucide-react';
 import { useState } from 'react';

@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -103,7 +103,7 @@ export default function LeaveCalendar() {
         const start = parseISO(event.startDate);
         const end = parseISO(event.endDate);
         return isWithinInterval(day, { start, end });
-      } catch (error) {
+      } catch (_error) {
         return false;
       }
     });

@@ -10,7 +10,7 @@ interface HeaderProps {
   onMobileMenuToggle?: () => void;
 }
 
-export function Header({ onLogout, isAdmin = false, isSuperAdmin = false, onMobileMenuToggle }: HeaderProps) {
+export function Header({ onLogout: _onLogout, isAdmin = false, isSuperAdmin = false, onMobileMenuToggle }: HeaderProps) {
   return (
     <header className="bg-white border-b border-gray-200 h-16 flex items-center px-4 sticky top-0 z-10">
       <div className="md:hidden">

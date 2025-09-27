@@ -11,8 +11,7 @@ import {
   LogOut,
   Wallet,
   LifeBuoy,
-  UserX,
-  X
+  UserX
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { employeeLeaveApi } from '@/services/employeeLeaveApi';

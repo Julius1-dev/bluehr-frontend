@@ -1,11 +1,10 @@
-import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Plus, Trash2, Building2, Users, Pencil, Check, X } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { BACKEND_URL } from '@/lib/config';
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Plus, Trash2, Building2, Users, Pencil, Check, X } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { BACKEND_URL } from "@/lib/config";
 
 type Department = {
   id: string;
@@ -19,34 +18,47 @@ const API_URL = `${BACKEND_URL}/company-admin/departments`;
 
 export function DepartmentsPage() {
   const [departments, setDepartments] = useState<Department[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [_loading, setLoading] = useState(true);
+  const [_error, setError] = useState("");
 
-  const [newDepartment, setNewDepartment] = useState({ name: '', description: '' });
+  const [newDepartment, setNewDepartment] = useState({
+    name: "",
+    description: "",
+  });
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editingRole, setEditingRole] = useState({ deptId: '', role: '', index: -1 });
-  const [newRole, setNewRole] = useState('');
+  const [editingRole, setEditingRole] = useState({
+    deptId: "",
+    role: "",
+    index: -1,
+  });
+  const [newRole, setNewRole] = useState("");
 
   // Fetch departments from backend
   const fetchDepartments = async () => {
     setLoading(true);
-    setError('');
+    setError("");
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       const res = await fetch(API_URL, {
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
-      if (!res.ok) throw new Error('Failed to fetch departments');
+      if (!res.ok) throw new Error("Failed to fetch departments");
       const data = await res.json();
-      setDepartments(data.map((dept: any) => ({
-        id: dept.id.toString(),
-        name: dept.name,
-        description: dept.description,
-        headCount: dept.headCount || 0,
-        roles: Array.isArray(dept.roles) ? dept.roles : (dept.roles ? JSON.parse(dept.roles) : [])
-      })));
+      setDepartments(
+        data.map((dept: any) => ({
+          id: dept.id.toString(),
+          name: dept.name,
+          description: dept.description,
+          headCount: dept.headCount || 0,
+          roles: Array.isArray(dept.roles)
+            ? dept.roles
+            : dept.roles
+            ? JSON.parse(dept.roles)
+            : [],
+        }))
+      );
     } catch (err: any) {
-      setError(err.message || 'Error fetching departments');
+      setError(err.message || "Error fetching departments");
     } finally {
       setLoading(false);
     }
@@ -60,120 +72,122 @@ export function DepartmentsPage() {
   const handleAddDepartment = async () => {
     if (!newDepartment.name.trim()) return;
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       const res = await fetch(API_URL, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           name: newDepartment.name.trim(),
           description: newDepartment.description.trim(),
-          roles: []
-        })
+          roles: [],
+        }),
       });
-      if (!res.ok) throw new Error('Failed to add department');
+      if (!res.ok) throw new Error("Failed to add department");
       const addedDept = await res.json();
-      setNewDepartment({ name: '', description: '' });
+      setNewDepartment({ name: "", description: "" });
       await fetchDepartments();
       // Notification logic
-      import('@/services/notificationService').then(({ notificationService }) => {
-        const notifications = notificationService.getNotifications();
-        const alreadyNotified = notifications.some(
-          n => n.metadata?.departmentId === addedDept.id
-        );
-        if (!alreadyNotified) {
-          notificationService.addNotification({
-            type: 'announcement',
-            title: 'Department Added',
-            message: `${addedDept.name} department has been created.`,
-            priority: 'medium',
-            metadata: { departmentId: addedDept.id }
-          });
+      import("@/services/notificationService").then(
+        ({ notificationService }) => {
+          const notifications = notificationService.getNotifications();
+          const alreadyNotified = notifications.some(
+            (n) => n.metadata?.departmentId === addedDept.id
+          );
+          if (!alreadyNotified) {
+            notificationService.addNotification({
+              type: "announcement",
+              title: "Department Added",
+              message: `${addedDept.name} department has been created.`,
+              priority: "medium",
+              metadata: { departmentId: addedDept.id },
+            });
+          }
         }
-      });
+      );
     } catch (err: any) {
-      setError(err.message || 'Error adding department');
+      setError(err.message || "Error adding department");
     }
   };
 
   // Update department (name, description, roles)
   const handleUpdateDepartment = async (dept: Department) => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       const res = await fetch(`${API_URL}/${dept.id}`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           name: dept.name,
           description: dept.description,
-          roles: dept.roles
-        })
+          roles: dept.roles,
+        }),
       });
-      if (!res.ok) throw new Error('Failed to update department');
+      if (!res.ok) throw new Error("Failed to update department");
       await fetchDepartments();
     } catch (err: any) {
-      setError(err.message || 'Error updating department');
+      setError(err.message || "Error updating department");
     }
   };
 
   // Delete department
   const handleDeleteDepartment = async (id: string) => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       const res = await fetch(`${API_URL}/${id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
       });
-      if (!res.ok) throw new Error('Failed to delete department');
+      if (!res.ok) throw new Error("Failed to delete department");
       await fetchDepartments();
     } catch (err: any) {
-      setError(err.message || 'Error deleting department');
+      setError(err.message || "Error deleting department");
     }
   };
 
   // Add role to department
   const handleAddRole = async (deptId: string) => {
     if (!newRole.trim()) return;
-    const dept = departments.find(d => d.id === deptId);
+    const dept = departments.find((d) => d.id === deptId);
     if (!dept) return;
     const updatedRoles = [...dept.roles, newRole.trim()];
     try {
       await handleUpdateDepartment({ ...dept, roles: updatedRoles });
-      setNewRole('');
+      setNewRole("");
     } catch (err: any) {
-      setError(err.message || 'Error adding role');
+      setError(err.message || "Error adding role");
     }
   };
 
   // Update role in department
   const handleUpdateRole = async (deptId: string) => {
     if (!editingRole.role.trim()) return;
-    const dept = departments.find(d => d.id === deptId);
+    const dept = departments.find((d) => d.id === deptId);
     if (!dept) return;
     const updatedRoles = [...dept.roles];
     updatedRoles[editingRole.index] = editingRole.role.trim();
     try {
       await handleUpdateDepartment({ ...dept, roles: updatedRoles });
-      setEditingRole({ deptId: '', role: '', index: -1 });
+      setEditingRole({ deptId: "", role: "", index: -1 });
     } catch (err: any) {
-      setError(err.message || 'Error updating role');
+      setError(err.message || "Error updating role");
     }
   };
 
   // Delete role from department
   const handleDeleteRole = async (deptId: string, roleIndex: number) => {
-    const dept = departments.find(d => d.id === deptId);
+    const dept = departments.find((d) => d.id === deptId);
     if (!dept) return;
     const updatedRoles = dept.roles.filter((_, idx) => idx !== roleIndex);
     try {
       await handleUpdateDepartment({ ...dept, roles: updatedRoles });
     } catch (err: any) {
-      setError(err.message || 'Error deleting role');
+      setError(err.message || "Error deleting role");
     }
   };
 
@@ -195,7 +209,9 @@ export function DepartmentsPage() {
                 id="dept-name"
                 placeholder="e.g., Marketing"
                 value={newDepartment.name}
-                onChange={(e) => setNewDepartment({...newDepartment, name: e.target.value})}
+                onChange={(e) =>
+                  setNewDepartment({ ...newDepartment, name: e.target.value })
+                }
               />
             </div>
             <div className="space-y-2 md:col-span-2">
@@ -205,7 +221,12 @@ export function DepartmentsPage() {
                   id="dept-desc"
                   placeholder="Department description"
                   value={newDepartment.description}
-                  onChange={(e) => setNewDepartment({...newDepartment, description: e.target.value})}
+                  onChange={(e) =>
+                    setNewDepartment({
+                      ...newDepartment,
+                      description: e.target.value,
+                    })
+                  }
                 />
                 <Button type="button" onClick={handleAddDepartment}>
                   <Plus className="h-4 w-4 mr-2" /> Add
@@ -228,8 +249,10 @@ export function DepartmentsPage() {
                       <Input
                         value={dept.name}
                         onChange={(e) => {
-                          const updated = departments.map(d => 
-                            d.id === dept.id ? { ...d, name: e.target.value } : d
+                          const updated = departments.map((d) =>
+                            d.id === dept.id
+                              ? { ...d, name: e.target.value }
+                              : d
                           );
                           setDepartments(updated);
                         }}
@@ -239,22 +262,24 @@ export function DepartmentsPage() {
                       dept.name
                     )}
                   </CardTitle>
-                  <p className="text-sm text-gray-500 mt-1">{dept.description}</p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    {dept.description}
+                  </p>
                 </div>
                 <div className="flex gap-2">
                   {editingId === dept.id ? (
                     <>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         className="h-8 w-8"
                         onClick={() => setEditingId(null)}
                       >
                         <Check className="h-4 w-4 text-green-600" />
                       </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         className="h-8 w-8"
                         onClick={() => {
                           setEditingId(null);
@@ -266,17 +291,17 @@ export function DepartmentsPage() {
                     </>
                   ) : (
                     <>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         className="h-8 w-8"
                         onClick={() => setEditingId(dept.id)}
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         className="h-8 w-8 text-red-600 hover:text-red-700"
                         onClick={() => handleDeleteDepartment(dept.id)}
                       >
@@ -298,31 +323,42 @@ export function DepartmentsPage() {
                   {dept.roles.length}
                 </span>
               </h3>
-              
+
               <div className="space-y-2">
                 {dept.roles.map((role, index) => (
-                  <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
-                    {editingRole.deptId === dept.id && editingRole.index === index ? (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between bg-gray-50 p-2 rounded"
+                  >
+                    {editingRole.deptId === dept.id &&
+                    editingRole.index === index ? (
                       <div className="flex-1 flex gap-2">
                         <Input
                           value={editingRole.role}
-                          onChange={(e) => setEditingRole({...editingRole, role: e.target.value})}
+                          onChange={(e) =>
+                            setEditingRole({
+                              ...editingRole,
+                              role: e.target.value,
+                            })
+                          }
                           className="h-8 flex-1"
                           autoFocus
                         />
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           className="h-8"
                           onClick={() => handleUpdateRole(dept.id)}
                         >
                           <Check className="h-4 w-4" />
                         </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           className="h-8"
-                          onClick={() => setEditingRole({ deptId: '', role: '', index: -1 })}
+                          onClick={() =>
+                            setEditingRole({ deptId: "", role: "", index: -1 })
+                          }
                         >
                           <X className="h-4 w-4" />
                         </Button>
@@ -331,17 +367,19 @@ export function DepartmentsPage() {
                       <>
                         <span className="text-sm">{role}</span>
                         <div className="flex gap-1">
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             className="h-6 w-6"
-                            onClick={() => setEditingRole({ deptId: dept.id, role, index })}
+                            onClick={() =>
+                              setEditingRole({ deptId: dept.id, role, index })
+                            }
                           >
                             <Pencil className="h-3 w-3" />
                           </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             className="h-6 w-6 text-red-600 hover:text-red-700"
                             onClick={() => handleDeleteRole(dept.id, index)}
                           >
@@ -352,20 +390,26 @@ export function DepartmentsPage() {
                     )}
                   </div>
                 ))}
-                
+
                 <div className="flex gap-2 mt-2">
                   <Input
                     placeholder="Add new role"
-                    value={editingRole.deptId === dept.id ? newRole : ''}
+                    value={editingRole.deptId === dept.id ? newRole : ""}
                     onChange={(e) => {
                       setNewRole(e.target.value);
-                      setEditingRole({ deptId: dept.id, role: e.target.value, index: -1 });
+                      setEditingRole({
+                        deptId: dept.id,
+                        role: e.target.value,
+                        index: -1,
+                      });
                     }}
-                    onKeyDown={(e) => e.key === 'Enter' && handleAddRole(dept.id)}
+                    onKeyDown={(e) =>
+                      e.key === "Enter" && handleAddRole(dept.id)
+                    }
                     className="h-8 text-sm"
                   />
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
                     className="h-8"
                     onClick={() => handleAddRole(dept.id)}
                   >

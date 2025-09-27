@@ -3,9 +3,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { 
-  AlertCircle,
-  Info,
+import {
   Settings,
   CreditCard,
   Building,
@@ -37,12 +35,12 @@ export function AdvanceSettings({
 }: AdvanceSettingsProps) {
   // Admin approval is always required
   const [adminApproval] = useState(true);
-  const [autoApprove, setAutoApprove] = useState(false);
+  const [_autoApprove, setAutoApprove] = useState(false);
   const [advanceSource, setAdvanceSource] = useState<'company_wallet' | 'blueHR'>(initialSettings.advanceSource);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   // Prevent enabling auto-approve if admin approval is required
-  const handleAutoApproveChange = (checked: boolean) => {
+  const _handleAutoApproveChange = (checked: boolean) => {
     if (adminApproval) {
       setAutoApprove(false);
       setHasUnsavedChanges(true);

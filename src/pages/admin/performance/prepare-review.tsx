@@ -6,18 +6,18 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Star, CheckCircle2, Calendar, Users as UsersIcon, ArrowLeft, Download, Award } from 'lucide-react';
+import { Star, ArrowLeft, Download, Award } from 'lucide-react';
 import { PerformanceApi } from '@/services/performanceApi';
 import { getUserFromToken } from '@/services/ticketApi';
 import jsPDF from 'jspdf';
 // Remove import { toast } from 'react-hot-toast';
 
 // Mock data
-const mockGoals = [
+  const _mockGoals = [
   { id: 1, title: 'Complete Advanced React Certification', progress: 100, milestones: 3 },
   { id: 2, title: 'Improve Team Collaboration Score', progress: 80, milestones: 4 },
 ];
-const mockCompetencies = [
+const _mockCompetencies = [
   { id: 1, name: 'Teamwork' },
   { id: 2, name: 'Initiative' },
   { id: 3, name: 'Communication' },
@@ -45,10 +45,10 @@ export default function PrepareReviewPage() {
   // Loading and error states
   const [loadingUpcoming, setLoadingUpcoming] = useState(false);
   const [loadingHistory, setLoadingHistory] = useState(false);
-  const [loadingAchievements, setLoadingAchievements] = useState(false);
+  const [_loadingAchievements, setLoadingAchievements] = useState(false);
   const [errorUpcoming, setErrorUpcoming] = useState('');
   const [errorHistory, setErrorHistory] = useState('');
-  const [errorAchievements, setErrorAchievements] = useState('');
+  const [_errorAchievements, setErrorAchievements] = useState('');
 
   // Data states
   const [upcomingReviews, setUpcomingReviews] = useState<any[]>([]);
@@ -57,10 +57,10 @@ export default function PrepareReviewPage() {
   const [employees, setEmployees] = useState<any[]>([]);
   const [employeeSearch, setEmployeeSearch] = useState('');
   const [realGoals, setRealGoals] = useState<any[]>([]);
-  const [reviewLoading, setReviewLoading] = useState(false);
+  const [_reviewLoading, setReviewLoading] = useState(false);
 
   // Company name for certificates
-  const companyName = achievements.length > 0 && achievements[0].companyName ? achievements[0].companyName : 'Your Company';
+  const _companyName = achievements.length > 0 && achievements[0].companyName ? achievements[0].companyName : 'Your Company';
 
   // Fetch data on mount
   useEffect(() => {
@@ -109,7 +109,7 @@ export default function PrepareReviewPage() {
     'Custom...'
   ];
   // Add a local state for award success message
-  const [awardSuccess, setAwardSuccess] = useState('');
+  const [_awardSuccess, setAwardSuccess] = useState('');
 
   // Add reviewer options (mock: all employees + admin)
   const reviewerOptions = [
@@ -195,7 +195,7 @@ export default function PrepareReviewPage() {
       setFeedback('');
       setSummary('');
       setOverallRating(0);
-    } catch (err) {
+      } catch (_err) {
       alert('Failed to load review data.');
     } finally {
       setReviewLoading(false);
@@ -230,7 +230,7 @@ export default function PrepareReviewPage() {
       setUpcomingReviews(data);
       setLoadingUpcoming(false);
       alert('Review submitted successfully!');
-    } catch (err) {
+      } catch (_err) {
       alert('Failed to submit review.');
     } finally {
       setReviewLoading(false);

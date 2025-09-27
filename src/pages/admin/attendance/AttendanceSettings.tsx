@@ -9,10 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { BACKEND_URL } from '@/lib/config';
-import LocationForm from './LocationForm';
 import {
   getLocations,
-  saveLocation,
   deleteLocation,
 } from '@/api/officeLocationApi';
 
@@ -88,10 +86,10 @@ export default function AttendanceSettings() {
   const [workShiftClockOut, setWorkShiftClockOut] = useState('17:00');
   const [workShiftBreakTime, setWorkShiftBreakTime] = useState('60');
   const [editingWorkShift, setEditingWorkShift] = useState<WorkShift | null>(null);
-  const [workShiftError, setWorkShiftError] = useState<string | null>(null);
+  const [_workShiftError, setWorkShiftError] = useState<string | null>(null);
   const [locations, setLocations] = useState<OfficeLocationData[]>([]);
-  const [selectedLocation, setSelectedLocation] = useState<OfficeLocationData | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [_selectedLocation, setSelectedLocation] = useState<OfficeLocationData | null>(null);
+  const [_loading, setLoading] = useState(false);
 
   const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
@@ -114,7 +112,7 @@ export default function AttendanceSettings() {
           console.error('Expected an array but got:', res);
           setLocations([]); // fallback to avoid crash
         }
-      } catch (err) {
+      } catch (_err) {
         console.error('Failed to load locations', err);
         setLocations([]); // fallback in case of error
       }
@@ -265,7 +263,7 @@ export default function AttendanceSettings() {
 
 
 
-  const handleDeleteWorkShift = async (id: string) => {
+  const _handleDeleteWorkShift = async (id: string) => {
     setWorkShiftError(null);
     const token = localStorage.getItem('token');
     try {

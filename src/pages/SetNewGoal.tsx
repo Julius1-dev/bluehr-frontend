@@ -1,28 +1,33 @@
-import React, { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Target, Calendar, AlertCircle, ArrowLeft, Plus, Trash2 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { PerformanceApi } from '@/services/performanceApi';
+import React, { useState } from "react";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Target, AlertCircle, ArrowLeft, Plus, Trash2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { PerformanceApi } from "@/services/performanceApi";
 
 export function SetNewGoal() {
   const navigate = useNavigate();
-  const [goalTitle, setGoalTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [targetDate, setTargetDate] = useState('');
-  const [category, setCategory] = useState('professional');
-  const [milestones, setMilestones] = useState<{ title: string; dueDate?: string }[]>([]);
-  const [milestoneTitle, setMilestoneTitle] = useState('');
-  const [milestoneDueDate, setMilestoneDueDate] = useState('');
+  const [goalTitle, setGoalTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [targetDate, setTargetDate] = useState("");
+  const [category, setCategory] = useState("professional");
+  const [milestones, setMilestones] = useState<
+    { title: string; dueDate?: string }[]
+  >([]);
+  const [milestoneTitle, setMilestoneTitle] = useState("");
+  const [milestoneDueDate, setMilestoneDueDate] = useState("");
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState('');
-  const [error, setError] = useState('');
+  const [success, setSuccess] = useState("");
+  const [error, setError] = useState("");
 
   const handleAddMilestone = () => {
     if (!milestoneTitle.trim()) return;
-    setMilestones([...milestones, { title: milestoneTitle, dueDate: milestoneDueDate }]);
-    setMilestoneTitle('');
-    setMilestoneDueDate('');
+    setMilestones([
+      ...milestones,
+      { title: milestoneTitle, dueDate: milestoneDueDate },
+    ]);
+    setMilestoneTitle("");
+    setMilestoneDueDate("");
   };
 
   const handleRemoveMilestone = (idx: number) => {
@@ -32,27 +37,27 @@ export function SetNewGoal() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setSuccess('');
-    setError('');
+    setSuccess("");
+    setError("");
     try {
       const goal = {
         title: goalTitle,
         description,
         category,
         deadline: targetDate,
-        status: 'on-track',
+        status: "on-track",
         progress: 0,
         milestones,
       };
       await PerformanceApi.addGoal(goal);
-      setSuccess('Goal and milestones added successfully!');
-      setGoalTitle('');
-      setDescription('');
-      setTargetDate('');
-      setCategory('professional');
+      setSuccess("Goal and milestones added successfully!");
+      setGoalTitle("");
+      setDescription("");
+      setTargetDate("");
+      setCategory("professional");
       setMilestones([]);
-    } catch (err: any) {
-      setError('Failed to add goal.');
+    } catch (_err: any) {
+      setError("Failed to add goal.");
     } finally {
       setLoading(false);
     }
@@ -140,16 +145,35 @@ export function SetNewGoal() {
                     onChange={(e) => setMilestoneDueDate(e.target.value)}
                     className="p-2 border rounded-md"
                   />
-                  <Button type="button" variant="outline" onClick={handleAddMilestone}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleAddMilestone}
+                  >
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
                 {milestones.length > 0 && (
                   <ul className="space-y-2">
                     {milestones.map((m, idx) => (
-                      <li key={idx} className="flex items-center gap-2 bg-gray-50 p-2 rounded">
-                        <span className="flex-1">{m.title} {m.dueDate && <span className="text-xs text-gray-500">(Due: {m.dueDate})</span>}</span>
-                        <Button type="button" size="icon" variant="ghost" onClick={() => handleRemoveMilestone(idx)}>
+                      <li
+                        key={idx}
+                        className="flex items-center gap-2 bg-gray-50 p-2 rounded"
+                      >
+                        <span className="flex-1">
+                          {m.title}{" "}
+                          {m.dueDate && (
+                            <span className="text-xs text-gray-500">
+                              (Due: {m.dueDate})
+                            </span>
+                          )}
+                        </span>
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => handleRemoveMilestone(idx)}
+                        >
                           <Trash2 className="h-4 w-4 text-red-500" />
                         </Button>
                       </li>
@@ -158,12 +182,14 @@ export function SetNewGoal() {
                 )}
               </div>
 
-              {success && <div className="text-green-600 text-sm">{success}</div>}
+              {success && (
+                <div className="text-green-600 text-sm">{success}</div>
+              )}
               {error && <div className="text-red-600 text-sm">{error}</div>}
 
               <Button type="submit" className="w-full" disabled={loading}>
                 <Target className="mr-2 h-4 w-4" />
-                {loading ? 'Saving...' : 'Set Goal'}
+                {loading ? "Saving..." : "Set Goal"}
               </Button>
             </form>
           </CardContent>
@@ -176,7 +202,10 @@ export function SetNewGoal() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4 text-sm text-gray-600">
-                <p>• Make your goals SMART (Specific, Measurable, Achievable, Relevant, Time-bound)</p>
+                <p>
+                  • Make your goals SMART (Specific, Measurable, Achievable,
+                  Relevant, Time-bound)
+                </p>
                 <p>• Break down larger goals into smaller milestones</p>
                 <p>• Align goals with your career development plan</p>
                 <p>• Consider both short-term and long-term objectives</p>
@@ -191,7 +220,8 @@ export function SetNewGoal() {
                 <p className="font-medium">Important Notice</p>
               </div>
               <p className="mt-2 text-sm text-blue-700">
-                Goals will be reviewed by your supervisor and included in your next performance review.
+                Goals will be reviewed by your supervisor and included in your
+                next performance review.
               </p>
             </CardContent>
           </Card>

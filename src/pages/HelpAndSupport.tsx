@@ -1,36 +1,56 @@
-import { useState, useEffect, useRef } from 'react';
-import { format } from 'date-fns';
-import { Search, Plus, Clock, Mail, Phone, Send, Paperclip, X } from 'lucide-react';
-import { TicketApi, getUserFromToken } from '@/services/ticketApi';
-import { connectSocket, joinTicketRoom, leaveTicketRoom } from '@/services/socket';
-import { PerformanceApi } from '@/services/performanceApi';
-import { BACKEND_URL } from '@/lib/config';
+import { useState, useEffect, useRef } from "react";
+import { format } from "date-fns";
+import {
+  Search,
+  Plus,
+  Clock,
+  Mail,
+  Phone,
+  Send,
+  Paperclip,
+  X,
+} from "lucide-react";
+import { TicketApi, getUserFromToken } from "@/services/ticketApi";
+import {
+  connectSocket,
+  joinTicketRoom,
+  leaveTicketRoom,
+} from "@/services/socket";
+import { PerformanceApi } from "@/services/performanceApi";
+import { BACKEND_URL } from "@/lib/config";
 
 // UI Components
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Textarea } from '@/components/ui/textarea';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { SearchableSelect } from '@/components/ui/SearchableSelect';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Textarea } from "@/components/ui/textarea";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
 
 interface Message {
   id: string;
   content: string;
-  sender: 'user' | 'support';
+  sender: "user" | "support";
   timestamp: Date;
   attachments?: string[];
 }
 
-interface Ticket {
+interface _Ticket {
   id: string;
   subject: string;
   description: string;
-  status: 'open' | 'in-progress' | 'resolved' | 'closed' | 'pending';
-  priority: 'low' | 'medium' | 'high' | 'urgent';
+  status: "open" | "in-progress" | "resolved" | "closed" | "pending";
+  priority: "low" | "medium" | "high" | "urgent";
   category: string;
   createdAt: Date;
   updatedAt: Date;
@@ -49,15 +69,15 @@ interface Ticket {
 }
 
 function safeFormat(dateValue: any, fmt: string) {
-  let d = typeof dateValue === 'string' ? new Date(dateValue) : dateValue;
-  if (typeof dateValue === 'number') d = new Date(dateValue);
-  if (!d || isNaN(d.getTime())) return '';
+  let d = typeof dateValue === "string" ? new Date(dateValue) : dateValue;
+  if (typeof dateValue === "number") d = new Date(dateValue);
+  if (!d || isNaN(d.getTime())) return "";
   return format(d, fmt);
 }
 
 // Add prop for dashboardRole
 interface HelpAndSupportProps {
-  dashboardRole: 'employee' | 'company-admin' | 'super-admin';
+  dashboardRole: "employee" | "company-admin" | "super-admin";
 }
 
 const HelpAndSupport = ({ dashboardRole }: HelpAndSupportProps) => {
@@ -65,9 +85,9 @@ const HelpAndSupport = ({ dashboardRole }: HelpAndSupportProps) => {
   const [tickets, setTickets] = useState<any[]>([]);
   const [selectedTicket, setSelectedTicket] = useState<any | null>(null);
   const [messages, setMessages] = useState<any[]>([]);
-  const [newMessage, setNewMessage] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState('all');
+  const [newMessage, setNewMessage] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeTab, setActiveTab] = useState("all");
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showNewTicketModal, setShowNewTicketModal] = useState(false);
@@ -78,73 +98,121 @@ const HelpAndSupport = ({ dashboardRole }: HelpAndSupportProps) => {
   const userId = user?.id || 1;
   const socketRef = useRef<any>(null);
   const [assignees, setAssignees] = useState<any[]>([]);
-  const [superAdmin, setSuperAdmin] = useState<{ id: string | number, name: string } | null>(null);
+  const [superAdmin, setSuperAdmin] = useState<{
+    id: string | number;
+    name: string;
+  } | null>(null);
 
   // Ticket creation modal state
   const [newTicket, setNewTicket] = useState({
-    subject: '',
-    description: '',
-    priority: 'medium',
-    initialMessage: '',
-    assignedTo: ''
+    subject: "",
+    description: "",
+    priority: "medium",
+    initialMessage: "",
+    assignedTo: "",
   });
 
   // Load tickets from API
   useEffect(() => {
     setIsLoading(true);
-    if (dashboardRole === 'employee') {
+    if (dashboardRole === "employee") {
       TicketApi.employeeListTickets()
         .then((data) => {
           // Deep sanitize all ticket fields
           const sanitizedTickets = data.map((ticket: any) => ({
             ...ticket,
-            id: typeof ticket.id === 'string' || typeof ticket.id === 'number' ? ticket.id : '',
-            subject: typeof ticket.subject === 'string' ? ticket.subject : '',
-            status: typeof ticket.status === 'string' ? ticket.status : '',
-            priority: typeof ticket.priority === 'string' ? ticket.priority : '',
-            updatedAt: typeof ticket.updatedAt === 'string' ? ticket.updatedAt : '',
-            createdAt: typeof ticket.createdAt === 'string' ? ticket.createdAt : '',
-            assignedTo: ticket.assignedTo && typeof ticket.assignedTo === 'object' && ticket.assignedTo.id ? ticket.assignedTo : (typeof ticket.assignedTo === 'string' ? { id: ticket.assignedTo, name: ticket.assignedTo } : undefined),
-            createdBy: ticket.createdBy && typeof ticket.createdBy === 'object' && ticket.createdBy.id ? ticket.createdBy : (typeof ticket.createdBy === 'string' ? { id: ticket.createdBy, name: ticket.createdBy } : undefined),
+            id:
+              typeof ticket.id === "string" || typeof ticket.id === "number"
+                ? ticket.id
+                : "",
+            subject: typeof ticket.subject === "string" ? ticket.subject : "",
+            status: typeof ticket.status === "string" ? ticket.status : "",
+            priority:
+              typeof ticket.priority === "string" ? ticket.priority : "",
+            updatedAt:
+              typeof ticket.updatedAt === "string" ? ticket.updatedAt : "",
+            createdAt:
+              typeof ticket.createdAt === "string" ? ticket.createdAt : "",
+            assignedTo:
+              ticket.assignedTo &&
+              typeof ticket.assignedTo === "object" &&
+              ticket.assignedTo.id
+                ? ticket.assignedTo
+                : typeof ticket.assignedTo === "string"
+                ? { id: ticket.assignedTo, name: ticket.assignedTo }
+                : undefined,
+            createdBy:
+              ticket.createdBy &&
+              typeof ticket.createdBy === "object" &&
+              ticket.createdBy.id
+                ? ticket.createdBy
+                : typeof ticket.createdBy === "string"
+                ? { id: ticket.createdBy, name: ticket.createdBy }
+                : undefined,
           }));
           setTickets(sanitizedTickets);
-          if (sanitizedTickets.length > 0) setSelectedTicket(sanitizedTickets[0]);
+          if (sanitizedTickets.length > 0)
+            setSelectedTicket(sanitizedTickets[0]);
         })
         .finally(() => setIsLoading(false));
     } else {
-    TicketApi.listTickets(role as 'company-admin' | 'super-admin', companyId || undefined)
-      .then((data) => {
+      TicketApi.listTickets(
+        role as "company-admin" | "super-admin",
+        companyId || undefined
+      )
+        .then((data) => {
           // Deep sanitize all ticket fields
           const sanitizedTickets = data.map((ticket: any) => ({
             ...ticket,
-            id: typeof ticket.id === 'string' || typeof ticket.id === 'number' ? ticket.id : '',
-            subject: typeof ticket.subject === 'string' ? ticket.subject : '',
-            status: typeof ticket.status === 'string' ? ticket.status : '',
-            priority: typeof ticket.priority === 'string' ? ticket.priority : '',
-            updatedAt: typeof ticket.updatedAt === 'string' ? ticket.updatedAt : '',
-            createdAt: typeof ticket.createdAt === 'string' ? ticket.createdAt : '',
-            assignedTo: ticket.assignedTo && typeof ticket.assignedTo === 'object' && ticket.assignedTo.id ? ticket.assignedTo : (typeof ticket.assignedTo === 'string' ? { id: ticket.assignedTo, name: ticket.assignedTo } : undefined),
-            createdBy: ticket.createdBy && typeof ticket.createdBy === 'object' && ticket.createdBy.id ? ticket.createdBy : (typeof ticket.createdBy === 'string' ? { id: ticket.createdBy, name: ticket.createdBy } : undefined),
+            id:
+              typeof ticket.id === "string" || typeof ticket.id === "number"
+                ? ticket.id
+                : "",
+            subject: typeof ticket.subject === "string" ? ticket.subject : "",
+            status: typeof ticket.status === "string" ? ticket.status : "",
+            priority:
+              typeof ticket.priority === "string" ? ticket.priority : "",
+            updatedAt:
+              typeof ticket.updatedAt === "string" ? ticket.updatedAt : "",
+            createdAt:
+              typeof ticket.createdAt === "string" ? ticket.createdAt : "",
+            assignedTo:
+              ticket.assignedTo &&
+              typeof ticket.assignedTo === "object" &&
+              ticket.assignedTo.id
+                ? ticket.assignedTo
+                : typeof ticket.assignedTo === "string"
+                ? { id: ticket.assignedTo, name: ticket.assignedTo }
+                : undefined,
+            createdBy:
+              ticket.createdBy &&
+              typeof ticket.createdBy === "object" &&
+              ticket.createdBy.id
+                ? ticket.createdBy
+                : typeof ticket.createdBy === "string"
+                ? { id: ticket.createdBy, name: ticket.createdBy }
+                : undefined,
           }));
           setTickets(sanitizedTickets);
-          if (sanitizedTickets.length > 0) setSelectedTicket(sanitizedTickets[0]);
-      })
-      .finally(() => setIsLoading(false));
+          if (sanitizedTickets.length > 0)
+            setSelectedTicket(sanitizedTickets[0]);
+        })
+        .finally(() => setIsLoading(false));
     }
   }, [role, companyId, dashboardRole, userId]);
 
   // Fetch assignees (company users) on mount
   useEffect(() => {
-    if (dashboardRole === 'employee') {
+    if (dashboardRole === "employee") {
       PerformanceApi.employeeGetAllEmployees().then((users: any[]) => {
         // Filter out current user
-        const filtered = users.filter(u => u.id !== userId);
+        const filtered = users.filter((u) => u.id !== userId);
         setAssignees(filtered);
       });
-    } else if (dashboardRole === 'company-admin') {
+    } else if (dashboardRole === "company-admin") {
       PerformanceApi.getAllEmployees().then((users: any[]) => {
         // Filter out current user
-        const filtered = users.filter(u => u.id !== userId);
+        const filtered = users.filter((u) => u.id !== userId);
         setAssignees(filtered);
       });
     }
@@ -154,61 +222,69 @@ const HelpAndSupport = ({ dashboardRole }: HelpAndSupportProps) => {
   // Fetch super admin ID on mount
   useEffect(() => {
     fetch(`${API_BASE}/super-admin/users/public/super-admin`)
-      .then(res => res.json())
-      .then(data => setSuperAdmin(data))
+      .then((res) => res.json())
+      .then((data) => setSuperAdmin(data))
       .catch(() => setSuperAdmin(null));
   }, []);
 
   // Load messages for selected ticket
   useEffect(() => {
     if (!selectedTicket) return;
-        setIsLoading(true);
-    if (dashboardRole === 'employee') {
+    setIsLoading(true);
+    if (dashboardRole === "employee") {
       TicketApi.employeeListMessages(selectedTicket.id)
         .then(setMessages)
         .finally(() => setIsLoading(false));
     } else {
-    TicketApi.listMessages(role as 'company-admin' | 'super-admin', selectedTicket.id)
-      .then(setMessages)
-      .finally(() => setIsLoading(false));
+      TicketApi.listMessages(
+        role as "company-admin" | "super-admin",
+        selectedTicket.id
+      )
+        .then(setMessages)
+        .finally(() => setIsLoading(false));
     }
     // Join ticket room
     if (!socketRef.current) socketRef.current = connectSocket();
     joinTicketRoom(selectedTicket.id);
-    socketRef.current.on('new_message', async (msg: any) => {
+    socketRef.current.on("new_message", async (msg: any) => {
       if (msg.ticket_id === selectedTicket.id) {
         // Reload messages from backend after receiving
-        if (dashboardRole === 'employee') {
-          const updatedMessages = await TicketApi.employeeListMessages(selectedTicket.id);
+        if (dashboardRole === "employee") {
+          const updatedMessages = await TicketApi.employeeListMessages(
+            selectedTicket.id
+          );
           setMessages(updatedMessages);
         } else {
-        const updatedMessages = await TicketApi.listMessages(role as 'company-admin' | 'super-admin', selectedTicket.id);
-        setMessages(updatedMessages);
+          const updatedMessages = await TicketApi.listMessages(
+            role as "company-admin" | "super-admin",
+            selectedTicket.id
+          );
+          setMessages(updatedMessages);
         }
       }
     });
-    socketRef.current.on('ticket_updated', (ticket: any) => {
+    socketRef.current.on("ticket_updated", (ticket: any) => {
       if (ticket.id === selectedTicket.id) setSelectedTicket(ticket);
     });
-    socketRef.current.on('ticket_closed', (ticket: any) => {
+    socketRef.current.on("ticket_closed", (ticket: any) => {
       if (ticket.id === selectedTicket.id) setSelectedTicket(ticket);
     });
     return () => {
       leaveTicketRoom(selectedTicket.id);
-      socketRef.current.off('new_message');
-      socketRef.current.off('ticket_updated');
-      socketRef.current.off('ticket_closed');
+      socketRef.current.off("new_message");
+      socketRef.current.off("ticket_updated");
+      socketRef.current.off("ticket_closed");
     };
   }, [selectedTicket, role, dashboardRole]);
 
   // Filter tickets
-  const filteredTickets = tickets.filter(ticket => {
-    const matchesSearch = 
+  const filteredTickets = tickets.filter((ticket) => {
+    const matchesSearch =
       ticket.subject?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       ticket.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       String(ticket.id).toLowerCase().includes(searchTerm.toLowerCase());
-    if (activeTab === 'all') return matchesSearch;
-    if (activeTab === 'my-tickets') {
+    if (activeTab === "all") return matchesSearch;
+    if (activeTab === "my-tickets") {
       // TODO: match current user id
       return matchesSearch && ticket.created_by === 1;
     }
@@ -219,49 +295,73 @@ const HelpAndSupport = ({ dashboardRole }: HelpAndSupportProps) => {
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !selectedTicket) return;
     setIsSubmitting(true);
-    if (dashboardRole === 'employee') {
+    if (dashboardRole === "employee") {
       await TicketApi.employeeCreateMessage(selectedTicket.id, newMessage);
       // Reload messages from backend after sending
       // (You may want to add a TicketApi.employeeListMessages if needed)
     } else {
-    await TicketApi.sendMessage(role as 'company-admin' | 'super-admin', {
-      ticket_id: selectedTicket.id,
-      sender_id: userId,
-      sender_role: role,
-      message: newMessage
-    });
+      await TicketApi.sendMessage(role as "company-admin" | "super-admin", {
+        ticket_id: selectedTicket.id,
+        sender_id: userId,
+        sender_role: role,
+        message: newMessage,
+      });
     }
-      setNewMessage('');
-      setIsSubmitting(false);
+    setNewMessage("");
+    setIsSubmitting(false);
   };
 
-  const getStatusBadge = (status: 'open' | 'in-progress' | 'resolved' | 'closed' | 'pending') => {
+  const getStatusBadge = (
+    status: "open" | "in-progress" | "resolved" | "closed" | "pending"
+  ) => {
     switch (status) {
-      case 'open':
+      case "open":
         return <Badge variant="default">Open</Badge>;
-      case 'in-progress':
+      case "in-progress":
         return <Badge variant="secondary">In Progress</Badge>;
-      case 'pending':
+      case "pending":
         return <Badge variant="outline">Pending</Badge>;
-      case 'resolved':
+      case "resolved":
         return <Badge variant="success">Resolved</Badge>;
-      case 'closed':
+      case "closed":
         return <Badge variant="destructive">Closed</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
   };
 
-  const getPriorityBadge = (priority: 'low' | 'medium' | 'high' | 'urgent') => {
+  const getPriorityBadge = (priority: "low" | "medium" | "high" | "urgent") => {
     switch (priority) {
-      case 'low':
-        return <Badge variant="outline" className="border-green-500 text-green-500">Low</Badge>;
-      case 'medium':
-        return <Badge variant="outline" className="border-yellow-500 text-yellow-500">Medium</Badge>;
-      case 'high':
-        return <Badge variant="outline" className="border-orange-500 text-orange-500">High</Badge>;
-      case 'urgent':
-        return <Badge variant="outline" className="border-red-500 text-red-500">Urgent</Badge>;
+      case "low":
+        return (
+          <Badge variant="outline" className="border-green-500 text-green-500">
+            Low
+          </Badge>
+        );
+      case "medium":
+        return (
+          <Badge
+            variant="outline"
+            className="border-yellow-500 text-yellow-500"
+          >
+            Medium
+          </Badge>
+        );
+      case "high":
+        return (
+          <Badge
+            variant="outline"
+            className="border-orange-500 text-orange-500"
+          >
+            High
+          </Badge>
+        );
+      case "urgent":
+        return (
+          <Badge variant="outline" className="border-red-500 text-red-500">
+            Urgent
+          </Badge>
+        );
       default:
         return <Badge variant="outline">{priority}</Badge>;
     }
@@ -269,10 +369,16 @@ const HelpAndSupport = ({ dashboardRole }: HelpAndSupportProps) => {
 
   // Ticket creation modal logic
   const handleCreateTicket = async () => {
-    if (!newTicket.subject || !newTicket.description || !newTicket.initialMessage || !newTicket.assignedTo) return;
+    if (
+      !newTicket.subject ||
+      !newTicket.description ||
+      !newTicket.initialMessage ||
+      !newTicket.assignedTo
+    )
+      return;
     setIsSubmitting(true);
     let ticket;
-    if (dashboardRole === 'employee') {
+    if (dashboardRole === "employee") {
       if (superAdmin && newTicket.assignedTo == superAdmin.id) {
         // Use the new employee endpoint for tickets assigned to super admin
         ticket = await TicketApi.sendToSuperAdminAsEmployee({
@@ -289,13 +395,16 @@ const HelpAndSupport = ({ dashboardRole }: HelpAndSupportProps) => {
           priority: newTicket.priority,
           assigned_to: newTicket.assignedTo,
           created_by: userId,
-          created_by_role: 'employee',
-          status: 'open',
-          category: 'General',
+          created_by_role: "employee",
+          status: "open",
+          category: "General",
           created_at: new Date(),
-          updated_at: new Date()
+          updated_at: new Date(),
         });
-        await TicketApi.employeeCreateMessage(ticket.id, newTicket.initialMessage);
+        await TicketApi.employeeCreateMessage(
+          ticket.id,
+          newTicket.initialMessage
+        );
       }
     } else if (superAdmin && newTicket.assignedTo == superAdmin.id) {
       // Use the new company admin endpoint for tickets assigned to super admin
@@ -308,25 +417,34 @@ const HelpAndSupport = ({ dashboardRole }: HelpAndSupportProps) => {
       });
       // No need to send initial message separately, it's handled in backend
     } else {
-      ticket = await TicketApi.createTicket(role as 'company-admin' | 'super-admin', {
-      subject: newTicket.subject,
-      description: newTicket.description,
-      priority: newTicket.priority,
-      category: 'General',
-      company_id: companyId,
-      created_by: userId,
-      created_by_role: role,
-        assigned_to: newTicket.assignedTo
-    });
-    await TicketApi.sendMessage(role as 'company-admin' | 'super-admin', {
-      ticket_id: ticket.id,
-      sender_id: userId,
-      sender_role: role,
-      message: newTicket.initialMessage
-    });
+      ticket = await TicketApi.createTicket(
+        role as "company-admin" | "super-admin",
+        {
+          subject: newTicket.subject,
+          description: newTicket.description,
+          priority: newTicket.priority,
+          category: "General",
+          company_id: companyId,
+          created_by: userId,
+          created_by_role: role,
+          assigned_to: newTicket.assignedTo,
+        }
+      );
+      await TicketApi.sendMessage(role as "company-admin" | "super-admin", {
+        ticket_id: ticket.id,
+        sender_id: userId,
+        sender_role: role,
+        message: newTicket.initialMessage,
+      });
     }
     setShowNewTicketModal(false);
-    setNewTicket({ subject: '', description: '', priority: 'medium', initialMessage: '', assignedTo: '' });
+    setNewTicket({
+      subject: "",
+      description: "",
+      priority: "medium",
+      initialMessage: "",
+      assignedTo: "",
+    });
     setTickets([ticket, ...tickets]);
     setSelectedTicket(ticket);
     setIsSubmitting(false);
@@ -336,38 +454,46 @@ const HelpAndSupport = ({ dashboardRole }: HelpAndSupportProps) => {
   const handleRequestCallback = async () => {
     setIsSubmitting(true);
     try {
-      if (role === 'employee') {
+      if (role === "employee") {
         await TicketApi.sendToSuperAdminAsEmployee({
-          subject: 'Callback Request',
-          description: 'User has requested a callback.',
-          priority: 'urgent',
+          subject: "Callback Request",
+          description: "User has requested a callback.",
+          priority: "urgent",
           company_id: companyId,
-          initialMessage: 'User has requested a callback.',
+          initialMessage: "User has requested a callback.",
         });
-      } else if (role === 'company-admin') {
+      } else if (role === "company-admin") {
         await TicketApi.sendToSuperAdminAsCompanyAdmin({
-          subject: 'Callback Request',
-          description: 'User has requested a callback.',
-          priority: 'urgent',
-      company_id: companyId,
-          initialMessage: 'User has requested a callback.',
-    });
+          subject: "Callback Request",
+          description: "User has requested a callback.",
+          priority: "urgent",
+          company_id: companyId,
+          initialMessage: "User has requested a callback.",
+        });
       }
-    setShowCallbackModal(false);
+      setShowCallbackModal(false);
     } finally {
-    setIsSubmitting(false);
+      setIsSubmitting(false);
     }
   };
 
   // Export logic
   const handleExport = async () => {
     if (!selectedTicket) return;
-    const msgs = await TicketApi.exportMessages(role as 'company-admin' | 'super-admin', selectedTicket.id);
+    const msgs = await TicketApi.exportMessages(
+      role as "company-admin" | "super-admin",
+      selectedTicket.id
+    );
     // Simple CSV export for now
-    const csv = msgs.map((m: any) => `${m.sender_role},${m.message.replace(/\n/g, ' ')},${m.created_at}`).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
+    const csv = msgs
+      .map(
+        (m: any) =>
+          `${m.sender_role},${m.message.replace(/\n/g, " ")},${m.created_at}`
+      )
+      .join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
     a.download = `ticket_${selectedTicket.id}_messages.csv`;
     a.click();
@@ -378,14 +504,23 @@ const HelpAndSupport = ({ dashboardRole }: HelpAndSupportProps) => {
   const handleCloseTicket = async () => {
     setIsSubmitting(true);
     try {
-      if (role === 'employee') {
+      if (role === "employee") {
         await TicketApi.employeeCloseTicket(selectedTicket.id);
       } else {
-        await TicketApi.closeTicket(role as 'company-admin' | 'super-admin', selectedTicket.id);
+        await TicketApi.closeTicket(
+          role as "company-admin" | "super-admin",
+          selectedTicket.id
+        );
       }
-      setSelectedTicket({ ...selectedTicket, status: 'closed' });
-      setTickets(tickets => tickets.map(ticket => ticket.id === selectedTicket.id ? { ...ticket, status: 'closed' } : ticket));
-    } catch (err) {
+      setSelectedTicket({ ...selectedTicket, status: "closed" });
+      setTickets((tickets) =>
+        tickets.map((ticket) =>
+          ticket.id === selectedTicket.id
+            ? { ...ticket, status: "closed" }
+            : ticket
+        )
+      );
+    } catch (_err) {
       // Optionally show error
     }
     setIsSubmitting(false);
@@ -397,7 +532,7 @@ const HelpAndSupport = ({ dashboardRole }: HelpAndSupportProps) => {
     content: msg.message || msg.content,
     sender: msg.sender_role || msg.sender,
     timestamp: msg.created_at ? new Date(msg.created_at) : msg.timestamp,
-    attachments: msg.attachments ? JSON.parse(msg.attachments) : undefined
+    attachments: msg.attachments ? JSON.parse(msg.attachments) : undefined,
   }));
 
   if (isLoading) {
@@ -417,11 +552,14 @@ const HelpAndSupport = ({ dashboardRole }: HelpAndSupportProps) => {
             Get help, report issues, or contact our support team
           </p>
         </div>
-        {role !== 'super-admin' && (
-          <Button className="mt-4 md:mt-0" onClick={() => setShowNewTicketModal(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          New Ticket
-        </Button>
+        {role !== "super-admin" && (
+          <Button
+            className="mt-4 md:mt-0"
+            onClick={() => setShowNewTicketModal(true)}
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            New Ticket
+          </Button>
         )}
       </div>
 
@@ -433,11 +571,15 @@ const HelpAndSupport = ({ dashboardRole }: HelpAndSupportProps) => {
               <CardTitle className="text-lg">Quick Actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              {['company-admin', 'employee'].includes(role) && (
-                <Button variant="outline" className="w-full justify-start" onClick={() => setShowCallbackModal(true)}>
-                <Phone className="mr-2 h-4 w-4" />
-                Request Callback
-              </Button>
+              {["company-admin", "employee"].includes(role) && (
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() => setShowCallbackModal(true)}
+                >
+                  <Phone className="mr-2 h-4 w-4" />
+                  Request Callback
+                </Button>
               )}
             </CardContent>
           </Card>
@@ -478,7 +620,11 @@ const HelpAndSupport = ({ dashboardRole }: HelpAndSupportProps) => {
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
                 </div>
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4 sm:mt-0">
+                <Tabs
+                  value={activeTab}
+                  onValueChange={setActiveTab}
+                  className="mt-4 sm:mt-0"
+                >
                   <TabsList>
                     <TabsTrigger value="all">All</TabsTrigger>
                     <TabsTrigger value="my-tickets">My Tickets</TabsTrigger>
@@ -503,19 +649,43 @@ const HelpAndSupport = ({ dashboardRole }: HelpAndSupportProps) => {
                   <TableBody>
                     {filteredTickets.length > 0 ? (
                       filteredTickets.map((ticket) => (
-                        <TableRow 
-                          key={ticket.id} 
-                          className={`cursor-pointer ${selectedTicket?.id === ticket.id ? 'bg-muted/50' : ''}`}
+                        <TableRow
+                          key={ticket.id}
+                          className={`cursor-pointer ${
+                            selectedTicket?.id === ticket.id
+                              ? "bg-muted/50"
+                              : ""
+                          }`}
                           onClick={() => setSelectedTicket(ticket)}
                         >
-                          <TableCell className="font-medium">{typeof ticket.id === 'string' || typeof ticket.id === 'number' ? ticket.id : ''}</TableCell>
-                          <TableCell className="max-w-[200px] truncate">{typeof ticket.subject === 'string' ? ticket.subject : ''}</TableCell>
-                          <TableCell>{typeof ticket.status === 'string' ? getStatusBadge(ticket.status) : ''}</TableCell>
-                          <TableCell>{typeof ticket.priority === 'string' ? getPriorityBadge(ticket.priority) : ''}</TableCell>
+                          <TableCell className="font-medium">
+                            {typeof ticket.id === "string" ||
+                            typeof ticket.id === "number"
+                              ? ticket.id
+                              : ""}
+                          </TableCell>
+                          <TableCell className="max-w-[200px] truncate">
+                            {typeof ticket.subject === "string"
+                              ? ticket.subject
+                              : ""}
+                          </TableCell>
+                          <TableCell>
+                            {typeof ticket.status === "string"
+                              ? getStatusBadge(ticket.status)
+                              : ""}
+                          </TableCell>
+                          <TableCell>
+                            {typeof ticket.priority === "string"
+                              ? getPriorityBadge(ticket.priority)
+                              : ""}
+                          </TableCell>
                           <TableCell>
                             <div className="flex items-center">
                               <Clock className="mr-1 h-3 w-3 text-muted-foreground" />
-                              {ticket.updatedAt && typeof ticket.updatedAt === 'string' ? safeFormat(ticket.updatedAt, 'MMM d, yyyy') : ''}
+                              {ticket.updatedAt &&
+                              typeof ticket.updatedAt === "string"
+                                ? safeFormat(ticket.updatedAt, "MMM d, yyyy")
+                                : ""}
                             </div>
                           </TableCell>
                         </TableRow>
@@ -538,19 +708,47 @@ const HelpAndSupport = ({ dashboardRole }: HelpAndSupportProps) => {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-lg font-medium">{typeof selectedTicket.subject === 'string' ? selectedTicket.subject : ''}</h3>
+                    <h3 className="text-lg font-medium">
+                      {typeof selectedTicket.subject === "string"
+                        ? selectedTicket.subject
+                        : ""}
+                    </h3>
                     <div className="flex items-center space-x-2 text-sm text-muted-foreground mt-1">
-                      <span>#{typeof selectedTicket.id === 'string' || typeof selectedTicket.id === 'number' ? selectedTicket.id : ''}</span>
+                      <span>
+                        #
+                        {typeof selectedTicket.id === "string" ||
+                        typeof selectedTicket.id === "number"
+                          ? selectedTicket.id
+                          : ""}
+                      </span>
                       <span>•</span>
-                      <span>Created {selectedTicket.createdAt && typeof selectedTicket.createdAt === 'string' ? safeFormat(selectedTicket.createdAt, 'MMM d, yyyy') : ''}</span>
+                      <span>
+                        Created{" "}
+                        {selectedTicket.createdAt &&
+                        typeof selectedTicket.createdAt === "string"
+                          ? safeFormat(selectedTicket.createdAt, "MMM d, yyyy")
+                          : ""}
+                      </span>
                       <span>•</span>
-                      {selectedTicket.assignedTo && typeof selectedTicket.assignedTo === 'string' ? (
+                      {selectedTicket.assignedTo &&
+                      typeof selectedTicket.assignedTo === "string" ? (
                         <span>Assigned to {selectedTicket.assignedTo}</span>
-                      ) : selectedTicket.assignedTo && typeof selectedTicket.assignedTo === 'object' ? (
-                        <span>Assigned to {superAdmin && selectedTicket.assignedTo.id == superAdmin.id ? 'Super Admin' : (selectedTicket.assignedTo.name && selectedTicket.assignedTo.name.trim() ? selectedTicket.assignedTo.name : 'Limited User')}</span>
+                      ) : selectedTicket.assignedTo &&
+                        typeof selectedTicket.assignedTo === "object" ? (
+                        <span>
+                          Assigned to{" "}
+                          {superAdmin &&
+                          selectedTicket.assignedTo.id == superAdmin.id
+                            ? "Super Admin"
+                            : selectedTicket.assignedTo.name &&
+                              selectedTicket.assignedTo.name.trim()
+                            ? selectedTicket.assignedTo.name
+                            : "Limited User"}
+                        </span>
                       ) : null}
                       <span>•</span>
-                      {selectedTicket.createdBy && selectedTicket.createdBy.name ? (
+                      {selectedTicket.createdBy &&
+                      selectedTicket.createdBy.name ? (
                         <span>Created by {selectedTicket.createdBy.name}</span>
                       ) : (
                         <span>Created by Unknown</span>
@@ -558,8 +756,12 @@ const HelpAndSupport = ({ dashboardRole }: HelpAndSupportProps) => {
                     </div>
                   </div>
                   <div className="flex space-x-2">
-                    {typeof selectedTicket.status === 'string' ? getStatusBadge(selectedTicket.status) : ''}
-                    {typeof selectedTicket.priority === 'string' ? getPriorityBadge(selectedTicket.priority) : ''}
+                    {typeof selectedTicket.status === "string"
+                      ? getStatusBadge(selectedTicket.status)
+                      : ""}
+                    {typeof selectedTicket.priority === "string"
+                      ? getPriorityBadge(selectedTicket.priority)
+                      : ""}
                   </div>
                 </div>
               </CardHeader>
@@ -567,23 +769,43 @@ const HelpAndSupport = ({ dashboardRole }: HelpAndSupportProps) => {
                 <div className="rounded-lg border p-4">
                   <div className="flex items-start space-x-3">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={selectedTicket.createdBy && selectedTicket.createdBy.avatar ? selectedTicket.createdBy.avatar : ''} />
+                      <AvatarImage
+                        src={
+                          selectedTicket.createdBy &&
+                          selectedTicket.createdBy.avatar
+                            ? selectedTicket.createdBy.avatar
+                            : ""
+                        }
+                      />
                       <AvatarFallback>
-                        {selectedTicket.createdBy && selectedTicket.createdBy.name
-                          ? selectedTicket.createdBy.name.split(' ').map((n: any) => n[0]).join('')
-                          : ''}
+                        {selectedTicket.createdBy &&
+                        selectedTicket.createdBy.name
+                          ? selectedTicket.createdBy.name
+                              .split(" ")
+                              .map((n: any) => n[0])
+                              .join("")
+                          : ""}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 space-y-1">
                       <div className="flex items-center justify-between">
                         <div className="font-medium">
-                          {selectedTicket.createdBy && selectedTicket.createdBy.name ? selectedTicket.createdBy.name : 'Unknown'}
+                          {selectedTicket.createdBy &&
+                          selectedTicket.createdBy.name
+                            ? selectedTicket.createdBy.name
+                            : "Unknown"}
                           <span className="ml-2 text-sm text-muted-foreground">
-                            {selectedTicket.createdBy && selectedTicket.createdBy.department ? selectedTicket.createdBy.department : ''}
+                            {selectedTicket.createdBy &&
+                            selectedTicket.createdBy.department
+                              ? selectedTicket.createdBy.department
+                              : ""}
                           </span>
                         </div>
                         <span className="text-xs text-muted-foreground">
-                          {safeFormat(selectedTicket.createdAt, 'MMM d, yyyy h:mm a')}
+                          {safeFormat(
+                            selectedTicket.createdAt,
+                            "MMM d, yyyy h:mm a"
+                          )}
                         </span>
                       </div>
                       <p className="text-sm">{selectedTicket.description}</p>
@@ -597,18 +819,22 @@ const HelpAndSupport = ({ dashboardRole }: HelpAndSupportProps) => {
                     {mappedMessages.map((message: any) => (
                       <div
                         key={message.id}
-                        className={`flex ${message.sender === role ? 'justify-end' : 'justify-start'}`}
+                        className={`flex ${
+                          message.sender === role
+                            ? "justify-end"
+                            : "justify-start"
+                        }`}
                       >
                         <div
                           className={`max-w-[80%] rounded-lg px-4 py-2 ${
                             message.sender === role
-                              ? 'bg-primary text-primary-foreground rounded-br-none'
-                              : 'bg-muted rounded-bl-none'
+                              ? "bg-primary text-primary-foreground rounded-br-none"
+                              : "bg-muted rounded-bl-none"
                           }`}
                         >
                           <p className="text-sm">{message.content}</p>
                           <p className="text-xs mt-1 opacity-70">
-                            {safeFormat(message.timestamp, 'h:mm a')}
+                            {safeFormat(message.timestamp, "h:mm a")}
                           </p>
                         </div>
                       </div>
@@ -623,7 +849,7 @@ const HelpAndSupport = ({ dashboardRole }: HelpAndSupportProps) => {
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
                         onKeyDown={(e) => {
-                          if (e.key === 'Enter' && !e.shiftKey) {
+                          if (e.key === "Enter" && !e.shiftKey) {
                             e.preventDefault();
                             handleSendMessage();
                           }
@@ -634,8 +860,8 @@ const HelpAndSupport = ({ dashboardRole }: HelpAndSupportProps) => {
                           <Paperclip className="h-4 w-4" />
                           <span className="sr-only">Attach file</span>
                         </Button>
-                        <Button 
-                          size="sm" 
+                        <Button
+                          size="sm"
                           onClick={handleSendMessage}
                           disabled={!newMessage.trim() || isSubmitting}
                         >
@@ -650,22 +876,27 @@ const HelpAndSupport = ({ dashboardRole }: HelpAndSupportProps) => {
                   </div>
                 </div>
 
-                {['super-admin', 'company-admin', 'employee'].includes(role) && selectedTicket && (
-                  <div className="flex space-x-2">
-                    <Button 
-                      variant="outline" 
-                      onClick={handleCloseTicket}
-                      disabled={selectedTicket.status === 'closed' || isSubmitting}
-                    >
-                      {selectedTicket.status === 'closed' ? 'Ticket Closed' : 'Close Ticket'}
-                    </Button>
-                    {role === 'super-admin' && (
-                    <Button onClick={handleExport}>
-                      Export Conversation
-                    </Button>
-                    )}
-                  </div>
-                )}
+                {["super-admin", "company-admin", "employee"].includes(role) &&
+                  selectedTicket && (
+                    <div className="flex space-x-2">
+                      <Button
+                        variant="outline"
+                        onClick={handleCloseTicket}
+                        disabled={
+                          selectedTicket.status === "closed" || isSubmitting
+                        }
+                      >
+                        {selectedTicket.status === "closed"
+                          ? "Ticket Closed"
+                          : "Close Ticket"}
+                      </Button>
+                      {role === "super-admin" && (
+                        <Button onClick={handleExport}>
+                          Export Conversation
+                        </Button>
+                      )}
+                    </div>
+                  )}
               </CardContent>
             </Card>
           )}
@@ -679,12 +910,14 @@ const HelpAndSupport = ({ dashboardRole }: HelpAndSupportProps) => {
             <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-4 flex items-center justify-between">
               <div>
                 <h2 className="text-xl font-bold">Create New Ticket</h2>
-                <p className="text-blue-100 text-sm mt-1">Fill in the details below to create a new support ticket</p>
+                <p className="text-blue-100 text-sm mt-1">
+                  Fill in the details below to create a new support ticket
+                </p>
               </div>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="text-white hover:bg-blue-600 hover:text-white" 
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-white hover:bg-blue-600 hover:text-white"
                 onClick={() => setShowNewTicketModal(false)}
               >
                 <X className="h-5 w-5" />
@@ -705,7 +938,9 @@ const HelpAndSupport = ({ dashboardRole }: HelpAndSupportProps) => {
                       className="w-full border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg"
                       placeholder="Enter ticket subject..."
                       value={newTicket.subject}
-                      onChange={e => setNewTicket(f => ({ ...f, subject: e.target.value }))}
+                      onChange={(e) =>
+                        setNewTicket((f) => ({ ...f, subject: e.target.value }))
+                      }
                     />
                   </div>
 
@@ -718,7 +953,12 @@ const HelpAndSupport = ({ dashboardRole }: HelpAndSupportProps) => {
                       className="w-full border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg resize-none"
                       placeholder="Describe your issue or request..."
                       value={newTicket.description}
-                      onChange={e => setNewTicket(f => ({ ...f, description: e.target.value }))}
+                      onChange={(e) =>
+                        setNewTicket((f) => ({
+                          ...f,
+                          description: e.target.value,
+                        }))
+                      }
                       rows={4}
                     />
                   </div>
@@ -732,7 +972,12 @@ const HelpAndSupport = ({ dashboardRole }: HelpAndSupportProps) => {
                       className="w-full border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg resize-none"
                       placeholder="Add your initial message..."
                       value={newTicket.initialMessage}
-                      onChange={e => setNewTicket(f => ({ ...f, initialMessage: e.target.value }))}
+                      onChange={(e) =>
+                        setNewTicket((f) => ({
+                          ...f,
+                          initialMessage: e.target.value,
+                        }))
+                      }
                       rows={3}
                     />
                   </div>
@@ -748,13 +993,26 @@ const HelpAndSupport = ({ dashboardRole }: HelpAndSupportProps) => {
                     <select
                       className="w-full border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg px-3 py-2 bg-white"
                       value={newTicket.priority}
-                      onChange={e => setNewTicket(f => ({ ...f, priority: e.target.value }))}
+                      onChange={(e) =>
+                        setNewTicket((f) => ({
+                          ...f,
+                          priority: e.target.value,
+                        }))
+                      }
                     >
                       <option value="">Select priority level</option>
-                      <option value="low" className="text-green-600">🟢 Low</option>
-                      <option value="medium" className="text-yellow-600">🟡 Medium</option>
-                      <option value="high" className="text-orange-600">🟠 High</option>
-                      <option value="urgent" className="text-red-600">🔴 Urgent</option>
+                      <option value="low" className="text-green-600">
+                        🟢 Low
+                      </option>
+                      <option value="medium" className="text-yellow-600">
+                        🟡 Medium
+                      </option>
+                      <option value="high" className="text-orange-600">
+                        🟠 High
+                      </option>
+                      <option value="urgent" className="text-red-600">
+                        🔴 Urgent
+                      </option>
                     </select>
                   </div>
 
@@ -766,13 +1024,22 @@ const HelpAndSupport = ({ dashboardRole }: HelpAndSupportProps) => {
                     <SearchableSelect
                       options={assignees.map((user: any) => ({
                         id: user.id,
-                        name: user.name || `${user.first_name || ''} ${user.last_name || ''}`.trim(),
+                        name:
+                          user.name ||
+                          `${user.first_name || ""} ${
+                            user.last_name || ""
+                          }`.trim(),
                         email: user.email,
                         role: user.role,
-                        department: user.department?.name
+                        department: user.department?.name,
                       }))}
                       value={newTicket.assignedTo}
-                      onChange={value => setNewTicket(f => ({ ...f, assignedTo: value.toString() }))}
+                      onChange={(value) =>
+                        setNewTicket((f) => ({
+                          ...f,
+                          assignedTo: value.toString(),
+                        }))
+                      }
                       placeholder="Select assignee"
                       className="w-full"
                     />
@@ -784,18 +1051,35 @@ const HelpAndSupport = ({ dashboardRole }: HelpAndSupportProps) => {
                       🚨 Escalate to Super Admin
                     </label>
                     <SearchableSelect
-                      options={superAdmin ? [{
-                        id: superAdmin.id,
-                        name: 'Send to Super Admin',
-                        role: 'super-admin'
-                      }] : []}
-                      value={newTicket.assignedTo === (superAdmin?.id?.toString() || '') ? (superAdmin?.id || '') : ''}
-                      onChange={value => setNewTicket(f => ({ ...f, assignedTo: value.toString() }))}
+                      options={
+                        superAdmin
+                          ? [
+                              {
+                                id: superAdmin.id,
+                                name: "Send to Super Admin",
+                                role: "super-admin",
+                              },
+                            ]
+                          : []
+                      }
+                      value={
+                        newTicket.assignedTo ===
+                        (superAdmin?.id?.toString() || "")
+                          ? superAdmin?.id || ""
+                          : ""
+                      }
+                      onChange={(value) =>
+                        setNewTicket((f) => ({
+                          ...f,
+                          assignedTo: value.toString(),
+                        }))
+                      }
                       placeholder="Send to Super Admin"
                       className="w-full"
                     />
                     <p className="text-xs text-blue-600 mt-2">
-                      Use this option for urgent issues that require immediate attention
+                      Use this option for urgent issues that require immediate
+                      attention
                     </p>
                   </div>
                 </div>
@@ -805,20 +1089,26 @@ const HelpAndSupport = ({ dashboardRole }: HelpAndSupportProps) => {
             {/* Footer */}
             <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex items-center justify-between">
               <div className="text-sm text-gray-600">
-                All fields marked with <span className="text-red-500">*</span> are required
+                All fields marked with <span className="text-red-500">*</span>{" "}
+                are required
               </div>
               <div className="flex space-x-3">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={() => setShowNewTicketModal(false)}
                   className="border-gray-300 hover:bg-gray-50"
                 >
                   Cancel
                 </Button>
-                <Button 
+                <Button
                   className="bg-blue-600 hover:bg-blue-700 text-white px-6"
-                  onClick={handleCreateTicket} 
-                  disabled={!newTicket.subject || !newTicket.description || !newTicket.initialMessage || !newTicket.assignedTo}
+                  onClick={handleCreateTicket}
+                  disabled={
+                    !newTicket.subject ||
+                    !newTicket.description ||
+                    !newTicket.initialMessage ||
+                    !newTicket.assignedTo
+                  }
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Create Ticket
@@ -829,13 +1119,21 @@ const HelpAndSupport = ({ dashboardRole }: HelpAndSupportProps) => {
         </div>
       )}
 
-      {showCallbackModal && ['company-admin', 'employee'].includes(role) && (
+      {showCallbackModal && ["company-admin", "employee"].includes(role) && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
           <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
             <h3 className="text-lg font-bold mb-4">Request a Callback</h3>
-            <p className="mb-4">A support agent will call you as soon as possible about your urgent matter.</p>
+            <p className="mb-4">
+              A support agent will call you as soon as possible about your
+              urgent matter.
+            </p>
             <div className="flex justify-end space-x-2 mt-4">
-              <Button variant="outline" onClick={() => setShowCallbackModal(false)}>Cancel</Button>
+              <Button
+                variant="outline"
+                onClick={() => setShowCallbackModal(false)}
+              >
+                Cancel
+              </Button>
               <Button onClick={handleRequestCallback}>Request</Button>
             </div>
           </div>
@@ -846,6 +1144,12 @@ const HelpAndSupport = ({ dashboardRole }: HelpAndSupportProps) => {
 };
 
 // Export wrappers for each dashboard
-export const EmployeeHelpAndSupport = () => <HelpAndSupport dashboardRole="employee" />;
-export const AdminHelpAndSupport = () => <HelpAndSupport dashboardRole="company-admin" />;
-export const SuperAdminHelpAndSupport = () => <HelpAndSupport dashboardRole="super-admin" />;
+export const EmployeeHelpAndSupport = () => (
+  <HelpAndSupport dashboardRole="employee" />
+);
+export const AdminHelpAndSupport = () => (
+  <HelpAndSupport dashboardRole="company-admin" />
+);
+export const SuperAdminHelpAndSupport = () => (
+  <HelpAndSupport dashboardRole="super-admin" />
+);

@@ -8,15 +8,11 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { 
   User, 
-  Calendar, 
   Star, 
   Target, 
   BarChart3, 
   MessageSquare, 
   Award,
-  CheckCircle2,
-  Clock,
-  TrendingUp,
   FileText,
   Send,
   Download

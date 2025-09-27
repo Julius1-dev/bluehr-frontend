@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 
 export function LeaveManagement(): JSX.Element {
-  const [activeTab, setActiveTab] = useState('pending');
+  const [_activeTab, setActiveTab] = useState('pending');
   const navigate = useNavigate();
 
   return (

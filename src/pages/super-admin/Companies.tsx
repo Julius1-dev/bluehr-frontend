@@ -1,18 +1,13 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
 import { BACKEND_URL } from '@/lib/config';
 import { 
   Search, 
   Filter, 
   MoreHorizontal, 
-  Plus, 
-  Building2, 
-  Check, 
-  X, 
-  ArrowUpDown,
+  Plus,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -110,7 +105,7 @@ export default function Companies() {
     currentPage * itemsPerPage
   );
 
-  const requestSort = (key: keyof Company) => {
+  const _requestSort = (key: keyof Company) => {
     let direction: 'asc' | 'desc' = 'asc';
     if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
       direction = 'desc';
@@ -118,7 +113,7 @@ export default function Companies() {
     setSortConfig({ key, direction });
   };
 
-  const getStatusBadge = (status: string) => {
+  const _getStatusBadge = (status: string) => {
     const statusMap: Record<string, { text: string; variant: string }> = {
       'Enterprise': { text: 'Enterprise', variant: 'bg-purple-100 text-purple-800' },
       'Business': { text: 'Business', variant: 'bg-blue-100 text-blue-800' },

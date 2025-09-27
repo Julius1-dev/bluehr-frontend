@@ -12,7 +12,7 @@ interface Company {
   status: 'active' | 'inactive';
 }
 
-interface AdvancesOverviewProps {
+interface _AdvancesOverviewProps {
   onViewCompany: (company: Company) => void;
 }
 
@@ -42,7 +42,7 @@ const mockCompanies: Company[] = [
 ];
 
 export default function AdvancesOverview() {
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
   const { onViewCompany } = useOutletContext<{ onViewCompany: (company: Company) => void }>();
 
   return (

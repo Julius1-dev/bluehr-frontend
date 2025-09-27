@@ -1,73 +1,73 @@
-import React, { useEffect, useState } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { BACKEND_URL } from '@/lib/config';
-import { 
+import React, { useEffect, useState } from "react";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { BACKEND_URL } from "@/lib/config";
+import {
   LogOut,
   Mail,
-  Phone,
   MapPin,
-  Building2,
   Shield,
   Key,
   Smartphone,
-  Clock,
-  Languages,
-  Calendar,
   Globe,
-  Sun,
-  Moon,
-  Palette,
   CreditCard,
-  Settings as SettingsIcon,
   Users,
-  FileText,
-  Zap
-} from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Link } from 'react-router-dom';
-import { AdvanceSettings as AdvanceSettingsComponent } from '@/components/settings/AdvanceSettings';
-import { toast } from 'sonner';
+} from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { AdvanceSettings as AdvanceSettingsComponent } from "@/components/settings/AdvanceSettings";
 
 interface SettingsProps {
   onLogout: () => void;
 }
 
-const MAPBOX_TOKEN = 'sk.eyJ1IjoiYmx1ZWNvbGxhcjQ0MSIsImEiOiJjbWN6NTBkb3IwdHUyMnFzMzJvNHJ1a3NpIn0.IHM7SiNWAnFN_PkTln79xQ';
+// NOTE: removed unused MAPBOX_TOKEN constant
 
 export function Settings({ onLogout }: SettingsProps) {
   // Ensure securitySettings is defined at the top
   const securitySettings = {
-    lastPasswordChange: '2025-03-15',
+    lastPasswordChange: "2025-03-15",
     twoFactorEnabled: true,
-    lastLogin: '2025-04-25 09:30 AM',
+    lastLogin: "2025-04-25 09:30 AM",
     loginDevices: [
-      { device: 'MacBook Pro', location: 'Boston, MA', lastActive: '2025-04-25 09:30 AM' },
-      { device: 'iPhone 15', location: 'Boston, MA', lastActive: '2025-04-25 08:45 AM' }
-    ]
+      {
+        device: "MacBook Pro",
+        location: "Boston, MA",
+        lastActive: "2025-04-25 09:30 AM",
+      },
+      {
+        device: "iPhone 15",
+        location: "Boston, MA",
+        lastActive: "2025-04-25 08:45 AM",
+      },
+    ],
   };
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [saving, setSaving] = useState(false);
-  const [location, setLocation] = useState('');
-  const [locationLoading, setLocationLoading] = useState(false);
+  const [error, setError] = useState("");
+  // removed unused 'saving' state
+  const [location, setLocation] = useState("");
+  // removed unused 'locationLoading' state
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
   const [show2FAModal, setShow2FAModal] = useState(false);
   const [qrData, setQrData] = useState<string | null>(null);
-  const [otpSecret, setOtpSecret] = useState<string | null>(null);
-  const [otpCode, setOtpCode] = useState('');
-  const [otpError, setOtpError] = useState('');
+  // removed unused 'otpSecret' state
+  const [otpCode, setOtpCode] = useState("");
+  const [otpError, setOtpError] = useState("");
   const [otpLoading, setOtpLoading] = useState(false);
-  const [setupStep, setSetupStep] = useState<'start' | 'show-qr' | 'verify' | 'disable'>('start');
+  const [setupStep, setSetupStep] = useState<
+    "start" | "show-qr" | "verify" | "disable"
+  >("start");
 
-  // Subscription state
-  const [subscription, setSubscription] = useState<any>(null);
-  const [subscriptionLoading, setSubscriptionLoading] = useState(true);
-  const [subscriptionError, setSubscriptionError] = useState('');
+  // Subscription state (removed unused detailed subscription tracking)
   const [userCount, setUserCount] = useState<number | null>(null);
 
   // Active sessions state
@@ -77,20 +77,21 @@ export function Settings({ onLogout }: SettingsProps) {
   useEffect(() => {
     const fetchProfile = async () => {
       setLoading(true);
-      setError('');
+      setError("");
       try {
-        const token = localStorage.getItem('token');
-        if (!token) throw new Error('No authentication token found');
+        const token = localStorage.getItem("token");
+        if (!token) throw new Error("No authentication token found");
         const res = await fetch(`${BACKEND_URL}/company-admin/auth/profile`, {
-          headers: { 'Authorization': `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
-        if (!data.success) throw new Error(data.error || 'Failed to fetch profile');
+        if (!data.success)
+          throw new Error(data.error || "Failed to fetch profile");
         setProfile(data.data);
-        setLocation(data.data.location || '');
+        setLocation(data.data.location || "");
         setTwoFactorEnabled(!!data.data.two_factor_enabled);
       } catch (err: any) {
-        setError(err.message || 'Error fetching profile');
+        setError(err.message || "Error fetching profile");
       } finally {
         setLoading(false);
       }
@@ -98,39 +99,18 @@ export function Settings({ onLogout }: SettingsProps) {
     fetchProfile();
   }, []);
 
-  useEffect(() => {
-    // Fetch company info (plan, price, etc)
-    const fetchCompany = async () => {
-      setSubscriptionLoading(true);
-      setSubscriptionError('');
-      try {
-        const token = localStorage.getItem('token');
-        if (!token) throw new Error('No authentication token found');
-        const res = await fetch(`${BACKEND_URL}/company-admin/company`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (!res.ok) throw new Error('Failed to fetch company profile');
-        const data = await res.json();
-        setSubscription(data);
-      } catch (err: any) {
-        setSubscriptionError(err.message || 'Error fetching subscription');
-      } finally {
-        setSubscriptionLoading(false);
-      }
-    };
-    fetchCompany();
-  }, []);
+  // Note: subscription details are static in UI; skipping fetch of company profile
 
   useEffect(() => {
     // Fetch user count
     const fetchUsers = async () => {
       try {
-        const token = localStorage.getItem('token');
-        if (!token) throw new Error('No authentication token found');
+        const token = localStorage.getItem("token");
+        if (!token) throw new Error("No authentication token found");
         const res = await fetch(`${BACKEND_URL}/company-admin/users`, {
-          headers: { 'Authorization': `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
-        if (!res.ok) throw new Error('Failed to fetch users');
+        if (!res.ok) throw new Error("Failed to fetch users");
         const data = await res.json();
         setUserCount(Array.isArray(data) ? data.length : 0);
       } catch {
@@ -144,14 +124,14 @@ export function Settings({ onLogout }: SettingsProps) {
   useEffect(() => {
     const fetchIpLocation = async () => {
       try {
-        const res = await fetch('https://ipapi.co/json/');
+        const res = await fetch("https://ipapi.co/json/");
         const data = await res.json();
         if (data && data.city && data.region && data.country_name) {
           setLocation(`${data.city}, ${data.region}, ${data.country_name}`);
         } else if (data && data.country_name) {
           setLocation(data.country_name);
         }
-      } catch (err) {
+      } catch {
         // fallback: do not update location
       }
     };
@@ -163,23 +143,26 @@ export function Settings({ onLogout }: SettingsProps) {
     const fetchActiveSessions = async () => {
       try {
         setSessionsLoading(true);
-        const token = localStorage.getItem('token');
-        if (!token) throw new Error('No authentication token found');
-        
-        const res = await fetch(`${BACKEND_URL}/company-admin/auth/login-logs`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        
-        if (!res.ok) throw new Error('Failed to fetch active sessions');
-        
+        const token = localStorage.getItem("token");
+        if (!token) throw new Error("No authentication token found");
+
+        const res = await fetch(
+          `${BACKEND_URL}/company-admin/auth/login-logs`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        if (!res.ok) throw new Error("Failed to fetch active sessions");
+
         const data = await res.json();
-        
+
         if (data.success) {
           setActiveSessions(data.data);
         } else {
-          throw new Error(data.message || 'Failed to fetch active sessions');
+          throw new Error(data.message || "Failed to fetch active sessions");
         }
-      } catch (err: any) {
+      } catch {
         // Fallback to empty array if API fails
         setActiveSessions([]);
       } finally {
@@ -190,68 +173,52 @@ export function Settings({ onLogout }: SettingsProps) {
     fetchActiveSessions();
   }, []);
 
-
-
-  const handleSave = async () => {
-    setSaving(true);
-    setError('');
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) throw new Error('No authentication token found');
-      const res = await fetch(`${BACKEND_URL}/company-admin/users/${profile.id}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ location })
-      });
-      if (!res.ok) throw new Error('Failed to update profile');
-      setSaving(false);
-    } catch (err: any) {
-      setError(err.message || 'Error updating profile');
-      setSaving(false);
-    }
-  };
+  // Removed unused handleSave (location is not editable in UI)
 
   // Restore mock notification preferences for the Notifications tab
   const notificationPreferences = [
-    { type: 'Leave Requests', email: true, push: true },
-    { type: 'Payroll Updates', email: true, push: false },
-    { type: 'Team Announcements', email: true, push: true },
-    { type: 'Performance Reviews', email: true, push: true },
-    { type: 'Document Updates', email: false, push: true }
+    { type: "Leave Requests", email: true, push: true },
+    { type: "Payroll Updates", email: true, push: false },
+    { type: "Team Announcements", email: true, push: true },
+    { type: "Performance Reviews", email: true, push: true },
+    { type: "Document Updates", email: false, push: true },
   ];
 
   const [showChangePassword, setShowChangePassword] = useState(false);
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
   const [changePasswordLoading, setChangePasswordLoading] = useState(false);
-  const [changePasswordError, setChangePasswordError] = useState('');
-  const [lastPasswordChange, setLastPasswordChange] = useState(securitySettings.lastPasswordChange);
+  const [changePasswordError, setChangePasswordError] = useState("");
+  const [lastPasswordChange, setLastPasswordChange] = useState(
+    securitySettings.lastPasswordChange
+  );
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setChangePasswordLoading(true);
-    setChangePasswordError('');
+    setChangePasswordError("");
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${BACKEND_URL}/company-admin/auth/change-password`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ currentPassword, newPassword })
-      });
+      const token = localStorage.getItem("token");
+      const res = await fetch(
+        `${BACKEND_URL}/company-admin/auth/change-password`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ currentPassword, newPassword }),
+        }
+      );
       const data = await res.json();
-      if (!data.success) throw new Error(data.error || 'Failed to change password');
+      if (!data.success)
+        throw new Error(data.error || "Failed to change password");
       setLastPasswordChange(data.passwordChangedAt);
       setShowChangePassword(false);
-      setCurrentPassword('');
-      setNewPassword('');
+      setCurrentPassword("");
+      setNewPassword("");
     } catch (err: any) {
-      setChangePasswordError(err.message || 'Failed to change password');
+      setChangePasswordError(err.message || "Failed to change password");
     } finally {
       setChangePasswordLoading(false);
     }
@@ -260,20 +227,21 @@ export function Settings({ onLogout }: SettingsProps) {
   // Helper to refetch profile
   const refetchProfile = async () => {
     setLoading(true);
-    setError('');
+    setError("");
     try {
-      const token = localStorage.getItem('token');
-      if (!token) throw new Error('No authentication token found');
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No authentication token found");
       const res = await fetch(`${BACKEND_URL}/company-admin/auth/profile`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-      if (!data.success) throw new Error(data.error || 'Failed to fetch profile');
+      if (!data.success)
+        throw new Error(data.error || "Failed to fetch profile");
       setProfile(data.data);
-      setLocation(data.data.location || '');
+      setLocation(data.data.location || "");
       setTwoFactorEnabled(!!data.data.two_factor_enabled);
     } catch (err: any) {
-      setError(err.message || 'Error fetching profile');
+      setError(err.message || "Error fetching profile");
     } finally {
       setLoading(false);
     }
@@ -281,21 +249,20 @@ export function Settings({ onLogout }: SettingsProps) {
 
   // 2FA Setup
   const handle2FASetup = async () => {
-    setOtpError('');
+    setOtpError("");
     setOtpLoading(true);
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       const res = await fetch(`${BACKEND_URL}/company-admin/auth/2fa/setup`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-      if (!data.success) throw new Error(data.error || 'Failed to setup 2FA');
+      if (!data.success) throw new Error(data.error || "Failed to setup 2FA");
       setQrData(data.qr);
-      setOtpSecret(data.otpauth_url);
-      setSetupStep('show-qr');
+      setSetupStep("show-qr");
     } catch (err: any) {
-      setOtpError(err.message || 'Failed to setup 2FA');
+      setOtpError(err.message || "Failed to setup 2FA");
     } finally {
       setOtpLoading(false);
     }
@@ -304,28 +271,28 @@ export function Settings({ onLogout }: SettingsProps) {
   // 2FA Enable
   const handle2FAEnable = async (e: React.FormEvent) => {
     e.preventDefault();
-    setOtpError('');
+    setOtpError("");
     setOtpLoading(true);
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       const res = await fetch(`${BACKEND_URL}/company-admin/auth/2fa/enable`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ code: otpCode })
+        body: JSON.stringify({ code: otpCode }),
       });
       const data = await res.json();
-      if (!data.success) throw new Error(data.error || 'Failed to enable 2FA');
+      if (!data.success) throw new Error(data.error || "Failed to enable 2FA");
       setShow2FAModal(false);
       setQrData(null);
       setOtpSecret(null);
-      setOtpCode('');
-      setSetupStep('start');
+      setOtpCode("");
+      setSetupStep("start");
       await refetchProfile(); // Refetch profile to update 2FA state
     } catch (err: any) {
-      setOtpError(err.message || 'Failed to enable 2FA');
+      setOtpError(err.message || "Failed to enable 2FA");
     } finally {
       setOtpLoading(false);
     }
@@ -334,28 +301,31 @@ export function Settings({ onLogout }: SettingsProps) {
   // 2FA Disable
   const handle2FADisable = async (e: React.FormEvent) => {
     e.preventDefault();
-    setOtpError('');
+    setOtpError("");
     setOtpLoading(true);
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       const res = await fetch(`${BACKEND_URL}/company-admin/auth/2fa/disable`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-      if (!data.success) throw new Error(data.error || 'Failed to disable 2FA');
+      if (!data.success) throw new Error(data.error || "Failed to disable 2FA");
       setShow2FAModal(false);
-      setOtpCode('');
-      setSetupStep('start');
+      setOtpCode("");
+      setSetupStep("start");
       await refetchProfile(); // Refetch profile to update 2FA state
     } catch (err: any) {
-      setOtpError(err.message || 'Failed to disable 2FA');
+      setOtpError(err.message || "Failed to disable 2FA");
     } finally {
       setOtpLoading(false);
     }
   };
 
-  if (loading) return <div className="p-8 text-center text-gray-500">Loading profile...</div>;
+  if (loading)
+    return (
+      <div className="p-8 text-center text-gray-500">Loading profile...</div>
+    );
   if (error) return <div className="p-8 text-center text-red-500">{error}</div>;
   if (!profile) return null;
 
@@ -363,8 +333,8 @@ export function Settings({ onLogout }: SettingsProps) {
     <div className="space-y-6 p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Settings</h1>
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           className="text-red-600 hover:bg-red-50 hover:text-red-700"
           onClick={onLogout}
         >
@@ -391,29 +361,41 @@ export function Settings({ onLogout }: SettingsProps) {
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-1">
-                    <label className="text-sm font-medium text-gray-500">Full Name</label>
-                    <div className="text-lg font-semibold">{profile.firstName} {profile.lastName}</div>
+                    <label className="text-sm font-medium text-gray-500">
+                      Full Name
+                    </label>
+                    <div className="text-lg font-semibold">
+                      {profile.firstName} {profile.lastName}
+                    </div>
                   </div>
                   <div className="space-y-1">
-                    <label className="text-sm font-medium text-gray-500">Role</label>
+                    <label className="text-sm font-medium text-gray-500">
+                      Role
+                    </label>
                     <div className="text-lg">{profile.role}</div>
                   </div>
                   <div className="space-y-1">
-                    <label className="text-sm font-medium text-gray-500">Email</label>
+                    <label className="text-sm font-medium text-gray-500">
+                      Email
+                    </label>
                     <div className="flex items-center gap-2">
                       <Mail className="h-4 w-4 text-gray-500" />
                       <span>{profile.email}</span>
                     </div>
                   </div>
                   <div className="space-y-1">
-                    <label className="text-sm font-medium text-gray-500">Location</label>
+                    <label className="text-sm font-medium text-gray-500">
+                      Location
+                    </label>
                     <div className="flex items-center gap-2">
                       <MapPin className="h-4 w-4 text-gray-500" />
-                      <span>{location || '-'}</span>
+                      <span>{location || "-"}</span>
                     </div>
                   </div>
                   <div className="space-y-1">
-                    <label className="text-sm font-medium text-gray-500">Language</label>
+                    <label className="text-sm font-medium text-gray-500">
+                      Language
+                    </label>
                     <div className="flex items-center gap-2">
                       <Globe className="h-4 w-4 text-gray-500" />
                       <span>English</span>
@@ -433,18 +415,18 @@ export function Settings({ onLogout }: SettingsProps) {
             <CardContent>
               <div className="space-y-4">
                 {notificationPreferences.map((pref, index) => (
-                  <div 
+                  <div
                     key={index}
                     className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
                   >
                     <div>
                       <h4 className="font-medium">{pref.type}</h4>
                       <div className="flex items-center gap-4 mt-1">
-                        <Badge variant={pref.email ? 'success' : 'secondary'}>
-                          Email {pref.email ? 'On' : 'Off'}
+                        <Badge variant={pref.email ? "success" : "secondary"}>
+                          Email {pref.email ? "On" : "Off"}
                         </Badge>
-                        <Badge variant={pref.push ? 'success' : 'secondary'}>
-                          Push {pref.push ? 'On' : 'Off'}
+                        <Badge variant={pref.push ? "success" : "secondary"}>
+                          Push {pref.push ? "On" : "Off"}
                         </Badge>
                       </div>
                     </div>
@@ -471,10 +453,19 @@ export function Settings({ onLogout }: SettingsProps) {
                       <div>
                         <h4 className="font-medium">Password</h4>
                         <p className="text-sm text-gray-500">
-                          Last changed: {lastPasswordChange ? new Date(lastPasswordChange).toLocaleDateString() : new Date(securitySettings.lastPasswordChange).toLocaleDateString()}
+                          Last changed:{" "}
+                          {lastPasswordChange
+                            ? new Date(lastPasswordChange).toLocaleDateString()
+                            : new Date(
+                                securitySettings.lastPasswordChange
+                              ).toLocaleDateString()}
                         </p>
                       </div>
-                      <Button variant="outline" size="sm" onClick={() => setShowChangePassword(true)}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowChangePassword(true)}
+                      >
                         <Key className="mr-2 h-4 w-4" />
                         Change Password
                       </Button>
@@ -484,12 +475,21 @@ export function Settings({ onLogout }: SettingsProps) {
                   <div className="p-4 bg-gray-50 rounded-lg">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h4 className="font-medium">Two-Factor Authentication</h4>
+                        <h4 className="font-medium">
+                          Two-Factor Authentication
+                        </h4>
                         <p className="text-sm text-gray-500">
-                          {twoFactorEnabled ? 'Enabled' : 'Disabled'}
+                          {twoFactorEnabled ? "Enabled" : "Disabled"}
                         </p>
                       </div>
-                      <Button variant="outline" size="sm" onClick={() => { setShow2FAModal(true); setSetupStep('start'); }}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setShow2FAModal(true);
+                          setSetupStep("start");
+                        }}
+                      >
                         <Shield className="mr-2 h-4 w-4" />
                         Configure
                       </Button>
@@ -503,26 +503,70 @@ export function Settings({ onLogout }: SettingsProps) {
                       </DialogHeader>
                       {!twoFactorEnabled ? (
                         <>
-                          {setupStep === 'start' && (
+                          {setupStep === "start" && (
                             <div className="space-y-4">
-                              <p>Protect your account with an extra layer of security. Set up 2FA using an authenticator app.</p>
-                              <Button onClick={handle2FASetup} disabled={otpLoading}>
-                                {otpLoading ? 'Setting up...' : 'Set up 2FA'}
+                              <p>
+                                Protect your account with an extra layer of
+                                security. Set up 2FA using an authenticator app.
+                              </p>
+                              <Button
+                                onClick={handle2FASetup}
+                                disabled={otpLoading}
+                              >
+                                {otpLoading ? "Setting up..." : "Set up 2FA"}
                               </Button>
-                              {otpError && <div className="text-red-500 text-sm">{otpError}</div>}
+                              {otpError && (
+                                <div className="text-red-500 text-sm">
+                                  {otpError}
+                                </div>
+                              )}
                             </div>
                           )}
-                          {setupStep === 'show-qr' && (
+                          {setupStep === "show-qr" && (
                             <div className="space-y-4">
-                              <p>Scan this QR code with your authenticator app, then enter the 6-digit code below.</p>
-                              {qrData && <img src={qrData} alt="2FA QR Code" className="mx-auto" style={{ width: 180, height: 180 }} />}
-                              <form onSubmit={handle2FAEnable} className="space-y-2">
-                                <label className="block text-sm font-medium mb-1">2FA Code</label>
-                                <Input type="text" value={otpCode} onChange={e => setOtpCode(e.target.value)} required maxLength={6} />
-                                {otpError && <div className="text-red-500 text-sm">{otpError}</div>}
+                              <p>
+                                Scan this QR code with your authenticator app,
+                                then enter the 6-digit code below.
+                              </p>
+                              {qrData && (
+                                <img
+                                  src={qrData}
+                                  alt="2FA QR Code"
+                                  className="mx-auto"
+                                  style={{ width: 180, height: 180 }}
+                                />
+                              )}
+                              <form
+                                onSubmit={handle2FAEnable}
+                                className="space-y-2"
+                              >
+                                <label className="block text-sm font-medium mb-1">
+                                  2FA Code
+                                </label>
+                                <Input
+                                  type="text"
+                                  value={otpCode}
+                                  onChange={(e) => setOtpCode(e.target.value)}
+                                  required
+                                  maxLength={6}
+                                />
+                                {otpError && (
+                                  <div className="text-red-500 text-sm">
+                                    {otpError}
+                                  </div>
+                                )}
                                 <DialogFooter>
-                                  <Button type="button" variant="outline" onClick={() => setShow2FAModal(false)} disabled={otpLoading}>Cancel</Button>
-                                  <Button type="submit" disabled={otpLoading}>{otpLoading ? 'Enabling...' : 'Enable 2FA'}</Button>
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => setShow2FAModal(false)}
+                                    disabled={otpLoading}
+                                  >
+                                    Cancel
+                                  </Button>
+                                  <Button type="submit" disabled={otpLoading}>
+                                    {otpLoading ? "Enabling..." : "Enable 2FA"}
+                                  </Button>
                                 </DialogFooter>
                               </form>
                             </div>
@@ -530,12 +574,27 @@ export function Settings({ onLogout }: SettingsProps) {
                         </>
                       ) : (
                         <form onSubmit={handle2FADisable} className="space-y-4">
-                          <p>2FA is currently enabled. You can disable it below.</p>
+                          <p>
+                            2FA is currently enabled. You can disable it below.
+                          </p>
                           {/* Optionally require code to disable: <Input type="text" value={otpCode} onChange={e => setOtpCode(e.target.value)} required maxLength={6} /> */}
-                          {otpError && <div className="text-red-500 text-sm">{otpError}</div>}
+                          {otpError && (
+                            <div className="text-red-500 text-sm">
+                              {otpError}
+                            </div>
+                          )}
                           <DialogFooter>
-                            <Button type="button" variant="outline" onClick={() => setShow2FAModal(false)} disabled={otpLoading}>Cancel</Button>
-                            <Button type="submit" disabled={otpLoading}>{otpLoading ? 'Disabling...' : 'Disable 2FA'}</Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => setShow2FAModal(false)}
+                              disabled={otpLoading}
+                            >
+                              Cancel
+                            </Button>
+                            <Button type="submit" disabled={otpLoading}>
+                              {otpLoading ? "Disabling..." : "Disable 2FA"}
+                            </Button>
                           </DialogFooter>
                         </form>
                       )}
@@ -545,13 +604,15 @@ export function Settings({ onLogout }: SettingsProps) {
                   <div className="space-y-2">
                     <h4 className="font-medium">Active Sessions</h4>
                     {sessionsLoading ? (
-                      <div className="p-4 text-center text-gray-500">Loading sessions...</div>
+                      <div className="p-4 text-center text-gray-500">
+                        Loading sessions...
+                      </div>
                     ) : activeSessions.length === 0 ? (
                       <p>No active sessions found.</p>
                     ) : (
                       <div className="space-y-4">
                         {activeSessions.map((session) => (
-                          <div 
+                          <div
                             key={session.id}
                             className="p-4 bg-gray-50 rounded-lg"
                           >
@@ -576,24 +637,55 @@ export function Settings({ onLogout }: SettingsProps) {
                   </div>
                 </div>
                 {/* Change Password Dialog */}
-                <Dialog open={showChangePassword} onOpenChange={setShowChangePassword}>
+                <Dialog
+                  open={showChangePassword}
+                  onOpenChange={setShowChangePassword}
+                >
                   <DialogContent>
                     <DialogHeader>
                       <DialogTitle>Change Password</DialogTitle>
                     </DialogHeader>
                     <form onSubmit={handleChangePassword} className="space-y-4">
                       <div>
-                        <label className="block text-sm font-medium mb-1">Current Password</label>
-                        <Input type="password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} required />
+                        <label className="block text-sm font-medium mb-1">
+                          Current Password
+                        </label>
+                        <Input
+                          type="password"
+                          value={currentPassword}
+                          onChange={(e) => setCurrentPassword(e.target.value)}
+                          required
+                        />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium mb-1">New Password</label>
-                        <Input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required minLength={6} />
+                        <label className="block text-sm font-medium mb-1">
+                          New Password
+                        </label>
+                        <Input
+                          type="password"
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          required
+                          minLength={6}
+                        />
                       </div>
-                      {changePasswordError && <div className="text-red-500 text-sm">{changePasswordError}</div>}
+                      {changePasswordError && (
+                        <div className="text-red-500 text-sm">
+                          {changePasswordError}
+                        </div>
+                      )}
                       <DialogFooter>
-                        <Button type="button" variant="outline" onClick={() => setShowChangePassword(false)} disabled={changePasswordLoading}>Cancel</Button>
-                        <Button type="submit" disabled={changePasswordLoading}>{changePasswordLoading ? 'Saving...' : 'Save'}</Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setShowChangePassword(false)}
+                          disabled={changePasswordLoading}
+                        >
+                          Cancel
+                        </Button>
+                        <Button type="submit" disabled={changePasswordLoading}>
+                          {changePasswordLoading ? "Saving..." : "Save"}
+                        </Button>
                       </DialogFooter>
                     </form>
                   </DialogContent>
@@ -602,7 +694,7 @@ export function Settings({ onLogout }: SettingsProps) {
             </Card>
           </div>
         </TabsContent>
-        
+
         <TabsContent value="subscription">
           <div className="grid gap-6">
             {/* Subscription Plan Card */}
@@ -610,11 +702,17 @@ export function Settings({ onLogout }: SettingsProps) {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <span>Free Forever Plan</span>
-                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                  <Badge
+                    variant="outline"
+                    className="bg-green-50 text-green-700 border-green-200"
+                  >
                     Active
                   </Badge>
                 </CardTitle>
-                <p className="text-sm text-muted-foreground">Your BlueHR subscription is completely free with no hidden costs</p>
+                <p className="text-sm text-muted-foreground">
+                  Your BlueHR subscription is completely free with no hidden
+                  costs
+                </p>
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
@@ -622,23 +720,31 @@ export function Settings({ onLogout }: SettingsProps) {
                     <div className="p-4 bg-green-50 rounded-lg border border-green-200">
                       <div className="flex items-center gap-2 mb-2">
                         <div className="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center">
-                          <span className="text-green-600 font-bold text-lg">$0</span>
+                          <span className="text-green-600 font-bold text-lg">
+                            $0
+                          </span>
                         </div>
                         <div>
-                          <h4 className="font-semibold text-green-800">Monthly Cost</h4>
+                          <h4 className="font-semibold text-green-800">
+                            Monthly Cost
+                          </h4>
                           <p className="text-sm text-green-600">Free forever</p>
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
                       <div className="flex items-center gap-2 mb-2">
                         <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center">
                           <Users className="h-5 w-5 text-blue-600" />
                         </div>
                         <div>
-                          <h4 className="font-semibold text-blue-800">Active Users</h4>
-                          <p className="text-2xl font-bold text-blue-600">{userCount !== null ? userCount : '-'}</p>
+                          <h4 className="font-semibold text-blue-800">
+                            Active Users
+                          </h4>
+                          <p className="text-2xl font-bold text-blue-600">
+                            {userCount !== null ? userCount : "-"}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -647,12 +753,19 @@ export function Settings({ onLogout }: SettingsProps) {
                   <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
                     <div className="flex items-start gap-3">
                       <div className="h-6 w-6 bg-amber-100 rounded-full flex items-center justify-center mt-0.5">
-                        <span className="text-amber-600 text-sm font-bold">!</span>
+                        <span className="text-amber-600 text-sm font-bold">
+                          !
+                        </span>
                       </div>
                       <div>
-                        <h4 className="font-medium text-amber-800 mb-1">Payroll Processing Fees</h4>
+                        <h4 className="font-medium text-amber-800 mb-1">
+                          Payroll Processing Fees
+                        </h4>
                         <p className="text-sm text-amber-700">
-                          While your subscription is free, payroll processing fees are deducted from your employees' salaries when payments are processed. These fees are transparent and based on salary ranges.
+                          While your subscription is free, payroll processing
+                          fees are deducted from your employees' salaries when
+                          payments are processed. These fees are transparent and
+                          based on salary ranges.
                         </p>
                       </div>
                     </div>
@@ -662,26 +775,66 @@ export function Settings({ onLogout }: SettingsProps) {
                     <h4 className="font-medium">Plan Features</h4>
                     <ul className="space-y-3">
                       <li className="flex items-center">
-                        <svg className="h-5 w-5 text-green-500 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        <svg
+                          className="h-5 w-5 text-green-500 mr-3"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M5 13l4 4L19 7"
+                          />
                         </svg>
                         <span>Unlimited employee management</span>
                       </li>
                       <li className="flex items-center">
-                        <svg className="h-5 w-5 text-green-500 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        <svg
+                          className="h-5 w-5 text-green-500 mr-3"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M5 13l4 4L19 7"
+                          />
                         </svg>
                         <span>Complete HR management suite</span>
                       </li>
                       <li className="flex items-center">
-                        <svg className="h-5 w-5 text-green-500 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        <svg
+                          className="h-5 w-5 text-green-500 mr-3"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M5 13l4 4L19 7"
+                          />
                         </svg>
                         <span>24/7 customer support</span>
                       </li>
                       <li className="flex items-center">
-                        <svg className="h-5 w-5 text-green-500 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        <svg
+                          className="h-5 w-5 text-green-500 mr-3"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M5 13l4 4L19 7"
+                          />
                         </svg>
                         <span>Advanced analytics and reporting</span>
                       </li>
@@ -698,84 +851,134 @@ export function Settings({ onLogout }: SettingsProps) {
                   <CreditCard className="h-5 w-5" />
                   Payroll Processing Charges
                 </CardTitle>
-                <p className="text-sm text-muted-foreground">Transparent fees deducted from employee salaries during payroll processing</p>
+                <p className="text-sm text-muted-foreground">
+                  Transparent fees deducted from employee salaries during
+                  payroll processing
+                </p>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   <div className="p-4 bg-gray-50 rounded-lg">
                     <p className="text-sm text-gray-600 mb-4">
-                      These charges are automatically deducted from your employees' salaries when payroll transactions are processed. The fees are based on salary ranges and are charged per transaction.
+                      These charges are automatically deducted from your
+                      employees' salaries when payroll transactions are
+                      processed. The fees are based on salary ranges and are
+                      charged per transaction.
                     </p>
                   </div>
 
                   <div className="overflow-hidden rounded-lg border">
                     <div className="bg-gray-50 px-6 py-3 border-b">
-                      <h4 className="font-medium text-gray-900">Payroll Fee Structure</h4>
+                      <h4 className="font-medium text-gray-900">
+                        Payroll Fee Structure
+                      </h4>
                     </div>
                     <div className="divide-y">
                       <div className="flex justify-between items-center px-6 py-4 hover:bg-gray-50">
                         <div>
-                          <span className="font-medium text-gray-900">KSh 101 - 3,000</span>
-                          <p className="text-sm text-gray-500">Basic salary range</p>
-                        </div>
-                                                 <div className="text-right">
-                           <span className="text-lg font-bold text-gray-900">KSh 30</span>
-                           <p className="text-sm text-gray-500">per transaction</p>
-                         </div>
-                      </div>
-                      
-                      <div className="flex justify-between items-center px-6 py-4 hover:bg-gray-50">
-                        <div>
-                          <span className="font-medium text-gray-900">KSh 3,001 - 10,000</span>
-                          <p className="text-sm text-gray-500">Lower middle range</p>
+                          <span className="font-medium text-gray-900">
+                            KSh 101 - 3,000
+                          </span>
+                          <p className="text-sm text-gray-500">
+                            Basic salary range
+                          </p>
                         </div>
                         <div className="text-right">
-                          <span className="text-lg font-bold text-gray-900">KSh 50</span>
-                          <p className="text-sm text-gray-500">per transaction</p>
+                          <span className="text-lg font-bold text-gray-900">
+                            KSh 30
+                          </span>
+                          <p className="text-sm text-gray-500">
+                            per transaction
+                          </p>
                         </div>
                       </div>
-                      
+
                       <div className="flex justify-between items-center px-6 py-4 hover:bg-gray-50">
                         <div>
-                          <span className="font-medium text-gray-900">KSh 10,001 - 20,000</span>
+                          <span className="font-medium text-gray-900">
+                            KSh 3,001 - 10,000
+                          </span>
+                          <p className="text-sm text-gray-500">
+                            Lower middle range
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-lg font-bold text-gray-900">
+                            KSh 50
+                          </span>
+                          <p className="text-sm text-gray-500">
+                            per transaction
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex justify-between items-center px-6 py-4 hover:bg-gray-50">
+                        <div>
+                          <span className="font-medium text-gray-900">
+                            KSh 10,001 - 20,000
+                          </span>
                           <p className="text-sm text-gray-500">Middle range</p>
                         </div>
                         <div className="text-right">
-                          <span className="text-lg font-bold text-gray-900">KSh 70</span>
-                          <p className="text-sm text-gray-500">per transaction</p>
+                          <span className="text-lg font-bold text-gray-900">
+                            KSh 70
+                          </span>
+                          <p className="text-sm text-gray-500">
+                            per transaction
+                          </p>
                         </div>
                       </div>
-                      
+
                       <div className="flex justify-between items-center px-6 py-4 hover:bg-gray-50">
                         <div>
-                          <span className="font-medium text-gray-900">KSh 20,001 - 40,000</span>
-                          <p className="text-sm text-gray-500">Upper middle range</p>
+                          <span className="font-medium text-gray-900">
+                            KSh 20,001 - 40,000
+                          </span>
+                          <p className="text-sm text-gray-500">
+                            Upper middle range
+                          </p>
                         </div>
                         <div className="text-right">
-                          <span className="text-lg font-bold text-gray-900">KSh 100</span>
-                          <p className="text-sm text-gray-500">per transaction</p>
+                          <span className="text-lg font-bold text-gray-900">
+                            KSh 100
+                          </span>
+                          <p className="text-sm text-gray-500">
+                            per transaction
+                          </p>
                         </div>
                       </div>
-                      
+
                       <div className="flex justify-between items-center px-6 py-4 hover:bg-gray-50">
                         <div>
-                          <span className="font-medium text-gray-900">KSh 40,001 - 50,000</span>
+                          <span className="font-medium text-gray-900">
+                            KSh 40,001 - 50,000
+                          </span>
                           <p className="text-sm text-gray-500">High range</p>
                         </div>
                         <div className="text-right">
-                          <span className="text-lg font-bold text-gray-900">KSh 150</span>
-                          <p className="text-sm text-gray-500">per transaction</p>
+                          <span className="text-lg font-bold text-gray-900">
+                            KSh 150
+                          </span>
+                          <p className="text-sm text-gray-500">
+                            per transaction
+                          </p>
                         </div>
                       </div>
-                      
+
                       <div className="flex justify-between items-center px-6 py-4 hover:bg-gray-50 bg-blue-50">
                         <div>
-                          <span className="font-medium text-gray-900">KSh 50,001 - Above</span>
+                          <span className="font-medium text-gray-900">
+                            KSh 50,001 - Above
+                          </span>
                           <p className="text-sm text-gray-500">Premium range</p>
                         </div>
                         <div className="text-right">
-                          <span className="text-lg font-bold text-blue-600">KSh 200</span>
-                          <p className="text-sm text-gray-500">per transaction</p>
+                          <span className="text-lg font-bold text-blue-600">
+                            KSh 200
+                          </span>
+                          <p className="text-sm text-gray-500">
+                            per transaction
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -784,13 +987,23 @@ export function Settings({ onLogout }: SettingsProps) {
                   <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
                     <div className="flex items-start gap-3">
                       <div className="h-6 w-6 bg-blue-100 rounded-full flex items-center justify-center mt-0.5">
-                        <span className="text-blue-600 text-sm font-bold">i</span>
+                        <span className="text-blue-600 text-sm font-bold">
+                          i
+                        </span>
                       </div>
                       <div>
-                        <h4 className="font-medium text-blue-800 mb-1">Important Information</h4>
+                        <h4 className="font-medium text-blue-800 mb-1">
+                          Important Information
+                        </h4>
                         <ul className="text-sm text-blue-700 space-y-1">
-                          <li>• Fees are automatically deducted during payroll processing</li>
-                          <li>• Charges are based on individual employee salary ranges</li>
+                          <li>
+                            • Fees are automatically deducted during payroll
+                            processing
+                          </li>
+                          <li>
+                            • Charges are based on individual employee salary
+                            ranges
+                          </li>
                           <li>• No additional subscription or hidden costs</li>
                           <li>• Transparent fee structure with no surprises</li>
                         </ul>
@@ -802,7 +1015,7 @@ export function Settings({ onLogout }: SettingsProps) {
             </Card>
           </div>
         </TabsContent>
-        
+
         <TabsContent value="advanced">
           <AdvanceSettingsComponent />
         </TabsContent>

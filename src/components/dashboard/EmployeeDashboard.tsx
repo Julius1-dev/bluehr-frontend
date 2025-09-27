@@ -6,7 +6,6 @@ import { LeaveWidget } from './LeaveWidget';
 import { PayrollWidget } from './PayrollWidget';
 import { WalletWidget } from './WalletWidget';
 import { DocumentsWidget } from './DocumentsWidget';
-import { PerformanceWidget } from './PerformanceWidget';
 import { RecentActivityWidget } from './RecentActivityWidget';
 import { PendingActionsSection } from './PendingActionsSection';
 

@@ -19,7 +19,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { DateRange } from 'react-day-picker';
 import { addDays, format } from 'date-fns';
 // import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { attendanceApi } from '@/services/attendanceApi';
 import {
   BarChart,
@@ -109,8 +108,8 @@ const useAIInsights = () => {
     departments: [],
     employees: [],
   });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [_loading, setLoading] = useState(true);
+  const [_error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchInsights() {
@@ -311,7 +310,7 @@ const AnalyticsContent = () => {
   console.log('safeAIInsights.employees:', safeAIInsights.employees);
 
   // Helper to derive start/end ISO date strings from a simple filter (e.g. 'This Week')
-  const getDateRangeFromFilter = (filter: string): { startDate: string; endDate: string } => {
+  const _getDateRangeFromFilter = (filter: string): { startDate: string; endDate: string } => {
     const now = new Date();
 
     if (filter === 'Today') {
@@ -370,7 +369,7 @@ const AnalyticsContent = () => {
         });
         const mapped = Object.values(employeeMap);
         setEmployeeAttendance(mapped.slice(0, 10)); // Top 10
-      } catch (err) {
+      } catch (_err) {
         setEmployeeAttendance([]);
         console.error('Failed to load employee attendance:', err);
       }
@@ -435,7 +434,7 @@ const AnalyticsContent = () => {
           ),
           byDepartment: summary.byDepartment || []
         });
-      } catch (err) {
+      } catch (_err) {
         console.error("Failed to load overview:", err);
       }
     };
@@ -445,7 +444,7 @@ const AnalyticsContent = () => {
       setLoading(true);
       setError(null);
       try {
-        const today = new Date();
+        const _today = new Date();
         const monday = getMonday(new Date());
         const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
         const trendData: { day: string; date: string; present: number; late: number; absent: number }[] = [];
@@ -462,7 +461,7 @@ const AnalyticsContent = () => {
               late: summary.late,
               absent: summary.absent,
             });
-          } catch (err) {
+          } catch (_err) {
             trendData.push({
               day: dayLabels[i],
               date: dateStr,
@@ -473,7 +472,7 @@ const AnalyticsContent = () => {
           }
         }
         setWeeklyTrend(trendData);
-      } catch (err) {
+      } catch (_err) {
         console.error('Error fetching weekly trend data:', err);
         setError('Failed to load weekly trend data. Please try again.');
       } finally {
@@ -485,7 +484,7 @@ const AnalyticsContent = () => {
     fetchWeeklyTrend();
   }, []);
   const navigate = useNavigate();
-  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+  const [dateRange, _setDateRange] = useState<DateRange | undefined>({
     from: new Date(),
     to: addDays(new Date(), 7),
   });
@@ -501,7 +500,7 @@ const AnalyticsContent = () => {
   }, [activeTab]);
 
   // Format date range for display
-  const dateRangeDisplay = dateRange?.from 
+  const _dateRangeDisplay = dateRange?.from 
     ? `${format(dateRange.from, 'MMM d, yyyy')} - ${dateRange.to ? format(dateRange.to, 'MMM d, yyyy') : format(dateRange.from, 'MMM d, yyyy')}`
     : 'Select date range';
 

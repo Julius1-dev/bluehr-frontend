@@ -4,7 +4,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Calendar, Users, Building2, Clock, Target, ChevronDown, ChevronUp } from 'lucide-react';
+import { Users, Building2, Target } from 'lucide-react';
 import { LeaveTypeApi } from '@/services/leaveTypeApi';
 import { PerformanceApi } from '@/services/performanceApi';
 
@@ -20,7 +20,7 @@ export default function AssignGoal() {
   const [endDate, setEndDate] = useState('');
   const [hours, setHours] = useState('');
   const [alignWithShift, setAlignWithShift] = useState(false);
-  const [showDetails, setShowDetails] = useState(true);
+  const [_showDetails, setShowDetails] = useState(true);
   const [milestones, setMilestones] = useState<{ title: string; dueDate?: string }[]>([]);
   const [milestoneTitle, setMilestoneTitle] = useState('');
   const [milestoneDueDate, setMilestoneDueDate] = useState('');
@@ -76,7 +76,7 @@ export default function AssignGoal() {
       setHours('');
       setAlignWithShift(false);
       setMilestones([]);
-    } catch (err) {
+      } catch (_err) {
       setError('Failed to assign goal.');
     } finally {
       setLoading(false);

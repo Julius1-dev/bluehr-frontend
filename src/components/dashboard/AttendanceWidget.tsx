@@ -1,11 +1,17 @@
-import React, { useEffect, useState } from 'react';
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '../ui/card';
-import { Button } from '../ui/button';
-import { Clock, ArrowRight } from 'lucide-react';
-import { Progress } from '../ui/progress';
-import { formatTime } from '@/lib/utils';
-import { useNavigate } from 'react-router-dom';
-import { BACKEND_URL } from '@/lib/config';
+import React, { useEffect, useState } from "react";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardFooter,
+} from "../ui/card";
+import { Button } from "../ui/button";
+import { Clock, ArrowRight } from "lucide-react";
+import { Progress } from "../ui/progress";
+import { formatTime } from "@/lib/utils";
+import { useNavigate } from "react-router-dom";
+import { BACKEND_URL } from "@/lib/config";
 
 function getLast7Days() {
   const days = [];
@@ -19,14 +25,14 @@ function getLast7Days() {
 }
 
 function getDayLabel(date: Date) {
-  return date.toLocaleDateString('en-US', { weekday: 'short' });
+  return date.toLocaleDateString("en-US", { weekday: "short" });
 }
 
 function calculateHours(clockIn: string | null, clockOut: string | null) {
   if (!clockIn || !clockOut) return 0;
-  const [h1, m1] = clockIn.split(':').map(Number);
-  const [h2, m2] = clockOut.split(':').map(Number);
-  let diff = (h2 * 60 + m2) - (h1 * 60 + m1);
+  const [h1, m1] = clockIn.split(":").map(Number);
+  const [h2, m2] = clockOut.split(":").map(Number);
+  let diff = h2 * 60 + m2 - (h1 * 60 + m1);
   if (diff < 0) diff += 24 * 60;
   return Math.max(0, diff / 60);
 }
@@ -34,9 +40,11 @@ function calculateHours(clockIn: string | null, clockOut: string | null) {
 export function AttendanceWidget() {
   const navigate = useNavigate();
   const [currentTime, setCurrentTime] = useState(formatTime(new Date()));
-  const [lastClockIn, setLastClockIn] = useState<string>('—');
-  const [lastClockOut, setLastClockOut] = useState<string>('—');
-  const [weekHours, setWeekHours] = useState<{ label: string; hours: number }[]>([]);
+  const [lastClockIn, setLastClockIn] = useState<string>("—");
+  const [lastClockOut, setLastClockOut] = useState<string>("—");
+  const [weekHours, setWeekHours] = useState<
+    { label: string; hours: number }[]
+  >([]);
   const [totalWeekHours, setTotalWeekHours] = useState<number>(0);
   const [weeklyTargetHours, setWeeklyTargetHours] = useState<number>(40);
 
@@ -49,19 +57,19 @@ export function AttendanceWidget() {
   }, []);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (!token) return;
     fetch(`${BACKEND_URL}/employee/attendance/today`, {
-      headers: { 'Authorization': `Bearer ${token}` }
+      headers: { Authorization: `Bearer ${token}` },
     })
-      .then(res => res.json())
-      .then(data => {
+      .then((res) => res.json())
+      .then((data) => {
         if (data.attendance) {
-          setLastClockIn(data.attendance.clock_in || '—');
-          setLastClockOut(data.attendance.clock_out || '—');
+          setLastClockIn(data.attendance.clock_in || "—");
+          setLastClockOut(data.attendance.clock_out || "—");
         } else {
-          setLastClockIn('—');
-          setLastClockOut('—');
+          setLastClockIn("—");
+          setLastClockOut("—");
         }
         // Calculate weekly target hours from shift
         if (data.shift) {
@@ -70,20 +78,22 @@ export function AttendanceWidget() {
           // shift.clock_in and shift.clock_out are in "HH:MM:SS" format
           let dailyHours = 0;
           if (shift.clock_in && shift.clock_out) {
-            const [h1, m1] = shift.clock_in.split(':').map(Number);
-            const [h2, m2] = shift.clock_out.split(':').map(Number);
-            let diff = (h2 * 60 + m2) - (h1 * 60 + m1);
+            const [h1, m1] = shift.clock_in.split(":").map(Number);
+            const [h2, m2] = shift.clock_out.split(":").map(Number);
+            let diff = h2 * 60 + m2 - (h1 * 60 + m1);
             if (diff < 0) diff += 24 * 60;
             dailyHours = diff / 60;
           }
           let daysAssigned = 0;
           if (Array.isArray(shift.days)) {
             daysAssigned = shift.days.length;
-          } else if (typeof shift.days === 'string') {
+          } else if (typeof shift.days === "string") {
             try {
               const arr = JSON.parse(shift.days);
               if (Array.isArray(arr)) daysAssigned = arr.length;
-            } catch {}
+            } catch {
+              // Ignore JSON parsing errors
+            }
           }
           setWeeklyTargetHours(dailyHours * daysAssigned || 40);
         } else {
@@ -91,8 +101,8 @@ export function AttendanceWidget() {
         }
       })
       .catch(() => {
-        setLastClockIn('—');
-        setLastClockOut('—');
+        setLastClockIn("—");
+        setLastClockOut("—");
         setWeeklyTargetHours(40);
       });
 
@@ -101,14 +111,20 @@ export function AttendanceWidget() {
     const from = days[0].toISOString().slice(0, 10);
     const to = days[6].toISOString().slice(0, 10);
     fetch(`${BACKEND_URL}/employee/attendance/history?from=${from}&to=${to}`, {
-      headers: { 'Authorization': `Bearer ${token}` }
+      headers: { Authorization: `Bearer ${token}` },
     })
-      .then(res => res.json())
-      .then(data => {
+      .then((res) => res.json())
+      .then((data) => {
         const records = data.records || [];
-        const dayMap: Record<string, { clock_in: string | null, clock_out: string | null }> = {};
+        const dayMap: Record<
+          string,
+          { clock_in: string | null; clock_out: string | null }
+        > = {};
         for (const rec of records) {
-          dayMap[rec.date] = { clock_in: rec.clock_in, clock_out: rec.clock_out };
+          dayMap[rec.date] = {
+            clock_in: rec.clock_in,
+            clock_out: rec.clock_out,
+          };
         }
         let week: { label: string; hours: number }[] = [];
         let total = 0;
@@ -133,7 +149,12 @@ export function AttendanceWidget() {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-lg font-medium">Time & Attendance</CardTitle>
-        <Button variant="ghost" size="sm" className="text-blue-600" onClick={() => navigate('/time-attendance')}>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-blue-600"
+          onClick={() => navigate("/time-attendance")}
+        >
           View History
           <ArrowRight className="ml-1 h-4 w-4" />
         </Button>
@@ -149,7 +170,7 @@ export function AttendanceWidget() {
               <div className="text-xl font-semibold">{currentTime}</div>
             </div>
           </div>
-          <Button className="px-4" onClick={() => navigate('/time-attendance')}>
+          <Button className="px-4" onClick={() => navigate("/time-attendance")}>
             <Clock className="mr-2 h-4 w-4" />
             Clock In
           </Button>
@@ -157,23 +178,37 @@ export function AttendanceWidget() {
         {/* Weekly hours progress bar */}
         <div className="mt-6 mb-2">
           <div className="flex justify-between items-center mb-1">
-            <span className="text-sm font-medium text-gray-700">Weekly Hours</span>
-            <span className="text-sm font-semibold text-gray-900">{totalWeekHours.toFixed(1)} / {weeklyTargetHours.toFixed(1)} hrs</span>
+            <span className="text-sm font-medium text-gray-700">
+              Weekly Hours
+            </span>
+            <span className="text-sm font-semibold text-gray-900">
+              {totalWeekHours.toFixed(1)} / {weeklyTargetHours.toFixed(1)} hrs
+            </span>
           </div>
-          <Progress value={Math.min(100, (totalWeekHours / weeklyTargetHours) * 100)} className="h-2 bg-gray-200 [&>div]:bg-blue-600" />
+          <Progress
+            value={Math.min(100, (totalWeekHours / weeklyTargetHours) * 100)}
+            className="h-2 bg-gray-200 [&>div]:bg-blue-600"
+          />
         </div>
         {/* Daily bars remain unchanged */}
         <div className="mt-4">
           <div className="flex justify-between mb-1 text-xs text-gray-500">
             {weekHours.map((d) => (
-              <div key={d.label} className="w-10 text-center">{d.label}</div>
+              <div key={d.label} className="w-10 text-center">
+                {d.label}
+              </div>
             ))}
           </div>
           <div className="flex justify-between items-end">
             {weekHours.map((d) => (
               <div key={d.label} className="w-10 flex flex-col items-center">
-                <div className="h-4 text-xs font-medium">{d.hours.toFixed(1)}</div>
-                <Progress value={Math.min(100, (d.hours / 8) * 100)} className="h-2 w-full bg-gray-200" />
+                <div className="h-4 text-xs font-medium">
+                  {d.hours.toFixed(1)}
+                </div>
+                <Progress
+                  value={Math.min(100, (d.hours / 8) * 100)}
+                  className="h-2 w-full bg-gray-200"
+                />
               </div>
             ))}
           </div>

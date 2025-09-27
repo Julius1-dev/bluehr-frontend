@@ -7,16 +7,10 @@ import { Badge } from '@/components/ui/badge';
 import { 
   BarChart2, 
   Target, 
-  TrendingUp, 
   Award, 
   Calendar,
   MessageSquare,
-  CheckCircle2,
-  Clock,
-  ArrowRight,
-  Users as UsersIcon,
-  Star,
-  BarChart3
+  CheckCircle2
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
@@ -33,16 +27,16 @@ export default function PerformancePage() {
   const [reviewDetailsOpen, setReviewDetailsOpen] = useState(false);
   const [requestFeedbackOpen, setRequestFeedbackOpen] = useState(false);
   const [teamReviewOpen, setTeamReviewOpen] = useState(false);
-  const [selectedEmployeeId, setSelectedEmployeeId] = useState<number | undefined>();
+  const [selectedEmployeeId, _setSelectedEmployeeId] = useState<number | undefined>();
   
   // Remove all mock data arrays
   // Add state for real data
   const [performanceMetrics, setPerformanceMetrics] = useState<any[]>([]);
   const [goals, setGoals] = useState<any[]>([]);
   const [recentActivities, setRecentActivities] = useState<any[]>([]);
-  const [teamMembers, setTeamMembers] = useState<any[]>([]);
-  const [loadingOverview, setLoadingOverview] = useState(false);
-  const [overviewError, setOverviewError] = useState('');
+  const [_teamMembers, setTeamMembers] = useState<any[]>([]);
+  const [_loadingOverview, setLoadingOverview] = useState(false);
+  const [_overviewError, setOverviewError] = useState('');
 
   useEffect(() => {
     setLoadingOverview(true);
@@ -110,7 +104,7 @@ export default function PerformancePage() {
       // Refresh goals after approval
       const data = await PerformanceApi.getAllEmployeeGoals();
       setEmployeeGoals(data);
-    } catch (err) {
+      } catch (_err) {
       setMilestoneActionError('Failed to approve milestone.');
     } finally {
       setMilestoneActionLoading((prev) => ({ ...prev, [`${employeeId}-${goalIndex}-${milestoneIndex}`]: false }));
@@ -124,7 +118,7 @@ export default function PerformancePage() {
       // Refresh goals after rejection
       const data = await PerformanceApi.getAllEmployeeGoals();
       setEmployeeGoals(data);
-    } catch (err) {
+      } catch (_err) {
       setMilestoneActionError('Failed to reject milestone.');
     } finally {
       setMilestoneActionLoading((prev) => ({ ...prev, [`${employeeId}-${goalIndex}-${milestoneIndex}`]: false }));
@@ -132,7 +126,7 @@ export default function PerformancePage() {
   };
 
   // Extract data from API response
-  const performance = {
+  const _performance = {
     metrics: performanceMetrics,
     goals: goals,
     achievements: [], // No achievements in mock data

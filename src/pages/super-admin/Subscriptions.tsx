@@ -10,7 +10,6 @@ import {
   Plus, 
   Building2, 
   ArrowUpDown,
-  ChevronDown,
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
@@ -18,21 +17,14 @@ import {
   CheckCircle2,
   AlertCircle,
   Clock,
-  CreditCard,
-  DollarSign,
   Download,
   FileText,
   Receipt,
   RefreshCw,
-  TrendingUp,
-  Users,
   XCircle,
-  Calendar,
-  Check,
   X,
   ChevronDown as ChevronDownIcon,
-  ChevronUp as ChevronUpIcon,
-  ChevronRight as ChevronRightIcon
+  ChevronUp as ChevronUpIcon
 } from 'lucide-react';
 import { useState } from 'react';
 import { format } from 'date-fns';
@@ -152,8 +144,8 @@ export default function Subscriptions() {
   const [sortConfig, setSortConfig] = useState<{ key: keyof Subscription; direction: 'asc' | 'desc' } | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   // Keep this state for future use with subscription actions
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [selectedSubscription, setSelectedSubscription] = useState<Subscription | null>(null);
+   
+  const [_selectedSubscription, setSelectedSubscription] = useState<Subscription | null>(null);
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const itemsPerPage = 10;
 
